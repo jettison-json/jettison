@@ -104,8 +104,9 @@ public class MappedNamespaceConvention implements Convention {
     
     public String createAttributeKey(String p, String ns, String local) {
         StringBuilder builder = new StringBuilder().append('@');
-        if (ns != null && ns.length() != 0) {
-            builder.append(getJSONNamespace(ns)).append('.');
+        String jns = getJSONNamespace(ns);
+        if (jns != null && jns.length() != 0) {
+            builder.append(jns).append('.');
         }
         return builder.append(local).toString();
     }
@@ -122,8 +123,9 @@ public class MappedNamespaceConvention implements Convention {
     
     public String createKey(String p, String ns, String local) {
         StringBuilder builder = new StringBuilder();
-        if (ns != null && ns.length() != 0) {
-            builder.append(getJSONNamespace(ns)).append('.');
+        String jns = getJSONNamespace(ns);
+        if (jns != null && jns.length() != 0) {
+            builder.append(jns).append('.');
         }
         return builder.append(local).toString();
     }
