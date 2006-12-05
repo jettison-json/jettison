@@ -208,7 +208,12 @@ public class BadgerFishXMLStreamWriter extends AbstractXMLStreamWriter {
                 nodes.push(node);
             } else {
                 JSONObject newCurrent = new JSONObject();
-                currentNode.put(currentKey, newCurrent);
+                
+                if (existing instanceof JSONArray) {
+                    ((JSONArray) existing).put(newCurrent);
+                } else {
+                    currentNode.put(currentKey, newCurrent);
+                }
                 
                 currentNode = newCurrent;
                 Node node = new Node(currentNode);

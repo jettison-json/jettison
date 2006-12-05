@@ -96,6 +96,44 @@ public class BadgerFishXMLStreamWriterTest extends TestCase {
                          strWriter.toString());
     }
 
+    public void testMultipleChildrenAgain() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        AbstractXMLStreamWriter xsw = new BadgerFishXMLStreamWriter(strWriter);
+        
+        xsw.writeStartDocument();
+        xsw.writeStartElement("Ratings");
+
+        xsw.writeStartElement("Rating");
+        xsw.writeAttribute("id", "100");
+        xsw.writeAttribute("value", "3");
+        xsw.writeEndElement();
+
+        xsw.writeStartElement("Rating");
+        xsw.writeAttribute("id", "200");
+        xsw.writeAttribute("value", "4");
+        xsw.writeEndElement();
+
+        xsw.writeStartElement("Rating");
+        xsw.writeAttribute("id", "300");
+        xsw.writeAttribute("value", "5");
+        xsw.writeEndElement();
+
+        xsw.writeEndElement();
+        xsw.writeEndDocument ();
+        xsw.flush();
+
+        xsw.close();
+        strWriter.close();
+        System.out.println(strWriter.toString());
+        
+        assertJSONEquals("{\"Ratings\":{\"Rating\":[" +
+                        "{\"@id\":\"100\",\"@value\":\"3\"}," +
+                        "{\"@id\":\"200\",\"@value\":\"4\"}," +
+                        "{\"@id\":\"300\",\"@value\":\"5\"}" +
+                        "]}}", 
+                         strWriter.toString());
+    }
+    
     public void testAttributeAndText() throws Exception {
         StringWriter strWriter = new StringWriter();
         AbstractXMLStreamWriter w = new BadgerFishXMLStreamWriter(strWriter);
