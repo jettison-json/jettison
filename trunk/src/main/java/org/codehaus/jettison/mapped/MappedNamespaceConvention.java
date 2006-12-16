@@ -15,8 +15,10 @@
  */
 package org.codehaus.jettison.mapped;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.namespace.QName;
@@ -30,16 +32,30 @@ import org.json.JSONObject;
 public class MappedNamespaceConvention implements Convention {
     private Map xnsToJns = new HashMap();
     private Map jnsToXns = new HashMap();
+    private List attributesAsElements;
+    private List jsonAttributesAsElements;
     
     public MappedNamespaceConvention() {
         super();
     }
-    public MappedNamespaceConvention(Map xnsToJns) {
+    public MappedNamespaceConvention(Configuration config) {
         super();
-        this.xnsToJns = xnsToJns;
+        this.xnsToJns = config.getXmlToJsonNamespaces();
+        this.attributesAsElements = config.getAttributesAsElements();
+        
         for (Iterator itr = xnsToJns.entrySet().iterator(); itr.hasNext();) {
             Map.Entry entry = (Map.Entry) itr.next();
             jnsToXns.put(entry.getValue(), entry.getKey());
+        }
+        
+        jsonAttributesAsElements = new ArrayList();
+        if (attributesAsElements != null) {
+            for (Iterator itr = attributesAsElements.iterator(); itr.hasNext();) {
+                QName q = (QName) itr.next();
+                jsonAttributesAsElements.add(createAttributeKey(q.getPrefix(), 
+                                                                q.getNamespaceURI(), 
+                                                                q.getLocalPart()));
+            }
         }
     }
 
@@ -54,6 +70,18 @@ public class MappedNamespaceConvention implements Convention {
             if (k.startsWith("@")) {
                 String value = object.optString(k);
                 k = k.substring(1);
+                if (value != null) {
+                    readAttribute(n, k, value);
+                } else {
+                    JSONArray array = object.optJSONArray(k);
+                    if (array != null) {
+                        readAttribute(n, k, array);
+                    }
+                }
+                itr.remove();
+            } else if (jsonAttributesAsElements != null 
+                && jsonAttributesAsElements.contains(k)) {
+                String value = object.optString(k);
                 if (value != null) {
                     readAttribute(n, k, value);
                 } else {
@@ -128,5 +156,19 @@ public class MappedNamespaceConvention implements Convention {
             builder.append(jns).append('.');
         }
         return builder.append(local).toString();
+    }
+    
+    public boolean isElement(String p, String ns, String local) {
+        if (attributesAsElements == null) return false;
+        
+        for (Iterator itr = attributesAsElements.iterator(); itr.hasNext();) {
+            QName q = (QName) itr.next();
+            
+            if (q.getNamespaceURI().equals(ns)
+                && q.getLocalPart().equals(local)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

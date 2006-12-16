@@ -44,14 +44,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
     }
 
     public void close() throws XMLStreamException {
-        try {
-            root.write(writer);
-            writer.flush();
-        } catch (JSONException e) {
-            throw new XMLStreamException(e);
-        } catch (IOException e) {
-            throw new XMLStreamException(e);
-        }
+        
     }
 
     public void flush() throws XMLStreamException {
@@ -82,11 +75,17 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
     }
 
     public void setPrefix(String arg0, String arg1) throws XMLStreamException {
-        // TODO Auto-generated method stub
 
     }
 
     public void writeAttribute(String p, String ns, String local, String value) throws XMLStreamException {
+        if (convention.isElement(p, ns, local)) {
+            writeStartElement(p, local, ns);
+            writeCharacters(value);
+            writeEndElement();
+            return;
+        }
+        
         String key = convention.createAttributeKey(p, ns, local);
         try {
             makeCurrentJSONObject();
@@ -135,14 +134,6 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
         writeAttribute(null, local, value);
     }
 
-    public void writeCData(String text) throws XMLStreamException {
-        writeCharacters(text);
-    }
-
-    public void writeCharacters(char[] arg0, int arg1, int arg2) throws XMLStreamException {
-        throw new UnsupportedOperationException();
-    }
-
     public void writeCharacters(String text) throws XMLStreamException {
         try {
             if (current instanceof String) {
@@ -171,8 +162,14 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
     }
 
     public void writeEndDocument() throws XMLStreamException {
-        // TODO Auto-generated method stub
-
+        try {
+            root.write(writer);
+            writer.flush();
+        } catch (JSONException e) {
+            throw new XMLStreamException(e);
+        } catch (IOException e) {
+            throw new XMLStreamException(e);
+        }
     }
 
     public void writeEndElement() throws XMLStreamException {

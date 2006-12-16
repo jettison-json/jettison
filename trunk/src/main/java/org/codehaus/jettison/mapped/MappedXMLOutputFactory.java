@@ -29,7 +29,11 @@ public class MappedXMLOutputFactory extends AbstractXMLOutputFactory {
     private MappedNamespaceConvention convention;
 
     public MappedXMLOutputFactory(Map nstojns) {
-        this.convention = new MappedNamespaceConvention(nstojns);
+        this(new Configuration(nstojns));
+    }
+
+    public MappedXMLOutputFactory(Configuration config) {
+        this.convention = new MappedNamespaceConvention(config);
     }
 
     public XMLStreamWriter createXMLStreamWriter(Writer writer) throws XMLStreamException {
