@@ -66,9 +66,11 @@ public class BadgerFishXMLStreamReader extends AbstractXMLStreamReader {
             } else if (node.getKeys() != null && node.getKeys().hasNext()) {
                 processElement();
             } else {
-                event = END_ELEMENT;
                 if (nodes.size() != 0) {
-                    node = (Node) nodes.pop();
+                    event = END_ELEMENT;
+                    node = (Node)nodes.pop();
+                } else {
+                    event = END_DOCUMENT;
                 }
             }
         }
