@@ -31,7 +31,11 @@ public class MappedXMLInputFactory extends AbstractXMLInputFactory {
     private MappedNamespaceConvention convention;
 
     public MappedXMLInputFactory(Map nstojns) {
-        this.convention = new MappedNamespaceConvention(nstojns);
+        this(new Configuration(nstojns));
+    }
+    
+    public MappedXMLInputFactory(Configuration config) {
+        this.convention = new MappedNamespaceConvention(config);
     }
     
     public XMLStreamReader createXMLStreamReader(JSONTokener tokener) throws XMLStreamException {

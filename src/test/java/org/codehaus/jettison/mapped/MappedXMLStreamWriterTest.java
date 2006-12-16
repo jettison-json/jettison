@@ -16,16 +16,17 @@
 package org.codehaus.jettison.mapped;
 
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import junit.framework.TestCase;
 
 import org.codehaus.jettison.AbstractXMLStreamWriter;
-import org.codehaus.jettison.mapped.MappedNamespaceConvention;
-import org.codehaus.jettison.mapped.MappedXMLStreamWriter;
 
 public class MappedXMLStreamWriterTest extends TestCase {
     public void testRoot() throws Exception {
@@ -75,7 +76,7 @@ public class MappedXMLStreamWriterTest extends TestCase {
         
         w.writeCharacters("test");
         w.writeCharacters("test");
-        
+        w.writeCharacters("test".toCharArray(), 0, 4);
         w.writeEndElement();
         w.writeEndElement();
         w.writeEndDocument();
@@ -83,7 +84,7 @@ public class MappedXMLStreamWriterTest extends TestCase {
         w.close();
         strWriter.close();
         
-        assertEquals("{\"root\":{\"child\":\"testtest\"}}", strWriter.toString());
+        assertEquals("{\"root\":{\"child\":\"testtesttest\"}}", strWriter.toString());
     }
     
     public void testAttributes() throws Exception {
@@ -91,7 +92,7 @@ public class MappedXMLStreamWriterTest extends TestCase {
         
         Map xtoj = new HashMap();
         xtoj.put("http://foo/", "foo");
-        MappedNamespaceConvention con = new MappedNamespaceConvention(xtoj);
+        MappedNamespaceConvention con = new MappedNamespaceConvention(new Configuration(xtoj));
         AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
         
         w.writeStartDocument();
@@ -109,6 +110,36 @@ public class MappedXMLStreamWriterTest extends TestCase {
         strWriter.close();
         
         assertEquals("{\"root\":{\"@att\":\"attvalue\",\"@foo.att2\":\"attvalue\"}}", strWriter.toString());
+    }
+
+    public void testAttributesAsElements() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        
+        Map xtoj = new HashMap();
+        xtoj.put("http://foo/", "foo");
+        List atts = new ArrayList();
+        atts.add(new QName("http://foo/", "att2"));
+        
+        Configuration c = new Configuration(xtoj, atts, null);
+        
+        MappedNamespaceConvention con = new MappedNamespaceConvention(c);
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        w.writeAttribute("att", "attvalue");
+        w.writeAttribute("http://foo/", "att2", "attvalue");
+        
+        //w.writeCharacters("test");
+        
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        assertEquals("{\"root\":{\"@att\":\"attvalue\",\"foo.att2\":\"attvalue\"}}", strWriter.toString());
     }
     
     public void testTwoChildren() throws Exception {
@@ -278,7 +309,7 @@ public class MappedXMLStreamWriterTest extends TestCase {
         
         Map xtoj = new HashMap();
         xtoj.put("http://foo/", "foo");
-        MappedNamespaceConvention con = new MappedNamespaceConvention(xtoj);
+        MappedNamespaceConvention con = new MappedNamespaceConvention(new Configuration(xtoj));
         
         AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
         

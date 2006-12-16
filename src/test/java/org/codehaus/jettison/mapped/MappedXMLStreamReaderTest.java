@@ -15,9 +15,12 @@
  */
 package org.codehaus.jettison.mapped;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.TestCase;
@@ -88,7 +91,7 @@ public class MappedXMLStreamReaderTest extends TestCase {
         
         Map xtoj = new HashMap();
         xtoj.put("http://foo/", "foo");
-        MappedNamespaceConvention con = new MappedNamespaceConvention(xtoj);
+        MappedNamespaceConvention con = new MappedNamespaceConvention(new Configuration(xtoj));
         XMLStreamReader reader = new MappedXMLStreamReader(obj, con);
         
         assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
@@ -124,6 +127,46 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals("att", reader.getAttributeLocalName(0));
         assertEquals("", reader.getAttributeNamespace(0));
         assertEquals("attvalue", reader.getAttributeValue(0));
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("child1", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("child1", reader.getText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("child1", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart()); 
+    }
+    
+    public void testAttributesAsElements() throws Exception {
+        JSONObject obj = 
+            new JSONObject("{ " +
+                           "\"root\" : { " +
+                           "\"@att\" : \"attvalue\"," +
+                           "\"att2\" : \"attvalue\"," +
+                           "\"child1\" : \"child1\"" +
+                           "} }");
+        List atts = new ArrayList();
+        atts.add(new QName("att2"));
+        Configuration c = new Configuration();
+        c.setAttributesAsElements(atts);
+        
+        MappedNamespaceConvention con = new MappedNamespaceConvention(c);
+        XMLStreamReader reader = new MappedXMLStreamReader(obj, con);
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart());
+        
+        assertEquals(1, reader.getAttributeCount());
+        assertEquals("att", reader.getAttributeLocalName(0));
+        assertEquals("", reader.getAttributeNamespace(0));
+        assertEquals("attvalue", reader.getAttributeValue(0));
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("att2", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("attvalue", reader.getText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
         
         assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
         assertEquals("child1", reader.getName().getLocalPart());

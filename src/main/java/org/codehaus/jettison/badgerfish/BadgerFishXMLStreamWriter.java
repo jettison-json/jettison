@@ -46,14 +46,6 @@ public class BadgerFishXMLStreamWriter extends AbstractXMLStreamWriter {
     }
 
     public void close() throws XMLStreamException {
-        try {
-            root.write(writer);
-            writer.flush();
-        } catch (JSONException e) {
-            throw new XMLStreamException(e);
-        } catch (IOException e) {
-            throw new XMLStreamException(e);
-        }
     }
 
     public void flush() throws XMLStreamException {
@@ -110,14 +102,6 @@ public class BadgerFishXMLStreamWriter extends AbstractXMLStreamWriter {
 
     public void writeAttribute(String local, String value) throws XMLStreamException {
         writeAttribute(null, local, value);
-    }
-
-    public void writeCData(String text) throws XMLStreamException {
-        writeCharacters(text);
-    }
-
-    public void writeCharacters(char[] arg0, int arg1, int arg2) throws XMLStreamException {
-        throw new UnsupportedOperationException();
     }
 
     public void writeCharacters(String text) throws XMLStreamException {
@@ -183,6 +167,18 @@ public class BadgerFishXMLStreamWriter extends AbstractXMLStreamWriter {
     }
 
     public void writeStartDocument() throws XMLStreamException {
+    }
+
+    
+    public void writeEndDocument() throws XMLStreamException {
+        try {
+            root.write(writer);
+            writer.flush();
+        } catch (JSONException e) {
+            throw new XMLStreamException(e);
+        } catch (IOException e) {
+            throw new XMLStreamException(e);
+        }
     }
 
     public void writeStartElement(String prefix, String local, String ns) throws XMLStreamException {

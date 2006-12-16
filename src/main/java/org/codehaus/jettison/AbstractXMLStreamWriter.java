@@ -20,6 +20,14 @@ import javax.xml.stream.XMLStreamWriter;
 
 public abstract class AbstractXMLStreamWriter implements XMLStreamWriter {
 
+    public void writeCData(String text) throws XMLStreamException {
+        writeCharacters(text);
+    }
+
+    public void writeCharacters(char[] arg0, int arg1, int arg2) throws XMLStreamException {
+        writeCharacters(new String(arg0, arg1, arg2));
+    }
+    
     public void writeEmptyElement(String prefix, String local, String ns) throws XMLStreamException {
         writeStartElement(prefix, local, ns);
         writeEndElement();
