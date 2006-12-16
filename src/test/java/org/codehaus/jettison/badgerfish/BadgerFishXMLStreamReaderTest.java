@@ -30,10 +30,14 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
         
         assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
         assertEquals("alice", reader.getName().getLocalPart());
+        
+        assertEquals(-1, reader.getLocation().getLineNumber());
+        
         assertEquals(XMLStreamReader.CHARACTERS, reader.next());
         assertEquals("bob", reader.getText());
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
         assertEquals("alice", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.END_DOCUMENT, reader.next());
     }
    
     public void testTwoChildren() throws Exception {

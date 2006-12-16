@@ -173,7 +173,29 @@ public abstract class AbstractXMLStreamReader implements XMLStreamReader {
     }
 
     public Location getLocation() {
-        return null;
+        return new Location() {
+
+            public int getCharacterOffset() {
+                return 0;
+            }
+
+            public int getColumnNumber() {
+                return 0;
+            }
+
+            public int getLineNumber() {
+                return -1;
+            }
+
+            public String getPublicId() {
+                return null;
+            }
+
+            public String getSystemId() {
+                return null;
+            }
+            
+        };
     }
 
     public String getPIData() {
