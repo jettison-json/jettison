@@ -150,7 +150,7 @@ public class MappedNamespaceConvention implements Convention {
     }
     
     public String createKey(String p, String ns, String local) {
-        StringBuilder builder = new StringBuilder();
+        StringBuffer builder = new StringBuffer();
         String jns = getJSONNamespace(ns);
         if (jns != null && jns.length() != 0) {
             builder.append(jns).append('.');
