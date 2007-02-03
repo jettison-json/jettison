@@ -21,6 +21,7 @@ import javax.xml.stream.XMLStreamException;
 import org.codehaus.jettison.AbstractXMLStreamReader;
 import org.codehaus.jettison.Node;
 import org.codehaus.jettison.util.FastStack;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -54,6 +55,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
             if (nodes.size() > 1) {
                 node = (Node) nodes.pop();
             }
+            
             currentValue = null;
         }
         else if (event == START_ELEMENT || event == END_ELEMENT) {
@@ -62,7 +64,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
             }
             if (currentValue != null) {
                 event = CHARACTERS;
-            } else if (node.getKeys() != null && node.getKeys().hasNext()) {
+            } else if ((node.getKeys() != null && node.getKeys().hasNext()) || node.getArray() != null) {
                 processElement();
             } else {
                 if (nodes.size() >  0) {
@@ -70,22 +72,44 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
                 }
                 event = END_ELEMENT;
             }
-        }
-         
+        } 
         return event;
     }
     
     private void processElement() throws XMLStreamException {
         try {
-            String nextKey = (String) node.getKeys().next();
-            
-            Object newObj = node.getObject().get(nextKey);
+        	Object newObj = null;
+        	String nextKey = null;
+        	if (node.getArray() != null) {
+        		int index = node.getArrayIndex();
+        		if (index >= node.getArray().length()) {
+        			nodes.pop();
+        			if (nodes.size() > 1)
+        			nodes.pop();
+            		event = END_ELEMENT;
+            		return;
+        		}
+        		newObj = node.getArray().get(index++);
+        		nextKey = node.getName().getLocalPart();
+        		node.setArrayIndex(index);
+        	} else {
+        		nextKey = (String) node.getKeys().next();
+        		newObj = node.getObject().get(nextKey);
+        	}
             if (newObj instanceof String) {
                 node = new Node(nextKey, convention);
                 nodes.push(node);
                 currentValue = (String) newObj;
                 event = START_ELEMENT;
                 return;
+            } else if (newObj instanceof JSONArray) {
+            	JSONArray array = (JSONArray)newObj;
+            	node = new Node(nextKey, convention);
+            	node.setArray(array);
+            	node.setArrayIndex(0);
+            	nodes.push(node);
+            	processElement();
+            	return;
             } else if (newObj instanceof JSONObject) {
                 node = new Node(nextKey, (JSONObject) newObj, convention);
                 nodes.push(node);
