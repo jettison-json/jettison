@@ -80,6 +80,62 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
         assertEquals("root", reader.getName().getLocalPart()); 
     }
+    
+    public void testNestedArrayOfChildren() throws Exception {
+        JSONObject obj = 
+            new JSONObject("{" +
+            		"\"root\":" +
+            				"{\"subchild1\":" +
+            					"[{\"subchild2\":" +
+            						"[\"first sub2\",\"second sub2\",\"third sub2\"]}" +
+            					",\"sub1\"]" +
+            			"}" +
+            		"}");
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        XMLStreamReader reader = new MappedXMLStreamReader(obj, con);
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("subchild1", reader.getName().getLocalPart());
+       
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("subchild2", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("first sub2", reader.getText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("subchild2", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("subchild2", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("second sub2", reader.getText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("subchild2", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("subchild2", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("third sub2", reader.getText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("subchild2", reader.getName().getLocalPart());
+              
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("subchild2", reader.getName().getLocalPart());
+                  
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("subchild1", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("sub1", reader.getText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("subchild1", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("subchild1", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart());
+    }
 
     
     public void testNamespaces() throws Exception {
@@ -177,4 +233,27 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
         assertEquals("root", reader.getName().getLocalPart()); 
     }
+    
+    public void testElementNameWithDot() throws Exception {
+        JSONObject obj = 
+            new JSONObject("{ " +
+                           "\"org.codehaus.jettison.mapped.root\" : { " +
+                           "\"org.codehaus.jettison.mapped.child1\" : \"org.codehaus.jettison.mapped.child1\"" +
+                           "} }");
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        XMLStreamReader reader = new MappedXMLStreamReader(obj, con);
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());       
+        assertEquals("org.codehaus.jettison.mapped.root", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("org.codehaus.jettison.mapped.child1", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("org.codehaus.jettison.mapped.child1", reader.getText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("org.codehaus.jettison.mapped.child1", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("org.codehaus.jettison.mapped.root", reader.getName().getLocalPart()); 
+    }
+    
+    
 }

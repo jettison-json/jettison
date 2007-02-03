@@ -141,7 +141,11 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
                 setNewValue(current);
             } else if (current instanceof JSONArray) {
                 JSONArray arr = (JSONArray) current;
-                arr.put(arr.length()-1, text);
+                if (arr.get(arr.length()-1).equals("")) {
+                	arr.put(arr.length()-1, text);
+                } else {
+                	arr.put(text);
+                }
                 current = text;
             }
         } catch (JSONException e) {
@@ -215,13 +219,29 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
             
             currentKey = convention.createKey(prefix, ns, local);
             if (current instanceof JSONArray) {
-                JSONObject newNode = new JSONObject();
-                newNode.put(currentKey, "");
-                setNewValue(newNode);
-                nodes.push(newNode);
-                current = "";
+            	JSONArray array = (JSONArray)current;
+            	if (array.get(array.length()-1).equals("")) {             	
+            		JSONObject newNode = new JSONObject();
+            		newNode.put(currentKey, "");
+            		setNewValue(newNode);
+            		nodes.push(newNode);
+            		current = "";
+            	}
             } else {
                 Object o = ((JSONObject) current).opt(currentKey);
+                // hack to support nested arrays
+                if (o == null && nodes.size() > 2) {
+                	Object next = nodes.get(nodes.size() - 2);
+                	if (next instanceof JSONObject) {
+                		Object maybe = ((JSONObject)next).opt(currentKey);
+                		if (maybe != null && maybe instanceof JSONObject) {
+                			o = maybe;
+                			nodes.pop();
+                			current = nodes.pop();               			
+                		}
+                			
+                	}
+                }
                 if (o instanceof JSONObject || o instanceof String) {
                     JSONArray arr = new JSONArray();
                     arr.put(o);

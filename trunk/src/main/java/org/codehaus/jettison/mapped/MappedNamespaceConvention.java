@@ -118,11 +118,12 @@ public class MappedNamespaceConvention implements Convention {
             String xns = (String) jnsToXns.get(jns);
             
             if (xns == null) {
-                throw new IllegalStateException("Invalid JSON namespace: " + jns);
-            }
-            String local = name.substring(dot+1);
+            	qname = new QName(name);
+            } else {
+            	String local = name.substring(dot+1);
             
-            qname  = new QName(xns, local);
+            	qname  = new QName(xns, local);
+            }
         } else {
             qname = new QName(name);
         }
@@ -131,7 +132,7 @@ public class MappedNamespaceConvention implements Convention {
     
     
     public String createAttributeKey(String p, String ns, String local) {
-        StringBuilder builder = new StringBuilder().append('@');
+        StringBuffer builder = new StringBuffer().append('@');
         String jns = getJSONNamespace(ns);
         if (jns != null && jns.length() != 0) {
             builder.append(jns).append('.');

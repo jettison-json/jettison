@@ -238,6 +238,45 @@ public class MappedXMLStreamWriterTest extends TestCase {
                         "\"child2\":{\"subchild\":\"test\"}}}", strWriter.toString());
     }
     
+    public void testNestedArrayOfChildren() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        
+        w.writeStartElement("subchild1");
+        
+        w.writeStartElement("subchild2");
+        w.writeCharacters("first sub2");
+        w.writeEndElement();
+        
+        w.writeStartElement("subchild2");
+        w.writeCharacters("second sub2");
+        w.writeEndElement();
+        
+        w.writeStartElement("subchild2");
+        w.writeCharacters("third sub2");
+        w.writeEndElement();
+        
+        w.writeEndElement();
+        
+        w.writeStartElement("subchild1");
+        w.writeCharacters("sub1");
+        w.writeEndElement();
+        
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        System.out.println(strWriter.toString());
+        
+        assertEquals("{\"root\":{\"subchild1\":[{\"subchild2\":[\"first sub2\",\"second sub2\",\"third sub2\"]},\"sub1\"]}}", strWriter.toString());
+    }
+    
     public void testArrayOfChildren() throws Exception {
         StringWriter strWriter = new StringWriter();
         MappedNamespaceConvention con = new MappedNamespaceConvention();
