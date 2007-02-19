@@ -98,7 +98,6 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals("root", reader.getName().getLocalPart());
         assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
         assertEquals("subchild1", reader.getName().getLocalPart());
-       
         
         assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
         assertEquals("subchild2", reader.getName().getLocalPart());
@@ -122,7 +121,7 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals("subchild2", reader.getName().getLocalPart());
               
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
-        assertEquals("subchild2", reader.getName().getLocalPart());
+        assertEquals("subchild1", reader.getName().getLocalPart());
                   
         assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
         assertEquals("subchild1", reader.getName().getLocalPart());
@@ -132,8 +131,8 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals("subchild1", reader.getName().getLocalPart());
         
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
-        assertEquals("subchild1", reader.getName().getLocalPart());
-        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.END_DOCUMENT, reader.next());
         assertEquals("root", reader.getName().getLocalPart());
     }
 
