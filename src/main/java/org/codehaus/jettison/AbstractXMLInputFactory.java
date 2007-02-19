@@ -126,7 +126,7 @@ public abstract class AbstractXMLInputFactory extends XMLInputFactory {
     public XMLStreamReader createXMLStreamReader(Reader reader) throws XMLStreamException {
         CharBuffer cb = CharBuffer.allocate(4096);
         try {
-            while (reader.read(cb) != -1) {
+            while (reader.read(cb.array()) != -1) {
                 // keep reading
             }
             return createXMLStreamReader(new JSONTokener(cb.toString()));
