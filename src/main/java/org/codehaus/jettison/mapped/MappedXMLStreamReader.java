@@ -144,22 +144,9 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
         return currentValue;
     }
 
-    public char[] getTextCharacters() {
-        return currentValue.toCharArray();
-    }
-
     public int getTextCharacters(int arg0, char[] arg1, int arg2, int arg3) throws XMLStreamException {
         // TODO Auto-generated method stub
         return 0;
     }
 
-    public int getTextLength() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    public int getTextStart() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
 }
