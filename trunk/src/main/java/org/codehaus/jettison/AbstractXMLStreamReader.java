@@ -228,7 +228,7 @@ public abstract class AbstractXMLStreamReader implements XMLStreamReader {
     }
 
     public int getTextLength() {
-        return 0;
+        return getText().length();
     }
 
     public int getTextStart() {
