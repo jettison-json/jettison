@@ -33,7 +33,7 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.util.XMLEventAllocator;
 import javax.xml.transform.Source;
 
-import org.json.JSONTokener;
+import org.codehaus.jettison.json.JSONTokener;
 
 public abstract class AbstractXMLInputFactory extends XMLInputFactory {
 

@@ -22,8 +22,8 @@ import javax.xml.stream.XMLStreamException;
 
 import org.codehaus.jettison.Convention;
 import org.codehaus.jettison.Node;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 
 public class BadgerFishConvention implements Convention {
 

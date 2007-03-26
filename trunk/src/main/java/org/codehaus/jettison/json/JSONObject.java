@@ -1,4 +1,4 @@
-package org.json;
+package org.codehaus.jettison.json;
 
 /*
 Copyright (c) 2002 JSON.org
@@ -320,7 +320,7 @@ public class JSONObject {
         Object o = opt(key);
         if (o == null) {
             put(key, new JSONArray().put(value));
-        } else if (o instanceof JSONArray) {
+        } else if (!(o instanceof JSONArray)){
             throw new JSONException("JSONObject[" + key + 
                         "] is not a JSONArray.");
         } else {

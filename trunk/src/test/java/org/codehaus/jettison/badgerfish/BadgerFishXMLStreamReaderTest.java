@@ -21,7 +21,7 @@ import junit.framework.TestCase;
 
 import org.codehaus.jettison.AbstractXMLStreamReader;
 import org.codehaus.jettison.badgerfish.BadgerFishXMLStreamReader;
-import org.json.JSONObject;
+import org.codehaus.jettison.json.JSONObject;
 
 public class BadgerFishXMLStreamReaderTest extends TestCase {
     public void testRootWithText() throws Exception {
