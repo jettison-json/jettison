@@ -25,9 +25,9 @@ import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.TestCase;
 
+import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.mapped.MappedNamespaceConvention;
 import org.codehaus.jettison.mapped.MappedXMLStreamReader;
-import org.json.JSONObject;
 
 public class MappedXMLStreamReaderTest extends TestCase {
     public void testStreamReader() throws Exception {

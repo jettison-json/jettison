@@ -25,9 +25,9 @@ import javax.xml.namespace.QName;
 
 import org.codehaus.jettison.Convention;
 import org.codehaus.jettison.Node;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 
 public class MappedNamespaceConvention implements Convention {
     private Map xnsToJns = new HashMap();

@@ -1,4 +1,4 @@
-package org.json;
+package org.codehaus.jettison.json;
 
 /**
  * The JSONException is thrown by the JSON.org classes then things are amiss.

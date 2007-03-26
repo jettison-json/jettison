@@ -18,8 +18,8 @@ package org.codehaus.jettison;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 
 public interface Convention {
 

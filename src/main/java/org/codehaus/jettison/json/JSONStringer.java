@@ -1,4 +1,4 @@
-package org.json;
+package org.codehaus.jettison.json;
 
 /*
 Copyright (c) 2006 JSON.org

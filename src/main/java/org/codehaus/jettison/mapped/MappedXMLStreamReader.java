@@ -20,10 +20,10 @@ import javax.xml.stream.XMLStreamException;
 
 import org.codehaus.jettison.AbstractXMLStreamReader;
 import org.codehaus.jettison.Node;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.util.FastStack;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class MappedXMLStreamReader extends AbstractXMLStreamReader {
     private FastStack nodes;
