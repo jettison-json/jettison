@@ -40,8 +40,15 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
         String rootName = (String) obj.keys().next();
 
         this.convention = con;
-        this.node = new Node(rootName, obj.getJSONObject(rootName), convention);
         this.nodes = new FastStack();
+        Object top = obj.get(rootName);
+        if(top instanceof JSONObject) {
+            this.node = new Node(rootName, (JSONObject)top, convention);
+        } else {
+            // TODO: check JSONArray and report an error
+            node = new Node(rootName, convention);
+            currentValue = top.toString();
+        }
         nodes.push(node);
         event = START_DOCUMENT;
     }
@@ -121,8 +128,13 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
                 nodes.push(node);
                 event = START_ELEMENT;
                 return;
+            } else {
+                node = new Node(nextKey, convention);
+                nodes.push(node);
+                currentValue = newObj.toString();
+                event = START_ELEMENT;
+                return;
             }
-            event = END_ELEMENT;
         } catch (JSONException e) {
             throw new XMLStreamException(e);
         }

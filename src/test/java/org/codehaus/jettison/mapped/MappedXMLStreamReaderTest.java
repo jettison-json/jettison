@@ -255,4 +255,19 @@ public class MappedXMLStreamReaderTest extends TestCase {
     }
     
     
+    public void testNonStringObjects() throws Exception {
+        JSONObject obj = 
+            new JSONObject();
+        obj.put("foo", true);
+        
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        XMLStreamReader reader = new MappedXMLStreamReader(obj, con);
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());       
+        assertEquals("foo", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("true", reader.getText());
+    }
+    
 }
