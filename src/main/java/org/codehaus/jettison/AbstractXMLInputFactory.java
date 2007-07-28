@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.nio.CharBuffer;
 
 import javax.xml.stream.EventFilter;
@@ -124,12 +125,14 @@ public abstract class AbstractXMLInputFactory extends XMLInputFactory {
     public abstract XMLStreamReader createXMLStreamReader(JSONTokener tokener) throws XMLStreamException;
 
     public XMLStreamReader createXMLStreamReader(Reader reader) throws XMLStreamException {
-        CharBuffer cb = CharBuffer.allocate(4096);
+    	StringWriter wrt = new StringWriter();
         try {
-            while (reader.read(cb.array()) != -1) {
-                // keep reading
+        	int len;
+        	char[] buf = new char[1024];
+            while ((len = reader.read(buf)) != -1) {
+            	wrt.write(buf, 0, len);
             }
-            return createXMLStreamReader(new JSONTokener(cb.toString()));
+            return createXMLStreamReader(new JSONTokener(wrt.toString()));
         } catch (IOException e) {
             throw new XMLStreamException(e);
         }
