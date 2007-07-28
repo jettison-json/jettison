@@ -222,9 +222,9 @@ public abstract class AbstractXMLStreamReader implements XMLStreamReader {
         return getText().toCharArray();
     }
 
-    public int getTextCharacters(int sourceStart, char[] target, int targetStart, int length) throws XMLStreamException {
-        getText().getChars(sourceStart,sourceStart+length,target,targetStart);
-        return length;
+    public int getTextCharacters(int arg0, char[] arg1, int arg2, int arg3) throws XMLStreamException {
+        // TODO Auto-generated method stub
+        return 0;
     }
 
     public int getTextLength() {
