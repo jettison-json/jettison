@@ -25,6 +25,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Result;
+import javax.xml.transform.stream.StreamResult;
 
 
 public abstract class AbstractXMLOutputFactory extends XMLOutputFactory {
@@ -60,8 +61,21 @@ public abstract class AbstractXMLOutputFactory extends XMLOutputFactory {
         return createXMLStreamWriter(out, null);
     }
 
-    public XMLStreamWriter createXMLStreamWriter(Result arg0) throws XMLStreamException {
-        throw new UnsupportedOperationException();
+    public XMLStreamWriter createXMLStreamWriter(Result result) throws XMLStreamException {
+        // Can only support simplest of Result impls:
+        if (result instanceof StreamResult) {
+            StreamResult sr = (StreamResult) result;
+            OutputStream out = sr.getOutputStream();
+            if (out != null) {
+                return createXMLStreamWriter(out);
+            }
+            Writer w = sr.getWriter();
+            if (w != null) {
+                return createXMLStreamWriter(w);
+            }
+            throw new UnsupportedOperationException("Only those javax.xml.transform.stream.StreamResult instances supported that have an OutputStream or Writer");
+        }
+        throw new UnsupportedOperationException("Only javax.xml.transform.stream.StreamResult type supported");
     }
 
     public abstract XMLStreamWriter createXMLStreamWriter(Writer writer) throws XMLStreamException;

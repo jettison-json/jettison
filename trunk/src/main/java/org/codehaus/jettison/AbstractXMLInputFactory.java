@@ -15,13 +15,7 @@
  */
 package org.codehaus.jettison;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.nio.CharBuffer;
+import java.io.*;
 
 import javax.xml.stream.EventFilter;
 import javax.xml.stream.StreamFilter;
@@ -33,10 +27,13 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.util.XMLEventAllocator;
 import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
 
 import org.codehaus.jettison.json.JSONTokener;
 
 public abstract class AbstractXMLInputFactory extends XMLInputFactory {
+
+    final static int INPUT_BUF_SIZE = 512;
 
     public XMLEventReader createFilteredReader(XMLEventReader arg0, EventFilter arg1) throws XMLStreamException {
         // TODO Auto-generated method stub
@@ -50,7 +47,7 @@ public abstract class AbstractXMLInputFactory extends XMLInputFactory {
     }
 
     
-    public XMLEventReader createXMLEventReader(InputStream arg0, String arg1) throws XMLStreamException {
+    public XMLEventReader createXMLEventReader(InputStream arg0, String encoding) throws XMLStreamException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -74,13 +71,13 @@ public abstract class AbstractXMLInputFactory extends XMLInputFactory {
     }
 
     
-    public XMLEventReader createXMLEventReader(String arg0, InputStream arg1) throws XMLStreamException {
+    public XMLEventReader createXMLEventReader(String systemId, InputStream arg1) throws XMLStreamException {
         // TODO Auto-generated method stub
         return null;
     }
 
     
-    public XMLEventReader createXMLEventReader(String arg0, Reader arg1) throws XMLStreamException {
+    public XMLEventReader createXMLEventReader(String systemId, Reader arg1) throws XMLStreamException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -93,33 +90,58 @@ public abstract class AbstractXMLInputFactory extends XMLInputFactory {
 
     
     public XMLStreamReader createXMLStreamReader(InputStream is) throws XMLStreamException {
-        return createXMLStreamReader(is, "UTF-8");
+        return createXMLStreamReader(is, null);
     }
 
     public XMLStreamReader createXMLStreamReader(InputStream is, String charset) throws XMLStreamException {
+        /* !!! This is not really correct: should (try to) auto-detect
+         * encoding, since JSON only allows 3 Unicode-based variants.
+         * For now it's ok to default to UTF-8 though.
+         */
+        if (charset == null) {
+            charset = "UTF-8";
+        }
         try {
-            if (charset == null) {
-                charset = "UTF-8";
-            }
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            copy(is, bos, 1024);
-            return createXMLStreamReader(new JSONTokener(new String(bos.toByteArray(), charset)));
+            String doc = readAll(is, charset);
+            return createXMLStreamReader(new JSONTokener(doc));
         } catch (IOException e) {
             throw new XMLStreamException(e);
         }
     }
-    
-    public static void copy(final InputStream input,
-                            final OutputStream output,
-                            final int bufferSize)
-        throws IOException {
-        final byte[] buffer = new byte[bufferSize];
-        int n = 0;
-        n = input.read(buffer);
-        while (-1 != n) {
-            output.write(buffer, 0, n);
-            n = input.read(buffer);
+
+    /**
+     * This helper method tries to read and decode input efficiently
+     * into a result String.
+     */
+    private String readAll(InputStream in, String encoding)
+        throws IOException
+    {
+        final byte[] buffer = new byte[INPUT_BUF_SIZE];
+        ByteArrayOutputStream bos = null;
+        while (true) {
+            int count = in.read(buffer);
+            if (count < 0) { // EOF
+                break;
+            }
+            /* Let's create buffer lazily, to be able to create something
+             * that's not too small (many resizes) or too big (slower
+             * to allocate): mostly to speed up handling of tiny docs.
+             */
+            if (bos == null) {
+                int cap;
+                if (count < 64) {
+                    cap = 64;
+                } else if (count == INPUT_BUF_SIZE) {
+                    // Let's assume there's more coming, not just this chunk
+                    cap = INPUT_BUF_SIZE * 4;
+                } else {
+                    cap = count;
+                }
+                bos = new ByteArrayOutputStream(cap);
+            }
+            bos.write(buffer, 0, count);
         }
+        return (bos == null) ? "" : bos.toString(encoding);
     }
     
     public abstract XMLStreamReader createXMLStreamReader(JSONTokener tokener) throws XMLStreamException;
@@ -139,20 +161,40 @@ public abstract class AbstractXMLInputFactory extends XMLInputFactory {
     }
 
     
-    public XMLStreamReader createXMLStreamReader(Source arg0) throws XMLStreamException {
-        throw new UnsupportedOperationException();
+    public XMLStreamReader createXMLStreamReader(Source src) throws XMLStreamException
+    {
+        // Can only support simplest of sources:
+        if (src instanceof StreamSource) {
+            StreamSource ss = (StreamSource) src;
+            InputStream in = ss.getInputStream();
+            String systemId = ss.getSystemId();
+            if (in != null) {
+                if (systemId != null) {
+                    return createXMLStreamReader(systemId, in);
+                }
+                return createXMLStreamReader(in);
+            }
+            Reader r = ss.getReader();
+            if (r != null) {
+                if (systemId != null) {
+                    return createXMLStreamReader(systemId, r);
+                }
+                return createXMLStreamReader(r);
+            }
+            throw new UnsupportedOperationException("Only those javax.xml.transform.stream.StreamSource instances supported that have an InputStream or Reader");
+        }
+        throw new UnsupportedOperationException("Only javax.xml.transform.stream.StreamSource type supported");
     }
 
     
-    public XMLStreamReader createXMLStreamReader(String arg0, InputStream arg1) throws XMLStreamException {
-        // TODO Auto-generated method stub
-        return null;
+    public XMLStreamReader createXMLStreamReader(String systemId, InputStream arg1) throws XMLStreamException {
+        // How (if) should the system id be used?
+        return createXMLStreamReader(arg1, null);
     }
 
     
-    public XMLStreamReader createXMLStreamReader(String arg0, Reader arg1) throws XMLStreamException {
-        // TODO Auto-generated method stub
-        return null;
+    public XMLStreamReader createXMLStreamReader(String systemId, Reader r) throws XMLStreamException {
+        return createXMLStreamReader(r);
     }
 
     
@@ -163,25 +205,22 @@ public abstract class AbstractXMLInputFactory extends XMLInputFactory {
 
     
     public Object getProperty(String arg0) throws IllegalArgumentException {
-        // TODO Auto-generated method stub
-        return null;
+        // TODO: should gracefully handle standard properties
+        throw new IllegalArgumentException();
     }
 
     
     public XMLReporter getXMLReporter() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     
     public XMLResolver getXMLResolver() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     
     public boolean isPropertySupported(String arg0) {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -193,8 +232,8 @@ public abstract class AbstractXMLInputFactory extends XMLInputFactory {
 
     
     public void setProperty(String arg0, Object arg1) throws IllegalArgumentException {
-        // TODO Auto-generated method stub
-        
+        // TODO: should gracefully handle standard properties
+        throw new IllegalArgumentException();
     }
 
     
