@@ -147,19 +147,39 @@ public abstract class AbstractXMLInputFactory extends XMLInputFactory {
     public abstract XMLStreamReader createXMLStreamReader(JSONTokener tokener) throws XMLStreamException;
 
     public XMLStreamReader createXMLStreamReader(Reader reader) throws XMLStreamException {
-    	StringWriter wrt = new StringWriter();
         try {
-        	int len;
-        	char[] buf = new char[1024];
-            while ((len = reader.read(buf)) != -1) {
-            	wrt.write(buf, 0, len);
-            }
-            return createXMLStreamReader(new JSONTokener(wrt.toString()));
+            return createXMLStreamReader(new JSONTokener(readAll(reader)));
         } catch (IOException e) {
             throw new XMLStreamException(e);
         }
     }
 
+    private String readAll(Reader r)
+        throws IOException
+    {
+        // Let's see if it's a small doc, can read it all in a single buffer
+        char[] buf = new char[INPUT_BUF_SIZE];
+        int len = 0;
+
+        do {
+            int count = r.read(buf, len, buf.length-len);
+            if (count < 0) { // Got it all
+                return (len == 0) ? "" : new String(buf, 0, len);
+            }
+            len += count;
+        } while (len < buf.length);
+
+        /* Filled the read buffer, need to coalesce. Let's assume there'll
+         * be a bit more data coming
+         */
+        CharArrayWriter wrt = new CharArrayWriter(INPUT_BUF_SIZE * 4);
+        wrt.write(buf, 0, len);
+
+        while ((len = r.read(buf)) != -1) {
+            wrt.write(buf, 0, len);
+        }
+        return wrt.toString();
+    }
     
     public XMLStreamReader createXMLStreamReader(Source src) throws XMLStreamException
     {
