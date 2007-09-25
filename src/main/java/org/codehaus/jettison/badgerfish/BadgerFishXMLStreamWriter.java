@@ -140,7 +140,7 @@ public class BadgerFishXMLStreamWriter extends AbstractXMLStreamWriter {
     }
 
     public void writeNamespace(String prefix, String ns) throws XMLStreamException {
-        ((Node) nodes.peek()).getNamespaces().put(prefix, ns);
+        ((Node) nodes.peek()).setNamespace(prefix, ns);
         try {
             JSONObject nsObj = currentNode.optJSONObject("@xmlns");
             if (nsObj == null) {
