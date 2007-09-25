@@ -52,13 +52,13 @@ public class BadgerFishConvention implements Convention {
                                 prefix = "";
                             }
                             
-                            n.getNamespaces().put(prefix, uri);
+                            n.setNamespace(prefix, uri);
                         }                        
                     }
                 } else {
                     String strValue = (String) o; 
                     QName name = createQName(k, n);
-                    n.getAttributes().put(name, strValue);
+                    n.setAttribute(name, strValue);
                 }
                 itr.remove();
             }
@@ -71,7 +71,7 @@ public class BadgerFishConvention implements Convention {
             String prefix = rootName.substring(0, idx);
             String local = rootName.substring(idx+1);
             
-            String uri = (String) node.getNamespaces().get(prefix);
+            String uri = (String) node.getNamespaceURI(prefix);
             if (uri == null) {
                 throw new XMLStreamException("Invalid prefix " + prefix 
                                              + " on element " + rootName);
@@ -80,7 +80,7 @@ public class BadgerFishConvention implements Convention {
             return new QName(uri, local, prefix);
         }
         
-        String uri = (String) node.getNamespaces().get("");
+        String uri = (String) node.getNamespaceURI("");
         if (uri != null) {
             return new QName(uri, rootName);
         }

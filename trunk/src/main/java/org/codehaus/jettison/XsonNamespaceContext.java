@@ -33,7 +33,7 @@ public class XsonNamespaceContext implements NamespaceContext {
     public String getNamespaceURI(String prefix) {
         for (Iterator itr = nodes.iterator(); itr.hasNext();){
             Node node = (Node) itr.next();
-            String uri = (String) node.getNamespaces().get(prefix);
+            String uri = node.getNamespaceURI(prefix);
             
             if (uri != null) {
                 return uri;
@@ -45,11 +45,9 @@ public class XsonNamespaceContext implements NamespaceContext {
     public String getPrefix(String namespaceURI) {
         for (Iterator itr = nodes.iterator(); itr.hasNext();){
             Node node = (Node) itr.next();
-            for (Iterator nsItr = node.getNamespaces().entrySet().iterator(); nsItr.hasNext();) {
-                Map.Entry e = (Map.Entry) nsItr.next();
-                if (e.getValue().equals(namespaceURI)) {
-                    return (String) e.getKey();
-                }
+            String prefix = node.getNamespacePrefix(namespaceURI);
+            if (prefix != null) {
+                return prefix;
             }
         }
         return null;

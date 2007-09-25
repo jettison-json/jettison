@@ -40,6 +40,11 @@ public class Node {
     public Node(String name, JSONObject object, Convention con) 
         throws JSONException, XMLStreamException {
         this.object = object;
+        /* Should really use a _Linked_ HashMap to preserve
+         * ordering (insert order) -- regular one has arbitrary ordering.
+         * But there are some funky dependencies within unit tests
+         * that will fail right now, need to investigate that bit more
+         */
         this.namespaces = new HashMap();
         this.attributes = new HashMap();
         
@@ -62,16 +67,60 @@ public class Node {
         this.attributes = new HashMap();
     }
 
-    public Map getNamespaces() {
-        return namespaces;
+    public int getNamespaceCount() {
+        return namespaces.size();
+    }
+
+    public String getNamespaceURI(String prefix) {
+        return (String) namespaces.get(prefix);
+    }
+
+    public String getNamespaceURI(int index) {
+        if (index < 0 || index >= getNamespaceCount()) {
+            throw new IllegalArgumentException("Illegal index: element has "+getNamespaceCount()+" namespace declarations");
+        }
+        Iterator itr = namespaces.values().iterator();
+        while (--index >= 0) {
+            itr.next();
+        }
+        return itr.next().toString();
+    }
+
+    public String getNamespacePrefix(String URI) {
+        for (Iterator nsItr = namespaces.entrySet().iterator(); nsItr.hasNext();) {
+            Map.Entry e = (Map.Entry) nsItr.next();
+            if (e.getValue().equals(URI)) {
+                return (String) e.getKey();
+            }
+        }
+        return null;
+    }
+
+    public String getNamespacePrefix(int index) {
+        if (index < 0 || index >= getNamespaceCount()) {
+            throw new IllegalArgumentException("Illegal index: element has "+getNamespaceCount()+" namespace declarations");
+        }
+        Iterator itr = namespaces.keySet().iterator();
+        while (--index >= 0) {
+            itr.next();
+        }
+        return itr.next().toString();
     }
 
     public void setNamespaces(Map namespaces) {
         this.namespaces = namespaces;
     }
 
+    public void setNamespace(String prefix, String uri) {
+        namespaces.put(prefix, uri);
+    }
+
     public Map getAttributes() {
         return attributes;
+    }
+
+    public void setAttribute(QName name, String value) {
+        attributes.put(name, value);
     }
 
     public Iterator getKeys() {

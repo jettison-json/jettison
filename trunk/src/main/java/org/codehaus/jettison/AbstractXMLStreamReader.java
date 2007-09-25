@@ -122,29 +122,19 @@ public abstract class AbstractXMLStreamReader implements XMLStreamReader {
     }
 
     public int getNamespaceCount() {
-        return node.getNamespaces().size();
+        return node.getNamespaceCount();
     }
 
     public String getNamespacePrefix(int n) {
-        Iterator itr = node.getNamespaces().keySet().iterator();
-        String name = null;
-        for (int i = 0; i <= n; i++) {
-            name = (String) itr.next();
-        }
-        return name;
+        return node.getNamespacePrefix(n);
     }
 
     public String getNamespaceURI(int n) {
-        Iterator itr = node.getNamespaces().values().iterator();
-        String name = null;
-        for (int i = 0; i <= n; i++) {
-            name = (String) itr.next();
-        }
-        return name;
+        return node.getNamespaceURI(n);
     }
 
     public String getNamespaceURI(String prefix) {
-        return (String) node.getNamespaces().get(prefix);
+        return node.getNamespaceURI(prefix);
     }
 
     public boolean hasName() {
