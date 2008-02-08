@@ -371,4 +371,82 @@ public class MappedXMLStreamWriterTest extends TestCase {
         
         assertEquals("{\"foo.root\":{\"foo.child\":[\"\",\"\"]}}", strWriter.toString());
     }
+    
+    public void testIssue18Enh() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("", "a", "");
+
+        w.writeStartElement("", "vals", "");
+        
+        w.writeStartElement("", "string", "");
+        w.writeCharacters("1");
+        w.writeEndElement();
+        
+        w.writeStartElement("", "string", "");
+        w.writeCharacters("2");
+        w.writeEndElement();
+        
+        w.writeStartElement("", "string", "");
+        w.writeCharacters("3");
+        w.writeEndElement();
+        
+        w.writeEndElement();
+        
+        w.writeStartElement("", "n", "");
+        w.writeCharacters("5");
+        w.writeEndElement();
+        
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+
+        assertEquals("{\"a\":{\"vals\":{\"string\":[\"1\",\"2\",\"3\"]},\"n\":\"5\"}}", strWriter.toString());
+    }
+    
+    public void testMap() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        w.writeStartDocument();
+        
+        w.writeStartElement("map");
+        	w.writeStartElement("entry");
+        		w.writeStartElement("string");
+        			w.writeCharacters("id");
+        		w.writeEndElement();
+        		w.writeStartElement("string");
+        			w.writeCharacters("6");
+        		w.writeEndElement();
+        	w.writeEndElement();
+        	w.writeStartElement("entry");
+        		w.writeStartElement("string");
+    				w.writeCharacters("name");
+    			w.writeEndElement();
+    			w.writeStartElement("string");
+    				w.writeCharacters("Dejan");
+    			w.writeEndElement();
+    		w.writeEndElement();
+    		w.writeStartElement("entry");
+        		w.writeStartElement("string");
+        			w.writeCharacters("city");
+        		w.writeEndElement();
+        		w.writeStartElement("string");
+    				w.writeCharacters("Belgrade");
+    			w.writeEndElement();
+    		w.writeEndElement();
+        w.writeEndElement();
+        
+        w.writeEndDocument();
+        w.close();
+        strWriter.close();
+        String result = strWriter.toString();
+        assertEquals(result, "{\"map\":{\"entry\":[{\"string\":[\"id\",\"6\"]},{\"string\":[\"name\",\"Dejan\"]},{\"string\":[\"city\",\"Belgrade\"]}]}}");
+    }
+    
 }
