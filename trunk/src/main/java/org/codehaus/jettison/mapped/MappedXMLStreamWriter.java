@@ -180,9 +180,9 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
         if (current instanceof String) {
             current = nodes.peek();
         } else if (nodes.size() > 1 ) {
-            nodes.pop();
+            Object isArray = nodes.pop();
             current = nodes.peek();
-            if (current instanceof JSONArray) {
+            if (current instanceof JSONArray || isArray instanceof JSONArray) {
                 nodes.pop();
                 current = nodes.peek();
             }
@@ -226,6 +226,11 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
             		setNewValue(newNode);
             		nodes.push(newNode);
             		current = "";
+            	} else {
+            		if (array.get(array.length() - 1) instanceof JSONObject) {
+            			array.put("");
+            			nodes.push(array);
+            		}
             	}
             } else {
                 Object o = ((JSONObject) current).opt(currentKey);
