@@ -147,13 +147,13 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
         
         assertEquals(0, reader.getAttributeCount());
         assertEquals(2, reader.getNamespaceCount());
-        assertEquals("http://some-other-namespace", reader.getNamespaceURI(0));
-        assertEquals("charlie", reader.getNamespacePrefix(0));
-        assertEquals("http://some-other-namespace", reader.getNamespaceURI("charlie"));
-       
-        assertEquals("http://some-namespace", reader.getNamespaceURI(1));
-        assertEquals("", reader.getNamespacePrefix(1));
+        assertEquals("http://some-namespace", reader.getNamespaceURI(0));
+        assertEquals("", reader.getNamespacePrefix(0));
         assertEquals("http://some-namespace", reader.getNamespaceURI(""));
+       
+        assertEquals("http://some-other-namespace", reader.getNamespaceURI(1));
+        assertEquals("charlie", reader.getNamespacePrefix(1));
+        assertEquals("http://some-other-namespace", reader.getNamespaceURI("charlie"));
          
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
         assertEquals("alice", reader.getName().getLocalPart());
@@ -192,14 +192,15 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
         
         assertEquals(0, reader.getAttributeCount());
         assertEquals(2, reader.getNamespaceCount());
-        assertEquals("http://some-other-namespace", reader.getNamespaceURI(0));
-        assertEquals("charlie", reader.getNamespacePrefix(0));
-        assertEquals("http://some-other-namespace", reader.getNamespaceURI("charlie"));
-       
-        assertEquals("http://some-namespace", reader.getNamespaceURI(1));
-        assertEquals("", reader.getNamespacePrefix(1));
+        
+        assertEquals("http://some-namespace", reader.getNamespaceURI(0));
+        assertEquals("", reader.getNamespacePrefix(0));
         assertEquals("http://some-namespace", reader.getNamespaceURI(""));
         
+        assertEquals("http://some-other-namespace", reader.getNamespaceURI(1));
+        assertEquals("charlie", reader.getNamespacePrefix(1));
+        assertEquals("http://some-other-namespace", reader.getNamespaceURI("charlie"));
+       
         assertEquals(XMLStreamReader.CHARACTERS, reader.next());
         assertEquals("david", reader.getText());
         
@@ -215,13 +216,15 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
         
         assertEquals(0, reader.getAttributeCount());
         assertEquals(2, reader.getNamespaceCount());
-        assertEquals("http://some-other-namespace", reader.getNamespaceURI(0));
-        assertEquals("charlie", reader.getNamespacePrefix(0));
+        
+        assertEquals("http://some-namespace", reader.getNamespaceURI(0));
+        assertEquals("", reader.getNamespacePrefix(0));
+        assertEquals("http://some-namespace", reader.getNamespaceURI(""));
+        
+        assertEquals("http://some-other-namespace", reader.getNamespaceURI(1));
+        assertEquals("charlie", reader.getNamespacePrefix(1));
         assertEquals("http://some-other-namespace", reader.getNamespaceURI("charlie"));
        
-        assertEquals("http://some-namespace", reader.getNamespaceURI(1));
-        assertEquals("", reader.getNamespacePrefix(1));
-        assertEquals("http://some-namespace", reader.getNamespaceURI(""));
         
         assertEquals(XMLStreamReader.CHARACTERS, reader.next());
         assertEquals("frank", reader.getText());
@@ -234,25 +237,4 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
         assertEquals("alice", reader.getName().getLocalPart());
     }
     
-    /**
-     * 
-     * <alice><bob>charlie</bob><david>edgar</david></alice>
-     * 
-     * <alice><bob>charlie</bob><bob>david</bob></alice>
-     * { \"alice\": { \"bob\" : [{\"$\": charlie\" }, {\"$\": \"david\" }] } }
-     * 
-     * <alice charlie=\"david\">bob</alice>
-     * { \"alice\": { \"$\" : \"bob\", \"@charlie\" : \"david\" } }
-     * 
-     * <alice xmlns=\"http://some-namespace\">bob</alice>
-     * { \"alice\": { \"$\" : \"bob\", \"@xmlns\": { \"$\" : \"http:\/\/some-namespace\"} } }
-     * 
-     * <alice xmlns=\"http:\/\/some-namespace\" xmlns:charlie=\"http:\/\/some-other-namespace\">bob</alice>
-     * { \"alice\": { \"$\" : \"bob\", \"@xmlns\": { \"$\" : \"http:\/\/some-namespace\", \"charlie\" : \"http:\/\/some-other-namespace\" } } }
-     * 
-     * <alice xmlns=\"http://some-namespace\" xmlns:charlie=\"http://some-other-namespace\"> <bob>david</bob> <charlie:edgar>frank</charlie:edgar> </alice>
-     * { \"alice\" : { \"bob\" : { \"$\" : \"david\" , \"@xmlns\" : {\"charlie\" : \"http:\/\/some-other-namespace\" , \"$\" : \"http:\/\/some-namespace\"} } , \"charlie:edgar\" : { \"$\" : \"frank\" , \"@xmlns\" : {\"charlie\":\"http:\/\/some-other-namespace\", \"$\" : \"http:\/\/some-namespace\"} }, \"@xmlns\" : { \"charlie\" : \"http:\/\/some-other-namespace\", \"$\" : \"http:\/\/some-namespace\"} } }
-     * 
-     * @throws Exception
-     */
 }
