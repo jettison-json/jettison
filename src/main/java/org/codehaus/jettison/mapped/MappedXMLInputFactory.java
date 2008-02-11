@@ -43,7 +43,6 @@ public class MappedXMLInputFactory extends AbstractXMLInputFactory {
             JSONObject root = new JSONObject(tokener);
             return new MappedXMLStreamReader(root, convention);
         } catch (JSONException e) {
-            e.printStackTrace();
             throw new XMLStreamException(e);
         }
     }
