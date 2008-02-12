@@ -406,7 +406,7 @@ public class MappedXMLStreamWriterTest extends TestCase {
         w.close();
         strWriter.close();
 
-        assertEquals("{\"a\":{\"vals\":{\"string\":[\"1\",\"2\",\"3\"]},\"n\":\"5\"}}", strWriter.toString());
+        assertEquals("{\"a\":{\"vals\":{\"string\":[1,2,3]},\"n\":5}}", strWriter.toString());
     }
     
     public void testMap() throws Exception {
@@ -446,7 +446,47 @@ public class MappedXMLStreamWriterTest extends TestCase {
         w.close();
         strWriter.close();
         String result = strWriter.toString();
-        assertEquals(result, "{\"map\":{\"entry\":[{\"string\":[\"id\",\"6\"]},{\"string\":[\"name\",\"Dejan\"]},{\"string\":[\"city\",\"Belgrade\"]}]}}");
+        assertEquals(result, "{\"map\":{\"entry\":[{\"string\":[\"id\",6]},{\"string\":[\"name\",\"Dejan\"]},{\"string\":[\"city\",\"Belgrade\"]}]}}");
     }
+    
+    public void testPrimitiveTypes() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        
+        w.writeStartElement("subchild1");
+        
+        w.writeStartElement("subchild2");
+        w.writeCharacters(5 + "");
+        w.writeEndElement();
+        
+        w.writeStartElement("subchild2");
+        w.writeCharacters(3.14 + "");
+        w.writeEndElement();
+        
+        w.writeStartElement("subchild2");
+        w.writeCharacters(true + "");
+        w.writeEndElement();
+        
+        w.writeEndElement();
+        
+        w.writeStartElement("subchild1");
+        w.writeCharacters("sub1");
+        w.writeEndElement();
+        
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        System.out.println(strWriter.toString());
+        
+        assertEquals("{\"root\":{\"subchild1\":[{\"subchild2\":[5,3.14,true]},\"sub1\"]}}", strWriter.toString());      
+    }
+    
     
 }

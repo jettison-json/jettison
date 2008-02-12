@@ -26,8 +26,6 @@ import javax.xml.stream.XMLStreamReader;
 import junit.framework.TestCase;
 
 import org.codehaus.jettison.json.JSONObject;
-import org.codehaus.jettison.mapped.MappedNamespaceConvention;
-import org.codehaus.jettison.mapped.MappedXMLStreamReader;
 
 public class MappedXMLStreamReaderTest extends TestCase {
     public void testStreamReader() throws Exception {
@@ -256,18 +254,34 @@ public class MappedXMLStreamReaderTest extends TestCase {
     
     
     public void testNonStringObjects() throws Exception {
-        JSONObject obj = 
-            new JSONObject();
-        obj.put("foo", true);
+    	JSONObject obj = new JSONObject("{\"root\":{\"foo\":true, \"foo2\":3.14, \"foo3\":17}}");
         
         MappedNamespaceConvention con = new MappedNamespaceConvention();
         XMLStreamReader reader = new MappedXMLStreamReader(obj, con);
+
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());       
+        assertEquals("root", reader.getName().getLocalPart());        
         
         assertEquals(XMLStreamReader.START_ELEMENT, reader.next());       
         assertEquals("foo", reader.getName().getLocalPart());
         
         assertEquals(XMLStreamReader.CHARACTERS, reader.next());
         assertEquals("true", reader.getText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());       
+        assertEquals("foo2", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("3.14", reader.getText()); 
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());        
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());       
+        assertEquals("foo3", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("17", reader.getText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
     }
     
 }
