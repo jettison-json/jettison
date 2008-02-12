@@ -109,7 +109,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
     }
 
     private void setNewValue(Object newCurrent) throws JSONException {
-        if (current instanceof String) {
+        if (isJsonPrimitive(current)) {
             setNewValue(newCurrent, nodes.peek());
         } else {
             setNewValue(newCurrent, current);
@@ -136,17 +136,24 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 
     public void writeCharacters(String text) throws XMLStreamException {
         try {
-            if (current instanceof String) {
-                current = current + text;
+            Object convertedPrimitive = convertToJSONPrimitive(text);
+            if (isJsonPrimitive(current)) {
+            	//Concatenate strings
+            	if(current instanceof String && convertedPrimitive instanceof String) {
+            		current = current + convertedPrimitive.toString();
+            	} //Overwrite other primitive type values
+            	else {
+            		current = convertedPrimitive;
+            	}
                 setNewValue(current);
             } else if (current instanceof JSONArray) {
                 JSONArray arr = (JSONArray) current;
                 if (arr.get(arr.length()-1).equals("")) {
-                	arr.put(arr.length()-1, text);
+                	arr.put(arr.length()-1, convertedPrimitive);
                 } else {
-                	arr.put(text);
+                	arr.put(convertedPrimitive);
                 }
-                current = text;
+                current = convertedPrimitive;
             }
         } catch (JSONException e) {
             throw new XMLStreamException(e);
@@ -177,7 +184,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
     }
 
     public void writeEndElement() throws XMLStreamException {
-        if (current instanceof String) {
+        if (isJsonPrimitive(current)) {
             current = nodes.peek();
         } else if (nodes.size() > 1 ) {
             Object isArray = nodes.pop();
@@ -247,7 +254,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
                 			
                 	}
                 }
-                if (o instanceof JSONObject || o instanceof String) {
+                if (o instanceof JSONObject || isJsonPrimitive(o)) {
                     JSONArray arr = new JSONArray();
                     arr.put(o);
                     arr.put("");
@@ -267,4 +274,44 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
             throw new XMLStreamException("Could not write start element!", e);
         }
     }
+    
+    private Object convertToJSONPrimitive(String text) {
+
+		Object primitive = null;
+		// Attempt to convert to Integer
+		try {
+			primitive = Long.valueOf(text);
+		} catch (Exception e) {
+		}
+		// Attempt to convert to double
+		if (primitive == null) {
+			try {
+				primitive = Double.valueOf(text);
+			} catch (Exception e) {
+			}
+		}
+		// Attempt to convert to boolean
+		if (primitive == null) {
+			if(text.trim().equalsIgnoreCase("true") || text.trim().equalsIgnoreCase("false")) {
+				primitive = Boolean.valueOf(text);
+			}
+		}
+		
+		if (primitive == null) {
+			// Default String
+			primitive = text;			
+		}
+
+		return primitive;
+	}
+    
+    private boolean isJsonPrimitive(Object o) {
+		if (o instanceof String || o instanceof Boolean || o instanceof Number) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+    
+    
 }
