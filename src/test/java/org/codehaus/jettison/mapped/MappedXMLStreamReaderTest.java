@@ -83,11 +83,11 @@ public class MappedXMLStreamReaderTest extends TestCase {
         JSONObject obj = 
             new JSONObject("{" +
             		"\"root\":" +
-            				"{\"subchild1\":" +
+            				"{\"child1\":" +
             					"[{\"subchild2\":" +
             						"[\"first sub2\",\"second sub2\",\"third sub2\"]}" +
-            					",\"sub1\"]" +
-            			"}" +
+            					",\"sub1\",\"sub2\"]" +
+            				",\"child2\":\"child2\"}" +
             		"}");
         MappedNamespaceConvention con = new MappedNamespaceConvention();
         XMLStreamReader reader = new MappedXMLStreamReader(obj, con);
@@ -95,7 +95,7 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
         assertEquals("root", reader.getName().getLocalPart());
         assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
-        assertEquals("subchild1", reader.getName().getLocalPart());
+        assertEquals("child1", reader.getName().getLocalPart());
         
         assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
         assertEquals("subchild2", reader.getName().getLocalPart());
@@ -119,18 +119,30 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals("subchild2", reader.getName().getLocalPart());
               
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
-        assertEquals("subchild1", reader.getName().getLocalPart());
+        assertEquals("child1", reader.getName().getLocalPart());
                   
         assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
-        assertEquals("subchild1", reader.getName().getLocalPart());
+        assertEquals("child1", reader.getName().getLocalPart());
         assertEquals(XMLStreamReader.CHARACTERS, reader.next());
         assertEquals("sub1", reader.getText());
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
-        assertEquals("subchild1", reader.getName().getLocalPart());
+        assertEquals("child1", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("child1", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("sub2", reader.getText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("child1", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("child2", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("child2", reader.getText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("child2", reader.getName().getLocalPart());
         
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
-        assertEquals("root", reader.getName().getLocalPart());
-        assertEquals(XMLStreamReader.END_DOCUMENT, reader.next());
         assertEquals("root", reader.getName().getLocalPart());
     }
 

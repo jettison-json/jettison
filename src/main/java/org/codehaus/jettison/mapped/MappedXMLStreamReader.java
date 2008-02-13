@@ -92,7 +92,13 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
                 int index = node.getArrayIndex();
                 if (index >= node.getArray().length()) {
                     nodes.pop();
-                    node = (Node) nodes.pop();
+                    
+                    if (nodes.size() > 1) {
+                        node = (Node) nodes.pop();
+                    } else {
+                        node = (Node) nodes.peek();
+                    }
+
                     if (nodes.size() > 1) {
                         event = END_ELEMENT;
                         return;
