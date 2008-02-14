@@ -488,5 +488,56 @@ public class MappedXMLStreamWriterTest extends TestCase {
         assertEquals("{\"root\":{\"subchild1\":[{\"subchild2\":[5,3.14,true]},\"sub1\"]}}", strWriter.toString());      
     }
     
+    //issue 29
+    public void testComplexElements() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("", "a", "");
+
+        w.writeStartElement("", "o", "");
+        w.writeAttribute("class", "string");
+        w.writeCharacters("1");
+        w.writeEndElement();
+        
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+
+        System.out.println(strWriter.toString());
+        
+        assertEquals("{\"a\":{\"o\":{\"@class\":\"string\",\"$\":\"1\"}}}", strWriter.toString());
+    }
+    
+    //issue 29
+    public void testIgnoreComplexElements() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        MappedXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        w.setValueKey(null);
+        
+        w.writeStartDocument();
+        w.writeStartElement("", "a", "");
+
+        w.writeStartElement("", "o", "");
+        w.writeAttribute("class", "string");
+        w.writeCharacters("1");
+        w.writeEndElement();
+        
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+
+        System.out.println(strWriter.toString());
+        
+        assertEquals("{\"a\":{\"o\":{\"@class\":\"string\"}}}", strWriter.toString());
+    }    
+    
     
 }
