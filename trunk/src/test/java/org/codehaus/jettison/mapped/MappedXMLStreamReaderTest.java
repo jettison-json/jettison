@@ -296,4 +296,63 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
     }
     
+    // issue 29
+    public void testComplexElements() throws Exception {
+    	JSONObject obj = new JSONObject("{\"a\":{\"o\":{\"@class\":\"string\",\"$\":\"1\"}}}");
+        
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        XMLStreamReader reader = new MappedXMLStreamReader(obj, con);
+
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());       
+        assertEquals("a", reader.getName().getLocalPart());        
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());  
+        assertEquals("o", reader.getName().getLocalPart());
+        
+        assertEquals(1, reader.getAttributeCount());
+        assertEquals("class", reader.getAttributeLocalName(0));
+        assertEquals("", reader.getAttributeNamespace(0));
+        assertEquals("string", reader.getAttributeValue(0));
+        
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("$", reader.getName().getLocalPart());
+        assertEquals("1", reader.getText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals(XMLStreamReader.END_DOCUMENT, reader.next());
+        
+    }
+    
+    // issue 29
+    public void testIgnoreComplexElements() throws Exception {
+    	JSONObject obj = new JSONObject("{\"a\":{\"o\":{\"@class\":\"string\",\"$\":\"1\"}}}");
+        
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        MappedXMLStreamReader reader = new MappedXMLStreamReader(obj, con);
+        reader.setValueKey(null);
+
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());       
+        assertEquals("a", reader.getName().getLocalPart());        
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());  
+        assertEquals("o", reader.getName().getLocalPart());
+        
+        assertEquals(1, reader.getAttributeCount());
+        assertEquals("class", reader.getAttributeLocalName(0));
+        assertEquals("", reader.getAttributeNamespace(0));
+        assertEquals("string", reader.getAttributeValue(0));
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("$", reader.getName().getLocalPart());
+        assertEquals("1", reader.getText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals(XMLStreamReader.END_DOCUMENT, reader.next());
+        
+    }    
+    
 }

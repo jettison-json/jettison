@@ -29,6 +29,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
     private FastStack nodes;
     private String currentValue;
     private MappedNamespaceConvention convention;
+    private String valueKey = "$";
 
     public MappedXMLStreamReader(JSONObject obj)
             throws JSONException, XMLStreamException {
@@ -80,6 +81,14 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
                     event = END_DOCUMENT;
                 }
             }
+        }
+        // handle value in nodes with attributes
+        if (nodes.size() > 0) {
+        	Node next = (Node)nodes.peek();
+        	if (event == START_ELEMENT && next.getName().getLocalPart().equals(valueKey)) {
+        		event = CHARACTERS;
+        		node = (Node)nodes.pop();
+        	}
         }
         return event;
     }
@@ -166,5 +175,9 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
         // TODO Auto-generated method stub
         return 0;
     }
+
+	public void setValueKey(String valueKey) {
+		this.valueKey = valueKey;
+	}
 
 }

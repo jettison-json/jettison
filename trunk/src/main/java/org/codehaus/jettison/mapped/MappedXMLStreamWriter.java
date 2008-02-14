@@ -36,6 +36,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
     String currentKey;
     int depth = 0;
     NamespaceContext ctx = new NullNamespaceContext();
+    String valueKey = "$";
     
     public MappedXMLStreamWriter(MappedNamespaceConvention convention, Writer writer) {
         super();
@@ -154,6 +155,11 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
                 	arr.put(convertedPrimitive);
                 }
                 current = convertedPrimitive;
+            } // handle value in nodes with attributes 
+            else if (current instanceof JSONObject && valueKey != null){ 
+            	JSONObject obj = (JSONObject)current;
+            	obj.put(valueKey, text);
+            	System.out.println(obj);
             }
         } catch (JSONException e) {
             throw new XMLStreamException(e);
@@ -311,6 +317,10 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 		} else {
 			return false;
 		}
+	}
+
+	public void setValueKey(String valueKey) {
+		this.valueKey = valueKey;
 	}
     
     
