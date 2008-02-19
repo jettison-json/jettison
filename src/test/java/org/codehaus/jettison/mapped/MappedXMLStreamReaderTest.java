@@ -175,6 +175,32 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals("http://foo/", reader.getName().getNamespaceURI());
     }
     
+    public void testDefaultNamespace() throws Exception {
+		JSONObject obj = new JSONObject("{ " + "\"root\" : { "
+				+ "\"child1\" : \"childtext\"," + "} }");
+
+		Map xtoj = new HashMap();
+		xtoj.put("http://foo/", "");
+		MappedNamespaceConvention con = new MappedNamespaceConvention(
+				new Configuration(xtoj));
+		XMLStreamReader reader = new MappedXMLStreamReader(obj, con);
+
+		assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+		assertEquals("root", reader.getName().getLocalPart());
+		assertEquals("http://foo/", reader.getName().getNamespaceURI());
+		assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+		assertEquals("child1", reader.getName().getLocalPart());
+		assertEquals("http://foo/", reader.getName().getNamespaceURI());
+		assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+		assertEquals("childtext", reader.getText());
+		assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+		assertEquals("child1", reader.getName().getLocalPart());
+		assertEquals("http://foo/", reader.getName().getNamespaceURI());
+		assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+		assertEquals("root", reader.getName().getLocalPart());
+		assertEquals("http://foo/", reader.getName().getNamespaceURI());
+	}    
+    
     public void testAttributes() throws Exception {
         JSONObject obj = 
             new JSONObject("{ " +

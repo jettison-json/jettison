@@ -113,20 +113,23 @@ public class MappedNamespaceConvention implements Convention {
     private QName createQName(String name) {
         int dot = name.lastIndexOf('.');
         QName qname = null;
-        if (dot != -1) {
-            String jns = name.substring(0, dot);
-            String xns = (String) jnsToXns.get(jns);
-            
-            if (xns == null) {
-            	qname = new QName(name);
-            } else {
-            	String local = name.substring(dot+1);
-            
-            	qname  = new QName(xns, local);
-            }
+        String local = name;
+
+        if (dot == -1) {
+            dot = 0;
         } else {
-            qname = new QName(name);
+            local = local.substring(dot+1);
         }
+        
+        String jns = name.substring(0, dot);
+        String xns = (String) jnsToXns.get(jns);
+
+        if (xns == null) {
+            qname = new QName(name);
+        } else {            
+            qname  = new QName(xns, local);
+        }
+
         return qname;
     }
     
