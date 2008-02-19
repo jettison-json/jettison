@@ -539,5 +539,56 @@ public class MappedXMLStreamWriterTest extends TestCase {
         assertEquals("{\"a\":{\"o\":{\"@class\":\"string\"}}}", strWriter.toString());
     }    
     
+    public void testSingleArrayElement() throws Exception {
+		StringWriter strWriter = new StringWriter();
+		MappedNamespaceConvention con = new MappedNamespaceConvention();
+		AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+		w.seriliazeAsArray(con.createKey("", "", "array-a"));
+
+		w.writeStartDocument();
+		w.writeStartElement("", "array-a", "");
+
+		w.writeStartElement("", "a", "");
+		w.writeStartElement("", "n", "");
+		w.writeCharacters("1");
+		w.writeEndElement();
+		w.writeEndElement();
+
+		w.writeEndElement();
+		w.writeEndDocument();
+
+		w.close();
+		strWriter.close();
+
+		System.out.println(strWriter.toString());
+
+		assertEquals("{\"array-a\":{\"a\":[{\"n\":1}]}}", strWriter.toString());
+	} 
+    
+    public void testSingleArrayElementIgnore() throws Exception {
+		StringWriter strWriter = new StringWriter();
+		MappedNamespaceConvention con = new MappedNamespaceConvention();
+		AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+
+		w.writeStartDocument();
+		w.writeStartElement("", "array-a", "");
+
+		w.writeStartElement("", "a", "");
+		w.writeStartElement("", "n", "");
+		w.writeCharacters("1");
+		w.writeEndElement();
+		w.writeEndElement();
+
+		w.writeEndElement();
+		w.writeEndDocument();
+
+		w.close();
+		strWriter.close();
+
+		System.out.println(strWriter.toString());
+
+		assertEquals("{\"array-a\":{\"a\":{\"n\":1}}}", strWriter.toString());
+	} 
+    
     
 }
