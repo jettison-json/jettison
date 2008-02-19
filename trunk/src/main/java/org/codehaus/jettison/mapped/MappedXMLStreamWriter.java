@@ -229,7 +229,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
             } else {
                 makeCurrentJSONObject(); 
             }
-            
+            String previousKey = currentKey;
             currentKey = convention.createKey(prefix, ns, local);
             if (current instanceof JSONArray) {
             	JSONArray array = (JSONArray)current;
@@ -271,6 +271,10 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
                     current = "";
                     ((JSONArray) o).put("");
                     nodes.push(o);
+                } else if (getSerializedAsArrays().contains(previousKey)) {
+                    JSONArray arr = new JSONArray();
+                    arr.put("");
+                    setNewValue(arr);
                 } else {
                     setNewValue("");
                     current = "";

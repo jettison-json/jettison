@@ -15,10 +15,14 @@
  */
 package org.codehaus.jettison;
 
+import java.util.ArrayList;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 public abstract class AbstractXMLStreamWriter implements XMLStreamWriter {
+	
+	ArrayList serializedAsArrays = new ArrayList();
 
     public void writeCData(String text) throws XMLStreamException {
         writeCharacters(text);
@@ -66,6 +70,14 @@ public abstract class AbstractXMLStreamWriter implements XMLStreamWriter {
     }
 
     public void writeEndDocument() throws XMLStreamException {
+    }
+    
+    public void seriliazeAsArray(String name) {
+    	serializedAsArrays.add(name);
+    }
+    
+    public ArrayList getSerializedAsArrays() {
+    	return serializedAsArrays;
     }
 
 }
