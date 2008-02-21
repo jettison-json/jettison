@@ -590,5 +590,40 @@ public class MappedXMLStreamWriterTest extends TestCase {
 		assertEquals("{\"array-a\":{\"a\":{\"n\":1}}}", strWriter.toString());
 	} 
     
+    //issue 26
+    public void testArraysAndAttributes() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        
+        w.writeStartElement("child");
+        w.writeAttribute("x", "y");
+        w.writeCharacters("value");
+        w.writeEndElement();
+        
+        w.writeStartElement("child");
+        w.writeAttribute("a", "b");
+        w.writeCharacters("value");
+        w.writeEndElement();
+        
+        w.writeStartElement("child");
+        w.writeAttribute("x", "z");
+        w.writeCharacters("value");
+        w.writeEndElement();        
+        
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        System.out.println(strWriter.toString());
+        
+        assertEquals("{\"root\":{\"child\":[{\"@x\":\"y\",\"$\":\"value\"},{\"@a\":\"b\",\"$\":\"value\"},{\"@x\":\"z\",\"$\":\"value\"}]}}", strWriter.toString());
+    }
+    
     
 }

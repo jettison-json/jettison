@@ -89,15 +89,22 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
         
         String key = convention.createAttributeKey(p, ns, local);
         try {
-            makeCurrentJSONObject();
-            
-            Object o = ((JSONObject) current).opt(key);
-            if (o == null) {
-                ((JSONObject) current).put(key, value);
-            }
-        } catch (JSONException e) {
-            throw new XMLStreamException(e);
-        }
+			if (current instanceof JSONArray) {
+				JSONArray array = ((JSONArray) current);
+				current = array.get(array.length() - 1);
+			}
+
+			makeCurrentJSONObject();
+			if (current instanceof JSONObject) {
+				Object o = ((JSONObject) current).opt(key);
+				if (o == null) {
+					((JSONObject) current).put(key, value);
+				}
+			}
+		} catch (JSONException e) {
+			throw new XMLStreamException(e);
+		}        
+		 
     }
 
     private void makeCurrentJSONObject() throws JSONException {
@@ -159,7 +166,6 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
             else if (current instanceof JSONObject && valueKey != null){ 
             	JSONObject obj = (JSONObject)current;
             	obj.put(valueKey, text);
-            	System.out.println(obj);
             }
         } catch (JSONException e) {
             throw new XMLStreamException(e);
