@@ -147,12 +147,15 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
         
         assertEquals(0, reader.getAttributeCount());
         assertEquals(2, reader.getNamespaceCount());
-        assertEquals("http://some-namespace", reader.getNamespaceURI(0));
-        assertEquals("", reader.getNamespacePrefix(0));
+        
+        // namespaces are ordered differently on different platforms/jvms, 
+        // so we can't really test the order
+//        assertEquals("http://some-namespace", reader.getNamespaceURI(0));
+//        assertEquals("", reader.getNamespacePrefix(0));
         assertEquals("http://some-namespace", reader.getNamespaceURI(""));
        
-        assertEquals("http://some-other-namespace", reader.getNamespaceURI(1));
-        assertEquals("charlie", reader.getNamespacePrefix(1));
+//        assertEquals("http://some-other-namespace", reader.getNamespaceURI(1));
+//        assertEquals("charlie", reader.getNamespacePrefix(1));
         assertEquals("http://some-other-namespace", reader.getNamespaceURI("charlie"));
          
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
@@ -193,12 +196,12 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
         assertEquals(0, reader.getAttributeCount());
         assertEquals(2, reader.getNamespaceCount());
         
-        assertEquals("http://some-namespace", reader.getNamespaceURI(0));
-        assertEquals("", reader.getNamespacePrefix(0));
+//        assertEquals("http://some-namespace", reader.getNamespaceURI(0));
+//        assertEquals("", reader.getNamespacePrefix(0));
         assertEquals("http://some-namespace", reader.getNamespaceURI(""));
         
-        assertEquals("http://some-other-namespace", reader.getNamespaceURI(1));
-        assertEquals("charlie", reader.getNamespacePrefix(1));
+//        assertEquals("http://some-other-namespace", reader.getNamespaceURI(1));
+//        assertEquals("charlie", reader.getNamespacePrefix(1));
         assertEquals("http://some-other-namespace", reader.getNamespaceURI("charlie"));
        
         assertEquals(XMLStreamReader.CHARACTERS, reader.next());
@@ -217,12 +220,12 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
         assertEquals(0, reader.getAttributeCount());
         assertEquals(2, reader.getNamespaceCount());
         
-        assertEquals("http://some-namespace", reader.getNamespaceURI(0));
-        assertEquals("", reader.getNamespacePrefix(0));
+//        assertEquals("http://some-namespace", reader.getNamespaceURI(0));
+//        assertEquals("", reader.getNamespacePrefix(0));
         assertEquals("http://some-namespace", reader.getNamespaceURI(""));
         
-        assertEquals("http://some-other-namespace", reader.getNamespaceURI(1));
-        assertEquals("charlie", reader.getNamespacePrefix(1));
+//        assertEquals("http://some-other-namespace", reader.getNamespaceURI(1));
+//        assertEquals("charlie", reader.getNamespacePrefix(1));
         assertEquals("http://some-other-namespace", reader.getNamespaceURI("charlie"));
        
         
