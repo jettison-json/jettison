@@ -30,20 +30,20 @@ import javax.xml.transform.stream.StreamResult;
 
 public abstract class AbstractXMLOutputFactory extends XMLOutputFactory {
 
-    public XMLEventWriter createXMLEventWriter(OutputStream arg0, String arg1) throws XMLStreamException {
-        throw new UnsupportedOperationException();
+    public XMLEventWriter createXMLEventWriter(OutputStream out, String charset) throws XMLStreamException {
+        return new AbstractXMLEventWriter(createXMLStreamWriter(out, charset));
     }
 
     public XMLEventWriter createXMLEventWriter(OutputStream out) throws XMLStreamException {
-        throw new UnsupportedOperationException();
+    	return new AbstractXMLEventWriter(createXMLStreamWriter(out));
     }
 
-    public XMLEventWriter createXMLEventWriter(Result arg0) throws XMLStreamException {
-        throw new UnsupportedOperationException();
+    public XMLEventWriter createXMLEventWriter(Result result) throws XMLStreamException {
+    	return new AbstractXMLEventWriter(createXMLStreamWriter(result));
     }
 
-    public XMLEventWriter createXMLEventWriter(Writer arg0) throws XMLStreamException {
-        throw new UnsupportedOperationException();
+    public XMLEventWriter createXMLEventWriter(Writer writer) throws XMLStreamException {
+    	return new AbstractXMLEventWriter(createXMLStreamWriter(writer));
     }
 
     public XMLStreamWriter createXMLStreamWriter(OutputStream out, String charset) throws XMLStreamException {
