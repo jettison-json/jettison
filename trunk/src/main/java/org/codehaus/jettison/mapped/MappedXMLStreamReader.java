@@ -48,6 +48,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
         } else {
             // TODO: check JSONArray and report an error
             node = new Node(rootName, convention);
+            convention.processAttributesAndNamespaces(node, obj);
             currentValue = top.toString();
         }
         nodes.push(node);
@@ -60,10 +61,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
             event = START_ELEMENT;
         } else if (event == CHARACTERS) {
             event = END_ELEMENT;
-            if (nodes.size() > 1) {
-                node = (Node) nodes.pop();
-            }
-
+            node = (Node) nodes.pop();
             currentValue = null;
         } else if (event == START_ELEMENT || event == END_ELEMENT) {
             if (event == END_ELEMENT && nodes.size() > 0) {
