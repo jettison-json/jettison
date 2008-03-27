@@ -39,7 +39,7 @@ public abstract class DOMTest extends TestCase {
 	public DOMTest() throws Exception {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance(); 
 		factory.setValidating(false);
-        factory.setNamespaceAware(false);
+		factory.setNamespaceAware(true);
 		factory.setIgnoringElementContentWhitespace(false);
 	    parser = factory.newDocumentBuilder();
 	}

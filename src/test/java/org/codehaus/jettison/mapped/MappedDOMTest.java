@@ -17,6 +17,8 @@ package org.codehaus.jettison.mapped;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.codehaus.jettison.DOMTest;
 import org.w3c.dom.Document;
@@ -42,60 +44,48 @@ public class MappedDOMTest extends DOMTest {
 		String resStr = toJSON(parse(xmlStr));
 		assertEquals("Unexpected result: " + resStr, expStr, resStr);
 
-		//String resXML = toXML(resStr);
-		//assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
+		String resXML = toXML(resStr);
+		assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
 	}
 
 	public void testSimpleAttribute() throws Exception {
-		String xmlStr = "<kermit mygirl='piggy'>the frog</kermit>";
+		String xmlStr = "<kermit mygirl=\"piggy\">the frog</kermit>";
 		String expStr = "{\"kermit\":{\"@mygirl\":\"piggy\",\"$\":\"the frog\"}}";
 		String resStr = toJSON(parse(xmlStr));
 		assertEquals("Unexpected result: " + resStr, expStr, resStr);
 
-		//String resXML = toXML(resStr);
-		//assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
+		String resXML = toXML(resStr);
+		assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
 	}
 
-	/* public void testDefaultNamespace() throws Exception {
-		String xmlStr = "<kermit xmlns='http://somens'>the frog</kermit>";
-		String expStr = "{\"kermit\":{\"@xmlns\":{\"$\":\"http:\\/\\/somens\"},\"$\":\"the frog\"}}";
+	public void testDefaultNamespace() throws Exception {
+		String xmlStr = "<kermit xmlns=\"http://somens\">the frog</kermit>";
+		String expStr = "{\"somens.kermit\":\"the frog\"}";
 		String resStr = toJSON(parse(xmlStr));
 		assertEquals("Unexpected result: " + resStr, expStr, resStr);
 
 		String resXML = toXML(resStr);
 		assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
 	}
-
-	public void testElementNamespace() throws Exception {
-		String xmlStr = "<ns1:kermit xmlns:ns1='http://somens'>the frog</ns1:kermit>";
-		String expStr = "{\"ns1:kermit\":{\"@xmlns\":{\"ns1\":\"http:\\/\\/somens\"},\"$\":\"the frog\"}}";
-		String resStr = toJSON(parse(xmlStr));
-		assertEquals("Unexpected result: " + resStr, expStr, resStr);
-
-		String resXML = toXML(resStr);
-		assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
-	}
-
-	public void testElementAttributeNamespace() throws Exception {
-		String xmlStr = "<ns1:kermit ns1:mygirl='piggy' xmlns:ns1='http://somens'>the frog</ns1:kermit>";
-		String expStr = "{\"ns1:kermit\":{\"@xmlns\":{\"ns1\":\"http:\\/\\/somens\"},\"@ns1:mygirl\":\"piggy\",\"$\":\"the frog\"}}";
-		String resStr = toJSON(parse(xmlStr));
-		assertEquals("Unexpected result: " + resStr, expStr, resStr);
-
-		String resXML = toXML(resStr);
-		assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
-	}*/
 
 	private String toJSON(Element srcDOM) throws Exception {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		new MappedDOMDocumentSerializer(baos, new Configuration()).serialize(srcDOM);
+		Configuration conf = new Configuration();
+		Map xnsToJns = new HashMap();
+		xnsToJns.put("http://somens", "somens");
+		conf.setXmlToJsonNamespaces(xnsToJns);
+		new MappedDOMDocumentSerializer(baos, conf).serialize(srcDOM);
 		return new String(baos.toByteArray());
 	}
 
 	private String toXML(String jsonStr) throws Exception {
-	      ByteArrayInputStream bais = new ByteArrayInputStream(jsonStr.getBytes());
-	      Document resDOM = new MappedDOMDocumentParser(new Configuration()).parse(bais);
-	      return printNode(resDOM);
+		ByteArrayInputStream bais = new ByteArrayInputStream(jsonStr.getBytes());
+		Configuration conf = new Configuration();
+		Map xnsToJns = new HashMap();
+		xnsToJns.put("http://somens", "somens");
+		conf.setXmlToJsonNamespaces(xnsToJns);
+		Document resDOM = new MappedDOMDocumentParser(conf).parse(bais);
+		return printNode(resDOM);
 	}
 	
 }

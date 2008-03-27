@@ -15,6 +15,8 @@
  */
 package org.codehaus.jettison;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -25,7 +27,6 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.dom.DOMResult;
 
@@ -48,23 +49,30 @@ public class AbstractDOMDocumentParser {
 	
 	public Document parse(InputStream input) throws IOException {
 		try {
-			XMLStreamReader streamReader = inputFactory
-					.createXMLStreamReader(input);
-			XMLInputFactory readerFactory = XMLInputFactory.newInstance();
-			XMLEventReader eventReader = readerFactory
-					.createXMLEventReader(streamReader);
-
-			XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
+	         XMLStreamReader streamReader = inputFactory.createXMLStreamReader(input);
+	         XMLInputFactory readerFactory = XMLInputFactory.newInstance();
+	         XMLEventReader eventReader = readerFactory.createXMLEventReader(streamReader);
+	         
+	         // Can not create a STaX writer for a DOMResult in woodstox-3.1.1
+	         /*XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
+			 Document nsDom = getDocumentBuilder().newDocument();
+			 DOMResult result = new DOMResult(nsDom);
+	         XMLEventWriter eventWriter = outputFactory.createXMLEventWriter(result);*/
+	         
+	         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	         XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
+	         XMLEventWriter eventWriter = outputFactory.createXMLEventWriter(baos);
+	         
+	         eventWriter.add(eventReader);
+	         eventWriter.close();
+	         
+	         // This parsing step should not be necessary, if we could output to a DOMResult
+	         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+	         return getDocumentBuilder().parse(bais);
+	         
+	         //return nsDom;
 			
-			Document nsDom = getDocumentBuilder().newDocument();
-			DOMResult result = new DOMResult(nsDom);
-			XMLEventWriter eventWriter =
-				outputFactory.createXMLEventWriter(result);
-			eventWriter.add(eventReader);
-			eventWriter.close();
-			return nsDom;
-			
-		} catch (XMLStreamException ex) {
+		} catch (Exception ex) {
 			IOException ioex = new IOException("Cannot parse input stream");
 			ioex.initCause(ex);
 			throw ioex;

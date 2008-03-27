@@ -91,6 +91,13 @@ public class MappedNamespaceConvention implements Convention {
                     }
                 }
                 itr.remove();
+            } else {
+                int dot = k.lastIndexOf('.');
+
+                if (dot != -1) {
+                	String jns = k.substring(0, dot);
+                	n.setNamespace("", (String)jnsToXns.get(jns));
+                }
             }
         }
     }

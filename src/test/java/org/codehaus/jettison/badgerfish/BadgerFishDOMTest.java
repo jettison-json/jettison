@@ -68,8 +68,8 @@ public class BadgerFishDOMTest extends DOMTest {
 		assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
 	}
 
-	/* public void testDefaultNamespace() throws Exception {
-		String xmlStr = "<kermit xmlns='http://somens'>the frog</kermit>";
+	 public void testDefaultNamespace() throws Exception {
+		String xmlStr = "<kermit xmlns=\"http://somens\">the frog</kermit>";
 		String expStr = "{\"kermit\":{\"@xmlns\":{\"$\":\"http:\\/\\/somens\"},\"$\":\"the frog\"}}";
 		String resStr = toJSON(parse(xmlStr));
 		assertEquals("Unexpected result: " + resStr, expStr, resStr);
@@ -79,7 +79,7 @@ public class BadgerFishDOMTest extends DOMTest {
 	}
 
 	public void testElementNamespace() throws Exception {
-		String xmlStr = "<ns1:kermit xmlns:ns1='http://somens'>the frog</ns1:kermit>";
+		String xmlStr = "<ns1:kermit xmlns:ns1=\"http://somens\">the frog</ns1:kermit>";
 		String expStr = "{\"ns1:kermit\":{\"@xmlns\":{\"ns1\":\"http:\\/\\/somens\"},\"$\":\"the frog\"}}";
 		String resStr = toJSON(parse(xmlStr));
 		assertEquals("Unexpected result: " + resStr, expStr, resStr);
@@ -89,14 +89,14 @@ public class BadgerFishDOMTest extends DOMTest {
 	}
 
 	public void testElementAttributeNamespace() throws Exception {
-		String xmlStr = "<ns1:kermit ns1:mygirl='piggy' xmlns:ns1='http://somens'>the frog</ns1:kermit>";
+		String xmlStr = "<ns1:kermit xmlns:ns1=\"http://somens\" ns1:mygirl=\"piggy\">the frog</ns1:kermit>";
 		String expStr = "{\"ns1:kermit\":{\"@xmlns\":{\"ns1\":\"http:\\/\\/somens\"},\"@ns1:mygirl\":\"piggy\",\"$\":\"the frog\"}}";
 		String resStr = toJSON(parse(xmlStr));
 		assertEquals("Unexpected result: " + resStr, expStr, resStr);
 
 		String resXML = toXML(resStr);
 		assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
-	}*/
+	}
 
 	private String toJSON(Element srcDOM) throws Exception {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
