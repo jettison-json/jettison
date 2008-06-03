@@ -23,6 +23,8 @@ public class Configuration {
     private Map xmlToJsonNamespaces;
     private List attributesAsElements;
     private List ignoredElements;
+
+    private TypeConverter typeConverter = new DefaultConverter();
     
     public Configuration() {
         super();
@@ -59,5 +61,12 @@ public class Configuration {
     public void setXmlToJsonNamespaces(Map xmlToJsonNamespaces) {
         this.xmlToJsonNamespaces = xmlToJsonNamespaces;
     }
-    
+
+    public TypeConverter getTypeConverter() {
+        return typeConverter;
+    }
+
+    public void setTypeConverter(TypeConverter typeConverter) {
+        this.typeConverter = typeConverter;
+    }
 }
