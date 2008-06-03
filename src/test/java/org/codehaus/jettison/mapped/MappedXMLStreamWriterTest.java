@@ -630,6 +630,28 @@ public class MappedXMLStreamWriterTest extends TestCase {
         
         assertEquals("{\"root\":{\"child\":[{\"@x\":\"y\",\"$\":\"value\"},{\"@a\":\"b\",\"$\":\"value\"},{\"@x\":\"z\",\"$\":\"value\"}]}}", strWriter.toString());
     }
+
+    //issue 36
+    public void testConverter() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        Configuration config = new Configuration();
+        config.setTypeConverter(new SimpleConverter());
+        MappedNamespaceConvention con = new MappedNamespaceConvention(config);
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+
+        w.writeStartElement("root");
+        w.writeCharacters("000123");
+        w.writeEndElement();
+
+        w.writeEndDocument();
+
+        w.close();
+        strWriter.close();
+
+        System.out.println(strWriter.toString());
+
+        assertEquals("{\"root\":\"000123\"}", strWriter.toString());        
+    }
     
     
 }

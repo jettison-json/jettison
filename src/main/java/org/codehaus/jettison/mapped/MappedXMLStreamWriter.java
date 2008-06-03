@@ -144,7 +144,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 
     public void writeCharacters(String text) throws XMLStreamException {
         try {
-            Object convertedPrimitive = convertToJSONPrimitive(text);
+            Object convertedPrimitive = convention.convertToJSONPrimitive(text);
             if (isJsonPrimitive(current)) {
             	//Concatenate strings
             	if(current instanceof String && convertedPrimitive instanceof String) {
@@ -292,36 +292,6 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
             throw new XMLStreamException("Could not write start element!", e);
         }
     }
-    
-    private Object convertToJSONPrimitive(String text) {
-
-		Object primitive = null;
-		// Attempt to convert to Integer
-		try {
-			primitive = Long.valueOf(text);
-		} catch (Exception e) {
-		}
-		// Attempt to convert to double
-		if (primitive == null) {
-			try {
-				primitive = Double.valueOf(text);
-			} catch (Exception e) {
-			}
-		}
-		// Attempt to convert to boolean
-		if (primitive == null) {
-			if(text.trim().equalsIgnoreCase("true") || text.trim().equalsIgnoreCase("false")) {
-				primitive = Boolean.valueOf(text);
-			}
-		}
-		
-		if (primitive == null) {
-			// Default String
-			primitive = text;			
-		}
-
-		return primitive;
-	}
     
     private boolean isJsonPrimitive(Object o) {
 		if (o instanceof String || o instanceof Boolean || o instanceof Number) {
