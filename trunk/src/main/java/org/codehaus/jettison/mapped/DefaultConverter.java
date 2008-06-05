@@ -27,8 +27,7 @@ public class DefaultConverter implements TypeConverter {
 		Object primitive = null;
 		// Attempt to convert to Integer
 		try {
-			//primitive = Long.valueOf(text);
-			primitive = Long.decode(text);
+			primitive = Long.valueOf(text);
 		} catch (Exception e) {
 		}
 		// Attempt to convert to double
@@ -45,7 +44,7 @@ public class DefaultConverter implements TypeConverter {
 			}
 		}
 
-		if (primitive == null) {
+		if (primitive == null || !primitive.toString().equals(text)) {
 			// Default String
 			primitive = text;
 		}
