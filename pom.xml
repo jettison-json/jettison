@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.codehaus.jettison</groupId>
   <artifactId>jettison</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.0</version>
   <name>Jettison</name>
   <description>A StAX implementation for JSON.</description>
   <dependencies>
@@ -17,17 +17,11 @@
       <artifactId>stax-api</artifactId>
       <version>1.0.1</version>
     </dependency>
-	<dependency> 
-		<groupId>woodstox</groupId> 
-		<artifactId>wstx-asl</artifactId> 
-		<version>3.2.2</version> 
-		<scope>test</scope>
-	</dependency>    
   </dependencies>
   <scm>
-    <connection>scm:svn:https://svn.codehaus.org/jettison/trunk</connection>
-    <developerConnection>scm:svn:https://svn.codehaus.org/jettison/trunk</developerConnection>
-    <url>https://svn.codehaus.org/jettison/trunk</url>
+    <connection>scm:svn:https://svn.codehaus.org/jettison/tags/jettison-1.0</connection>
+    <developerConnection>scm:svn:https://svn.codehaus.org/jettison/tags/jettison-1.0</developerConnection>
+    <url>https://svn.codehaus.org/jettison/tags/jettison-1.0</url>
   </scm>
   <build>
     <extensions>

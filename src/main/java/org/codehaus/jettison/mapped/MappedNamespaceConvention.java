@@ -34,12 +34,9 @@ public class MappedNamespaceConvention implements Convention {
     private Map jnsToXns = new HashMap();
     private List attributesAsElements;
     private List jsonAttributesAsElements;
-
-    private TypeConverter typeConverter;
     
     public MappedNamespaceConvention() {
         super();
-        typeConverter = new DefaultConverter();
     }
     public MappedNamespaceConvention(Configuration config) {
         super();
@@ -60,7 +57,6 @@ public class MappedNamespaceConvention implements Convention {
                                                                 q.getLocalPart()));
             }
         }
-        typeConverter = config.getTypeConverter();
     }
 
     /* (non-Javadoc)
@@ -95,13 +91,6 @@ public class MappedNamespaceConvention implements Convention {
                     }
                 }
                 itr.remove();
-            } else {
-                int dot = k.lastIndexOf('.');
-
-                if (dot != -1) {
-                	String jns = k.substring(0, dot);
-                	n.setNamespace("", (String)jnsToXns.get(jns));
-                }
             }
         }
     }
@@ -186,9 +175,4 @@ public class MappedNamespaceConvention implements Convention {
         }
         return false;
     }
-
-    public Object convertToJSONPrimitive(String text) {
-        return typeConverter.convertToJSONPrimitive(text);
-    }
-
 }
