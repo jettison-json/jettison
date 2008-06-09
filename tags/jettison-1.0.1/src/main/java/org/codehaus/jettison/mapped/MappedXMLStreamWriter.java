@@ -203,7 +203,9 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
             current = nodes.peek();
             if (current instanceof JSONArray || isArray instanceof JSONArray) {
                 nodes.pop();
-                current = nodes.peek();
+                if (nodes.size() > 0) {
+                	current = nodes.peek();
+                }
             }
         }
         depth--;
@@ -313,7 +315,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 			}
 		}
 		
-		if (primitive == null) {
+		if (primitive == null || !primitive.toString().equals(text)) {
 			// Default String
 			primitive = text;			
 		}

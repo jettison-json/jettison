@@ -246,25 +246,30 @@ public class MappedXMLStreamWriterTest extends TestCase {
         w.writeStartDocument();
         w.writeStartElement("root");
         
-        w.writeStartElement("subchild1");
+        	w.writeStartElement("subchild1");
         
-        w.writeStartElement("subchild2");
-        w.writeCharacters("first sub2");
-        w.writeEndElement();
+        		w.writeStartElement("subchild2");
+        			w.writeCharacters("first sub2");
+        		w.writeEndElement();
         
-        w.writeStartElement("subchild2");
-        w.writeCharacters("second sub2");
-        w.writeEndElement();
+        		w.writeStartElement("subchild2");
+        			w.writeStartElement("subchild3");
+        				w.writeCharacters("first sub3");
+        			w.writeEndElement();
+        			w.writeStartElement("subchild3");
+        				w.writeCharacters("second sub3");
+        			w.writeEndElement();
+        		w.writeEndElement();
         
-        w.writeStartElement("subchild2");
-        w.writeCharacters("third sub2");
-        w.writeEndElement();
+        		w.writeStartElement("subchild2");
+        			w.writeCharacters("third sub2");
+        		w.writeEndElement();
         
-        w.writeEndElement();
+        	w.writeEndElement();
         
-        w.writeStartElement("subchild1");
-        w.writeCharacters("sub1");
-        w.writeEndElement();
+        	w.writeStartElement("subchild1");
+        		w.writeCharacters("sub1");
+        	w.writeEndElement();
         
         w.writeEndElement();
         w.writeEndDocument();
@@ -274,7 +279,8 @@ public class MappedXMLStreamWriterTest extends TestCase {
         
         System.out.println(strWriter.toString());
         
-        assertEquals("{\"root\":{\"subchild1\":[{\"subchild2\":[\"first sub2\",\"second sub2\",\"third sub2\"]},\"sub1\"]}}", strWriter.toString());
+        assertEquals("{\"root\":{\"subchild1\":[{\"subchild2\":[\"first sub2\",{\"subchild3\":[\"first sub3\",\"second sub3\"]},\"third sub2\"]},\"sub1\"]}}"
+, strWriter.toString());
     }
     
     public void testArrayOfChildren() throws Exception {
@@ -471,6 +477,10 @@ public class MappedXMLStreamWriterTest extends TestCase {
         w.writeCharacters(true + "");
         w.writeEndElement();
         
+        w.writeStartElement("subchild2");
+        w.writeCharacters("000123");
+        w.writeEndElement();        
+        
         w.writeEndElement();
         
         w.writeStartElement("subchild1");
@@ -485,7 +495,7 @@ public class MappedXMLStreamWriterTest extends TestCase {
         
         System.out.println(strWriter.toString());
         
-        assertEquals("{\"root\":{\"subchild1\":[{\"subchild2\":[5,3.14,true]},\"sub1\"]}}", strWriter.toString());      
+        assertEquals("{\"root\":{\"subchild1\":[{\"subchild2\":[5,3.14,true,\"000123\"]},\"sub1\"]}}", strWriter.toString());      
     }
     
     //issue 29
