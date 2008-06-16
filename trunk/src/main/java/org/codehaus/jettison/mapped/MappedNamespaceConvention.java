@@ -34,6 +34,7 @@ public class MappedNamespaceConvention implements Convention {
     private Map jnsToXns = new HashMap();
     private List attributesAsElements;
     private List jsonAttributesAsElements;
+    private boolean supressAtAttributes; 
 
     private TypeConverter typeConverter;
     
@@ -45,6 +46,7 @@ public class MappedNamespaceConvention implements Convention {
         super();
         this.xnsToJns = config.getXmlToJsonNamespaces();
         this.attributesAsElements = config.getAttributesAsElements();
+        this.supressAtAttributes = config.isSupressAtAttributes();
         
         for (Iterator itr = xnsToJns.entrySet().iterator(); itr.hasNext();) {
             Map.Entry entry = (Map.Entry) itr.next();
@@ -70,6 +72,18 @@ public class MappedNamespaceConvention implements Convention {
         // Read in the attributes, and stop when there are no more
         for (Iterator itr = object.keys(); itr.hasNext();) {
             String k = (String) itr.next();
+            
+            if( this.supressAtAttributes ){
+            	if( k.startsWith("@")){
+            		k = k.substring( 1 );
+            	}
+            	if( null == this.jsonAttributesAsElements ){
+            		this.jsonAttributesAsElements = new ArrayList();
+            	}
+            	if( ! this.jsonAttributesAsElements.contains( k ) ){
+            		this.jsonAttributesAsElements.add( k );
+            	}
+            }
             
             if (k.startsWith("@")) {
                 String value = object.optString(k);
@@ -146,7 +160,10 @@ public class MappedNamespaceConvention implements Convention {
     
     
     public String createAttributeKey(String p, String ns, String local) {
-        StringBuffer builder = new StringBuffer().append('@');
+        StringBuffer builder = new StringBuffer();
+        if( ! this.supressAtAttributes ){
+        	builder.append('@');
+        }
         String jns = getJSONNamespace(ns);
         if (jns != null && jns.length() != 0) {
             builder.append(jns).append('.');
