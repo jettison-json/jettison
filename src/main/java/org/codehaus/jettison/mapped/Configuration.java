@@ -23,6 +23,7 @@ public class Configuration {
     private Map xmlToJsonNamespaces;
     private List attributesAsElements;
     private List ignoredElements;
+    private boolean supressAtAttributes; 
 
     private TypeConverter typeConverter = new DefaultConverter();
     
@@ -69,4 +70,12 @@ public class Configuration {
     public void setTypeConverter(TypeConverter typeConverter) {
         this.typeConverter = typeConverter;
     }
+
+	public boolean isSupressAtAttributes() {
+		return this.supressAtAttributes;
+	}
+
+	public void setSupressAtAttributes(boolean supressAtAttributes) {
+		this.supressAtAttributes = supressAtAttributes;
+	}
 }

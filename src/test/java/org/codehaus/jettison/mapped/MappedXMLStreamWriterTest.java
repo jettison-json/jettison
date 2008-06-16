@@ -141,6 +141,37 @@ public class MappedXMLStreamWriterTest extends TestCase {
         
         assertEquals("{\"root\":{\"@att\":\"attvalue\",\"foo.att2\":\"attvalue\"}}", strWriter.toString());
     }
+
+    public void testAttributesWithAtSupressed() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        
+        Map xtoj = new HashMap();
+        xtoj.put("http://foo/", "foo");
+        List atts = new ArrayList();
+        atts.add(new QName("http://foo/", "att2"));
+        
+        Configuration c = new Configuration(xtoj, atts, null);
+        c.setSupressAtAttributes(true);
+        
+        MappedNamespaceConvention con = new MappedNamespaceConvention(c);
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        w.writeAttribute("att", "attvalue");
+        w.writeAttribute("http://foo/", "att2", "attvalue");
+        
+        //w.writeCharacters("test");
+        
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        assertEquals("{\"root\":{\"att\":\"attvalue\",\"foo.att2\":\"attvalue\"}}", strWriter.toString());
+    }
     
     public void testTwoChildren() throws Exception {
         StringWriter strWriter = new StringWriter();
