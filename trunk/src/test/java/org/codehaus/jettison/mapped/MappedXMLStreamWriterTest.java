@@ -688,5 +688,33 @@ public class MappedXMLStreamWriterTest extends TestCase {
         assertEquals("{\"root\":\"true\"}", strWriter.toString());        
     }
     
+    //issue 52
+    public void testAttributeKey() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        
+        Map xtoj = new HashMap();
+        xtoj.put("http://foo/", "foo");
+        Configuration conf = new Configuration(xtoj);
+        conf.setAttributeKey("!");
+        MappedNamespaceConvention con = new MappedNamespaceConvention(conf);
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        w.writeAttribute("att", "attvalue");
+        w.writeAttribute("http://foo/", "att2", "attvalue");
+        
+        //w.writeCharacters("test");
+        
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        assertEquals("{\"root\":{\"!att\":\"attvalue\",\"!foo.att2\":\"attvalue\"}}", strWriter.toString());
+    }   
+    
     
 }

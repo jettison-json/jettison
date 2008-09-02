@@ -24,7 +24,9 @@ public class Configuration {
     private List attributesAsElements;
     private List ignoredElements;
     private boolean supressAtAttributes; 
+    private String attributeKey = "@"; 
 
+    
     private TypeConverter typeConverter = new DefaultConverter();
     
     public Configuration() {
@@ -78,4 +80,12 @@ public class Configuration {
 	public void setSupressAtAttributes(boolean supressAtAttributes) {
 		this.supressAtAttributes = supressAtAttributes;
 	}
+	
+   public String getAttributeKey() {
+        return this.attributeKey;
+    }
+
+    public void setAttributeKey(String attributeKey) {
+        this.attributeKey = attributeKey;
+    }
 }
