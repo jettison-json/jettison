@@ -35,7 +35,8 @@ public class MappedNamespaceConvention implements Convention {
     private List attributesAsElements;
     private List jsonAttributesAsElements;
     private boolean supressAtAttributes; 
-
+    private String attributeKey = "@";
+    
     private TypeConverter typeConverter;
     
     public MappedNamespaceConvention() {
@@ -47,6 +48,8 @@ public class MappedNamespaceConvention implements Convention {
         this.xnsToJns = config.getXmlToJsonNamespaces();
         this.attributesAsElements = config.getAttributesAsElements();
         this.supressAtAttributes = config.isSupressAtAttributes();
+        this.attributeKey = config.getAttributeKey();
+
         
         for (Iterator itr = xnsToJns.entrySet().iterator(); itr.hasNext();) {
             Map.Entry entry = (Map.Entry) itr.next();
@@ -74,7 +77,7 @@ public class MappedNamespaceConvention implements Convention {
             String k = (String) itr.next();
             
             if( this.supressAtAttributes ){
-            	if( k.startsWith("@")){
+            	if( k.startsWith(attributeKey)){
             		k = k.substring( 1 );
             	}
             	if( null == this.jsonAttributesAsElements ){
@@ -85,7 +88,7 @@ public class MappedNamespaceConvention implements Convention {
             	}
             }
             
-            if (k.startsWith("@")) {
+            if (k.startsWith(attributeKey)) {
                 String value = object.optString(k);
                 k = k.substring(1);
                 if (value != null) {
@@ -162,7 +165,7 @@ public class MappedNamespaceConvention implements Convention {
     public String createAttributeKey(String p, String ns, String local) {
         StringBuffer builder = new StringBuffer();
         if( ! this.supressAtAttributes ){
-        	builder.append('@');
+        	builder.append(attributeKey);
         }
         String jns = getJSONNamespace(ns);
         if (jns != null && jns.length() != 0) {
