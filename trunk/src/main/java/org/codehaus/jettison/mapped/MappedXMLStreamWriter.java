@@ -34,7 +34,6 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
     Writer writer;
     FastStack nodes = new FastStack();
     String currentKey;
-    int depth = 0;
     NamespaceContext ctx = new NullNamespaceContext();
     String valueKey = "$";
     
@@ -199,16 +198,20 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
         if (isJsonPrimitive(current)) {
             current = nodes.peek();
         } else if (nodes.size() > 1 ) {
-            Object isArray = nodes.pop();
-            current = nodes.peek();
-            if (current instanceof JSONArray || isArray instanceof JSONArray) {
-                nodes.pop();
-                if (nodes.size() > 0) {
-                	current = nodes.peek();
+            
+            if (isEmptyArray(current)) {
+                current = nodes.peek();
+            } else {
+                Object isArray = nodes.pop();
+                current = nodes.peek();
+                if (current instanceof JSONArray || isArray instanceof JSONArray) {
+                    nodes.pop();
+                    if (nodes.size() > 0) {
+                        current = nodes.peek();
+                    }
                 }
             }
         }
-        depth--;
     }
 
     public void writeEntityRef(String arg0) throws XMLStreamException {
@@ -227,7 +230,6 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
     }
 
     public void writeStartElement(String prefix, String local, String ns) throws XMLStreamException {
-        depth++;
         
         try {
             if (current == null) {
@@ -279,7 +281,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
                     current = "";
                     ((JSONArray) o).put("");
                     nodes.push(o);
-                } else if (getSerializedAsArrays().contains(previousKey)) {
+                } else if (getSerializedAsArrays().contains(currentKey)) {
                     JSONArray arr = new JSONArray();
                     arr.put("");
                     setNewValue(arr);
@@ -300,6 +302,20 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 			return false;
 		}
 	}
+    
+    private boolean isEmptyArray(Object o) throws XMLStreamException {
+        if (o instanceof JSONArray) {
+            JSONArray arr = (JSONArray) o;
+            if (arr.length() == 1) {
+                try {
+                    return arr.get(0).equals("");
+                } catch (JSONException e) {
+                    throw new XMLStreamException("Could not read array value!", e);
+                } 
+            }
+        }
+        return false;
+    }
 
 	public void setValueKey(String valueKey) {
 		this.valueKey = valueKey;
