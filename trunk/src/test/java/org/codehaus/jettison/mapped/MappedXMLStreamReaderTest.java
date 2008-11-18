@@ -488,6 +488,23 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals("root", reader.getName().getLocalPart()); 
     }    
     
+    //issue 50
+    public void testGetElementText() throws Exception {
+        JSONObject obj = 
+            new JSONObject("{ " +
+                           "\"root\" : \"test\" }");
+        
+        Configuration conf = new Configuration();
+        MappedNamespaceConvention con = new MappedNamespaceConvention(conf);
+        XMLStreamReader reader = new MappedXMLStreamReader(obj, con);
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart());
+        
+        assertEquals("test", reader.getElementText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+    }
+    
     
     
 }

@@ -162,6 +162,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
     }
 
     public String getElementText() throws XMLStreamException {
+        event = CHARACTERS;
         return currentValue;
     }
 
