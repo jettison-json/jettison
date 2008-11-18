@@ -43,8 +43,10 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
         this.convention = con;
         this.nodes = new FastStack();
         Object top = obj.get(rootName);
-        if(top instanceof JSONObject) {
+        if (top instanceof JSONObject) {
             this.node = new Node(rootName, (JSONObject)top, convention);
+        } else if (top instanceof JSONArray && !(((JSONArray)top).length() == 1 && ((JSONArray)top).get(0).equals(""))) {
+            this.node = new Node(rootName, ((JSONArray)top).getJSONObject(0), convention);
         } else {
             // TODO: check JSONArray and report an error
             node = new Node(rootName, convention);
@@ -98,20 +100,23 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
             if (node.getArray() != null) {
                 int index = node.getArrayIndex();
                 if (index >= node.getArray().length()) {
-                    nodes.pop();
-                    
-                    if (nodes.size() > 1) {
-                        node = (Node) nodes.pop();
-                    } else {
-                        node = (Node) nodes.peek();
-                    }
+                	
+            		nodes.pop();
 
-                    if (nodes.size() > 1) {
-                        event = END_ELEMENT;
-                        return;
-                    }
+                	node = (Node) nodes.peek();
+
+                	if (node == null)
+                	{
+                		event = END_DOCUMENT;
+                		return;
+                	}
+                    
                     if ((node.getKeys() != null && node.getKeys().hasNext()) || node.getArray() != null) {
                         processElement();
+                    }
+                    else {
+                            event = END_ELEMENT;
+                            node = (Node) nodes.pop();
                     }
                     return;
                 }
