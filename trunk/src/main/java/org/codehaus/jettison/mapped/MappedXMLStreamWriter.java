@@ -44,7 +44,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
     }
 
     public void close() throws XMLStreamException {
-        
+
     }
 
     public void flush() throws XMLStreamException {
@@ -102,8 +102,8 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 			}
 		} catch (JSONException e) {
 			throw new XMLStreamException(e);
-		}        
-		 
+		}
+        
     }
 
     private void makeCurrentJSONObject() throws JSONException {
@@ -161,8 +161,8 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
                 	arr.put(convertedPrimitive);
                 }
                 current = convertedPrimitive;
-            } // handle value in nodes with attributes 
-            else if (current instanceof JSONObject && valueKey != null){ 
+            } // handle value in nodes with attributes
+            else if (current instanceof JSONObject && valueKey != null){
             	JSONObject obj = (JSONObject)current;
             	obj.put(valueKey, text);
             }
@@ -237,18 +237,32 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
                 current = root;
                 nodes.push(root);
             } else {
-                makeCurrentJSONObject(); 
+                makeCurrentJSONObject();
             }
             String previousKey = currentKey;
             currentKey = convention.createKey(prefix, ns, local);
             if (current instanceof JSONArray) {
             	JSONArray array = (JSONArray)current;
-            	if (array.get(array.length()-1).equals("")) {             	
-            		JSONObject newNode = new JSONObject();
-            		newNode.put(currentKey, "");
-            		setNewValue(newNode);
-            		nodes.push(newNode);
-            		current = "";
+            	if (array.get(array.length()-1).equals("")) {
+            	    // this is in case when the first element of an array is another array
+                    if (getSerializedAsArrays().contains(currentKey)) {
+                        JSONObject newNode = new JSONObject();
+                        newNode.put(currentKey, "");
+                        setNewValue(newNode);
+                        nodes.push(newNode);
+                        current = "";
+                        JSONArray arr = new JSONArray();
+                        arr.put("");
+                        setNewValue(arr);
+
+                    } else
+                    {
+                        JSONObject newNode = new JSONObject();
+                        newNode.put(currentKey, "");
+                        setNewValue(newNode);
+                        nodes.push(newNode);
+                        current = "";
+                    }
             	} else {
             		if (array.get(array.length() - 1) instanceof JSONObject) {
             			array.put("");
@@ -265,9 +279,9 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
                 		if (maybe != null && maybe instanceof JSONObject) {
                 			o = maybe;
                 			nodes.pop();
-                			current = nodes.pop();               			
+                			current = nodes.pop();
                 		}
-                			
+
                 	}
                 }
                 if (o instanceof JSONObject || isJsonPrimitive(o)) {
@@ -294,7 +308,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
             throw new XMLStreamException("Could not write start element!", e);
         }
     }
-    
+
     private boolean isJsonPrimitive(Object o) {
 		if (o instanceof String || o instanceof Boolean || o instanceof Number) {
 			return true;
@@ -302,7 +316,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 			return false;
 		}
 	}
-    
+
     private boolean isEmptyArray(Object o) throws XMLStreamException {
         if (o instanceof JSONArray) {
             JSONArray arr = (JSONArray) o;
@@ -311,7 +325,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
                     return arr.get(0).equals("");
                 } catch (JSONException e) {
                     throw new XMLStreamException("Could not read array value!", e);
-                } 
+                }
             }
         }
         return false;
@@ -320,6 +334,6 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	public void setValueKey(String valueKey) {
 		this.valueKey = valueKey;
 	}
-    
-    
+
+
 }

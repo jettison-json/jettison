@@ -732,8 +732,6 @@ public class MappedXMLStreamWriterTest extends TestCase {
         w.writeAttribute("att", "attvalue");
         w.writeAttribute("http://foo/", "att2", "attvalue");
         
-        //w.writeCharacters("test");
-        
         w.writeEndElement();
         w.writeEndElement();
         w.writeEndDocument();
@@ -743,6 +741,32 @@ public class MappedXMLStreamWriterTest extends TestCase {
         
         assertEquals("{\"root\":{\"!att\":\"attvalue\",\"!foo.att2\":\"attvalue\"}}", strWriter.toString());
     }   
+    
+    // issue 63
+    public void testArrayAsFirstInAnArray() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        w.seriliazeAsArray(con.createKey("", "", "bazs"));
+        w.seriliazeAsArray(con.createKey("", "", "quacks"));
+
+        w.writeStartDocument();
+        w.writeStartElement("Foo");
+        w.writeStartElement("bazs"); // array
+        w.writeStartElement("quacks"); // array
+        w.writeStartElement("goof");
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndDocument();
+
+        w.close();
+        strWriter.close();
+
+        assertEquals("{\"Foo\":{\"bazs\":[{\"quacks\":[{\"goof\":\"\"}]}]}}", strWriter.toString());
+    }
+
     
     
 }
