@@ -24,7 +24,8 @@ public class Configuration {
     private List attributesAsElements;
     private List ignoredElements;
     private boolean supressAtAttributes; 
-    private String attributeKey = "@"; 
+    private String attributeKey = "@";
+    private boolean implicitCollections = false;
 
     
     private TypeConverter typeConverter = new DefaultConverter();
@@ -88,4 +89,12 @@ public class Configuration {
     public void setAttributeKey(String attributeKey) {
         this.attributeKey = attributeKey;
     }
+
+	public boolean isImplicitCollections() {
+		return implicitCollections;
+	}
+
+	public void setImplicitCollections(boolean implicitCollections) {
+		this.implicitCollections = implicitCollections;
+	}
 }

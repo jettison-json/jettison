@@ -303,6 +303,44 @@ public class MappedXMLStreamWriterTest extends TestCase {
 , strWriter.toString());
     }
     
+    //ISSUE-48
+    public void testNestedArrayOfChildrenWithComplexElements() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        
+        	w.writeStartElement("subchild1");
+        
+        		w.writeStartElement("subchild2");
+        			w.writeCharacters("first sub2");
+        		w.writeEndElement();
+        		
+        	w.writeEndElement();
+        	
+        	w.writeStartElement("subchild1");
+    			w.writeCharacters("text");
+    		w.writeEndElement();
+    		
+        	w.writeStartElement("subchild1");
+		 	   w.writeCharacters("text1");
+		    w.writeEndElement();
+			
+			w.writeStartElement("outer");
+				w.writeCharacters("test");
+			w.writeEndElement();
+        
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        assertEquals(strWriter.toString(), "{\"root\":{\"subchild1\":[{\"subchild2\":\"first sub2\"},\"text\",\"text1\"],\"outer\":\"test\"}}");
+    }
+    
     public void testArrayOfChildren() throws Exception {
         StringWriter strWriter = new StringWriter();
         MappedNamespaceConvention con = new MappedNamespaceConvention();
@@ -312,18 +350,29 @@ public class MappedXMLStreamWriterTest extends TestCase {
         w.writeStartElement("root");
         
         w.writeStartElement("child");
+        w.writeCharacters("first");
         w.writeEndElement();
         
         w.writeStartElement("child");
+        w.writeCharacters("second");
+        w.writeEndElement();
+        
+        w.writeStartElement("child");
+        w.writeCharacters("third");
         w.writeEndElement();
         
         w.writeEndElement();
+        
+        w.writeStartElement("other");
+        w.writeCharacters("test");
+        w.writeEndElement();
+        
         w.writeEndDocument();
         
         w.close();
         strWriter.close();
         
-        assertEquals("{\"root\":{\"child\":[\"\",\"\"]}}", strWriter.toString());
+        assertEquals("{\"root\":{\"child\":[\"first\",\"second\",\"third\"]},\"other\":\"test\"}", strWriter.toString());
     }
     
     public void testComplexArrayOfChildren() throws Exception {
@@ -752,11 +801,11 @@ public class MappedXMLStreamWriterTest extends TestCase {
 
         w.writeStartDocument();
         w.writeStartElement("Foo");
-        w.writeStartElement("bazs"); // array
-        w.writeStartElement("quacks"); // array
-        w.writeStartElement("goof");
-        w.writeEndElement();
-        w.writeEndElement();
+        	w.writeStartElement("bazs"); // array
+        		w.writeStartElement("quacks"); // array
+        			w.writeStartElement("goof");
+        			w.writeEndElement();
+        		w.writeEndElement();
         w.writeEndElement();
         w.writeEndElement();
         w.writeEndDocument();
@@ -767,6 +816,33 @@ public class MappedXMLStreamWriterTest extends TestCase {
         assertEquals("{\"Foo\":{\"bazs\":[{\"quacks\":[{\"goof\":\"\"}]}]}}", strWriter.toString());
     }
 
-    
+    // JETTISON-65
+    public void x_testImplicitCollections() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        Configuration conf = new Configuration();
+        conf.setImplicitCollections(true);
+        MappedNamespaceConvention con = new MappedNamespaceConvention(conf);
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        
+        addChild(w);
+        addChild(w);
+        addChild(w);
+        addChild(w);
+        
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        assertEquals("{\"root\":[" +
+                     "{\"subchild1\":\"test\",\"subchild2\":\"test\"}," +
+                     "{\"subchild1\":\"test\",\"subchild2\":\"test\"}," +
+                     "{\"subchild1\":\"test\",\"subchild2\":\"test\"}," +
+                     "{\"subchild1\":\"test\",\"subchild2\":\"test\"}]}", strWriter.toString());
+    }
     
 }

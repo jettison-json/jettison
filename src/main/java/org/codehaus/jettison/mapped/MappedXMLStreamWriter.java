@@ -17,6 +17,7 @@ package org.codehaus.jettison.mapped;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Iterator;
 
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.XMLStreamException;
@@ -243,7 +244,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
             currentKey = convention.createKey(prefix, ns, local);
             if (current instanceof JSONArray) {
             	JSONArray array = (JSONArray)current;
-            	if (array.get(array.length()-1).equals("")) {
+            	if (array.get(array.length() - 1).equals("")) {
             	    // this is in case when the first element of an array is another array
                     if (getSerializedAsArrays().contains(currentKey)) {
                         JSONObject newNode = new JSONObject();
@@ -255,8 +256,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
                         arr.put("");
                         setNewValue(arr);
 
-                    } else
-                    {
+                    } else {
                         JSONObject newNode = new JSONObject();
                         newNode.put(currentKey, "");
                         setNewValue(newNode);
@@ -267,6 +267,16 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
             		if (array.get(array.length() - 1) instanceof JSONObject) {
             			array.put("");
             			nodes.push(array);
+            		} else if (!currentKey.equals(previousKey)) {
+            			// element with new name shouldn't be in the array
+            			int i = 0;
+            			while (current instanceof JSONObject == false){
+            				if (i>0){ nodes.pop(); }
+            				current = nodes.peek();
+            				i++;
+            			}
+                        setNewValue("");
+                        current = "";
             		}
             	}
             } else {
@@ -285,6 +295,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
                 	}
                 }
                 if (o instanceof JSONObject || isJsonPrimitive(o)) {
+                	// JETTISON-65
                     JSONArray arr = new JSONArray();
                     arr.put(o);
                     arr.put("");
