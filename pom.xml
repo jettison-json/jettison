@@ -28,7 +28,7 @@
   <scm>
     <connection>scm:svn:https://svn.codehaus.org/jettison/tags/jettison-1.1</connection>
     <developerConnection>scm:svn:https://svn.codehaus.org/jettison/tags/jettison-1.1</developerConnection>
-    <url>scm:svn:https://svn.codehaus.org/jettison/tags/jettison-1.1</url>
+    <url>https://svn.codehaus.org/jettison/tags/jettison-1.1</url>
   </scm>
   <build>
     <extensions>
