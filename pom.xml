@@ -58,7 +58,7 @@
            <Export-Package>org.codehaus.jettison*;version=${project.version}</Export-Package>
            <Import-Package>*</Import-Package>
            <Private-Package>!*</Private-Package>
-           <Implementation-Title>Jettison</Implementation-Title>
+           <Implementation-Title>${project.name}</Implementation-Title>
            <Implementation-Version>${project.version}</Implementation-Version>
          </instructions>
         </configuration>
