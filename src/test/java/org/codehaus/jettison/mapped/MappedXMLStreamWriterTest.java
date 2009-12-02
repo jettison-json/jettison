@@ -99,9 +99,7 @@ public class MappedXMLStreamWriterTest extends TestCase {
         w.writeAttribute("att", "attvalue");
         w.writeAttribute("http://foo/", "att2", "attvalue");
         
-        //w.writeCharacters("test");
         
-        w.writeEndElement();
         w.writeEndElement();
         w.writeEndDocument();
         
@@ -129,9 +127,6 @@ public class MappedXMLStreamWriterTest extends TestCase {
         w.writeAttribute("att", "attvalue");
         w.writeAttribute("http://foo/", "att2", "attvalue");
         
-        //w.writeCharacters("test");
-        
-        w.writeEndElement();
         w.writeEndElement();
         w.writeEndDocument();
         
@@ -160,9 +155,6 @@ public class MappedXMLStreamWriterTest extends TestCase {
         w.writeAttribute("att", "attvalue");
         w.writeAttribute("http://foo/", "att2", "attvalue");
         
-        //w.writeCharacters("test");
-        
-        w.writeEndElement();
         w.writeEndElement();
         w.writeEndDocument();
         
@@ -292,6 +284,8 @@ public class MappedXMLStreamWriterTest extends TestCase {
         	w.writeStartElement("subchild1");
         		w.writeCharacters("sub1");
         	w.writeEndElement();
+        	
+        	//w.writeEndElement();
         
         w.writeEndElement();
         w.writeEndDocument();
@@ -753,6 +747,7 @@ public class MappedXMLStreamWriterTest extends TestCase {
         MappedNamespaceConvention con = new MappedNamespaceConvention(config);
         AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
 
+        w.writeStartDocument();
         w.writeStartElement("root");
         w.writeCharacters("true");
         w.writeEndElement();
@@ -781,7 +776,6 @@ public class MappedXMLStreamWriterTest extends TestCase {
         w.writeAttribute("att", "attvalue");
         w.writeAttribute("http://foo/", "att2", "attvalue");
         
-        w.writeEndElement();
         w.writeEndElement();
         w.writeEndDocument();
         
@@ -843,6 +837,67 @@ public class MappedXMLStreamWriterTest extends TestCase {
                      "{\"subchild1\":\"test\",\"subchild2\":\"test\"}," +
                      "{\"subchild1\":\"test\",\"subchild2\":\"test\"}," +
                      "{\"subchild1\":\"test\",\"subchild2\":\"test\"}]}", strWriter.toString());
+    }
+
+    // JETTISON-57
+    public void testChildClassPropertyNameSameAsParentObject() throws Exception {
+
+        StringWriter strWriter = new StringWriter();
+        Configuration conf = new Configuration();
+        conf.setImplicitCollections(true);
+        MappedNamespaceConvention con = new MappedNamespaceConvention(conf);
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+
+        w.writeStartDocument();
+            w.writeStartElement("definition");
+                w.writeStartElement("structure");
+                    w.writeAttribute("name", "conversation");
+                    w.writeStartElement("symbolic");
+                        w.writeAttribute("name", "reason");
+                    w.writeEndElement();
+                    w.writeStartElement("symbolic");
+                        w.writeAttribute("name", "terms");
+                    w.writeEndElement();
+                    w.writeStartElement("numeric");
+                        w.writeAttribute("name", "amountasked");
+                    w.writeEndElement();
+                    w.writeStartElement("numeric");
+                        w.writeAttribute("name", "amountoffered");
+                    w.writeEndElement();
+                    w.writeStartElement("structure");
+                        w.writeAttribute("name", "check");
+                        w.writeStartElement("symbolic");
+                            w.writeAttribute("name", "date");
+                        w.writeEndElement();
+                        w.writeStartElement("structure");
+                            w.writeAttribute("name", "lines");
+                            w.writeAttribute("repeating", "true");
+                            w.writeStartElement("symbolic");
+                                w.writeAttribute("name", "type");
+                            w.writeEndElement();
+                            w.writeStartElement("numeric");
+                                w.writeAttribute("name", "amount");
+                            w.writeEndElement();
+                            w.writeStartElement("numeric");
+                                w.writeAttribute("name", "cost");
+                            w.writeEndElement();
+                        w.writeEndElement();
+                    w.writeEndElement();
+                w.writeEndElement();
+            w.writeEndElement();
+        w.writeEndDocument();
+
+        w.close();
+        strWriter.close();
+
+        assertEquals("{\"definition\":" +
+                "{\"structure\":{\"@name\":\"conversation\",\"symbolic\":" +
+                "[{\"@name\":\"reason\"},{\"@name\":\"terms\"}],\"numeric\":[" +
+                "{\"@name\":\"amountasked\"},{\"@name\":\"amountoffered\"}]," +
+                "\"structure\":{\"@name\":\"check\",\"symbolic\":" +
+                "{\"@name\":\"date\"},\"structure\":{\"@name\":\"lines\",\"@repeating\":\"true\",\"symbolic\"" +
+                ":{\"@name\":\"type\"},\"numeric\":[{\"@name\":\"amount\"},{\"@name\":\"cost\"}]}}}}}"
+                , strWriter.toString());
     }
     
 }
