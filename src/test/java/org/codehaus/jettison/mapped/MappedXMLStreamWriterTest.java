@@ -538,6 +538,10 @@ public class MappedXMLStreamWriterTest extends TestCase {
         w.writeStartElement("subchild2");
         w.writeCharacters("000123");
         w.writeEndElement();
+
+        w.writeStartElement("subchild2");
+        w.writeCharacters("Infinity");
+        w.writeEndElement();
         
         w.writeEndElement();
         
@@ -550,10 +554,40 @@ public class MappedXMLStreamWriterTest extends TestCase {
         
         w.close();
         strWriter.close();
-        
-        assertEquals("{\"root\":{\"subchild1\":[{\"subchild2\":[5,3.14,true,\"000123\"]},\"sub1\"]}}", strWriter.toString());      
+        String expected = "{\"root\":{\"subchild1\":[{\"subchild2\":[5,3.14,true,\"000123\",\"Infinity\"]},\"sub1\"]}}";
+        String actual = strWriter.toString();
+        assertEquals(expected, actual);
     }
-    
+
+    // issue 64
+    public void testPrimitiveInfinityNaN() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+
+        w.writeStartDocument();
+        w.writeStartElement("root");
+
+
+        w.writeStartElement("subchild1");
+        w.writeCharacters("Infinity");
+        w.writeEndElement();
+
+        w.writeStartElement("subchild1");
+        w.writeCharacters("NaN");
+        w.writeEndElement();
+
+
+        w.writeEndElement();
+        w.writeEndDocument();
+
+        w.close();
+        strWriter.close();
+        String expected = "{\"root\":{\"subchild1\":[\"Infinity\",\"NaN\"]}}";
+        String actual = strWriter.toString();
+        assertEquals(expected, actual);
+    }
+
     //issue 29
     public void testComplexElements() throws Exception {
         StringWriter strWriter = new StringWriter();

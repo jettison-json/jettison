@@ -41,7 +41,7 @@ public class MappedNamespaceConvention implements Convention {
     
     public MappedNamespaceConvention() {
         super();
-        typeConverter = new DefaultConverter();
+        typeConverter = Configuration.newDefaultConverterInstance();
     }
     public MappedNamespaceConvention(Configuration config) {
         super();
