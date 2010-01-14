@@ -23,7 +23,6 @@ package org.codehaus.jettison.mapped;
  * @since 1.1
  */
 public interface TypeConverter {
-
     public Object convertToJSONPrimitive(String text);
 
 }

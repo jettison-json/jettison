@@ -22,20 +22,29 @@ package org.codehaus.jettison.mapped;
  * @since 1.1
  */
 public class DefaultConverter implements TypeConverter {
-    public Object convertToJSONPrimitive(String text) {
+    /* Were there a constants class, this key would live there. */
+    private static final String ENFORCE_32BIT_INTEGER_KEY = "jettison.mapped.typeconverter.enforce_32bit_integer";
+    public static final boolean ENFORCE_32BIT_INTEGER = Boolean.getBoolean( ENFORCE_32BIT_INTEGER_KEY );
 
+
+    public Object convertToJSONPrimitive(String text) {
+        if(text == null) return text;
 		Object primitive = null;
 		// Attempt to convert to Integer
 		try {
-			primitive = Long.valueOf(text);
-		} catch (Exception e) {
-		}
+			primitive = ENFORCE_32BIT_INTEGER ? Integer.valueOf(text) : Long.valueOf(text);
+		} catch (Exception e) {/**/}
 		// Attempt to convert to double
 		if (primitive == null) {
 			try {
-				primitive = Double.valueOf(text);
-			} catch (Exception e) {
-			}
+				Double v = Double.valueOf(text);
+                if( !v.isInfinite() && !v.isNaN() ) {
+                    primitive = v;
+                }
+                else {
+                    primitive = text;
+                }
+			} catch (Exception e) {/**/}
 		}
 		// Attempt to convert to boolean
 		if (primitive == null) {
