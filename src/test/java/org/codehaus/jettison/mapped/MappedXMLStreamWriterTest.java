@@ -605,7 +605,7 @@ public class MappedXMLStreamWriterTest extends TestCase {
 		StringWriter strWriter = new StringWriter();
 		MappedNamespaceConvention con = new MappedNamespaceConvention();
 		AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
-		w.seriliazeAsArray(con.createKey("", "", "array-a"));
+		w.serializeAsArray(con.createKey("", "", "array-a"));
 
 		w.writeStartDocument();
 		w.writeStartElement("", "array-a", "");
@@ -629,7 +629,7 @@ public class MappedXMLStreamWriterTest extends TestCase {
         StringWriter strWriter = new StringWriter();
         MappedNamespaceConvention con = new MappedNamespaceConvention();
         AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
-        w.seriliazeAsArray(con.createKey("", "", "array-a"));
+        w.serializeAsArray(con.createKey("", "", "array-a"));
 
         w.writeStartDocument();
         w.writeStartElement("", "array-a", "");
@@ -647,9 +647,9 @@ public class MappedXMLStreamWriterTest extends TestCase {
         StringWriter strWriter = new StringWriter();
         MappedNamespaceConvention con = new MappedNamespaceConvention();
         AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
-        w.seriliazeAsArray(con.createKey("", "", "docs"));
-        w.seriliazeAsArray(con.createKey("", "", "filters"));
-        w.seriliazeAsArray(con.createKey("", "", "hosts"));
+        w.serializeAsArray(con.createKey("", "", "docs"));
+        w.serializeAsArray(con.createKey("", "", "filters"));
+        w.serializeAsArray(con.createKey("", "", "hosts"));
 
         w.writeStartDocument();
         w.writeStartElement("", "docs", "");
@@ -790,8 +790,8 @@ public class MappedXMLStreamWriterTest extends TestCase {
         StringWriter strWriter = new StringWriter();
         MappedNamespaceConvention con = new MappedNamespaceConvention();
         AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
-        w.seriliazeAsArray(con.createKey("", "", "bazs"));
-        w.seriliazeAsArray(con.createKey("", "", "quacks"));
+        w.serializeAsArray(con.createKey("", "", "bazs"));
+        w.serializeAsArray(con.createKey("", "", "quacks"));
 
         w.writeStartDocument();
         w.writeStartElement("Foo");
