@@ -175,5 +175,12 @@ public class Node {
         this.currentKey = currentKey;
     }
     
+    public String toString() {
+		if (this.name != null) {
+			return this.name.toString();
+		} else {
+			return super.toString();
+		}
+	}
     
 }
