@@ -72,6 +72,14 @@ public abstract class AbstractXMLStreamWriter implements XMLStreamWriter {
     public void writeEndDocument() throws XMLStreamException {
     }
     
+    public void serializeAsArray(String name) {
+    	serializedAsArrays.add(name);
+    }
+    
+    /**
+     * @deprecated since 1.2 because of misspelling. Use serializeAsArray(String name) instead.
+     */
+    @Deprecated
     public void seriliazeAsArray(String name) {
     	serializedAsArrays.add(name);
     }
