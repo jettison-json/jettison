@@ -30,7 +30,7 @@ import org.codehaus.jettison.json.JSONObject;
 public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	private MappedNamespaceConvention convention;
 	protected Writer writer;
-	private NamespaceContext namespaceContext = new NullNamespaceContext();
+	private NamespaceContext namespaceContext;
 	/**
 	 * What key is used for text content, when an element has both text and
 	 * other content?
@@ -180,6 +180,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 		super();
 		this.convention = convention;
 		this.writer = writer;
+		this.namespaceContext = convention;
 	}
 
 	public NamespaceContext getNamespaceContext() {

@@ -30,6 +30,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
     private String currentValue;
     private MappedNamespaceConvention convention;
     private String valueKey = "$";
+    private NamespaceContext ctx;
 
     public MappedXMLStreamReader(JSONObject obj)
             throws JSONException, XMLStreamException {
@@ -42,11 +43,12 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
 
         this.convention = con;
         this.nodes = new FastStack();
+        this.ctx = con;
         Object top = obj.get(rootName);
         if (top instanceof JSONObject) {
-            this.node = new Node(rootName, (JSONObject)top, convention);
+            this.node = new Node(null, rootName, (JSONObject)top, convention);
         } else if (top instanceof JSONArray && !(((JSONArray)top).length() == 1 && ((JSONArray)top).get(0).equals(""))) {
-            this.node = new Node(rootName, ((JSONArray)top).getJSONObject(0), convention);
+            this.node = new Node(null, rootName, ((JSONArray)top).getJSONObject(0), convention);
         } else {
             // TODO: check JSONArray and report an error
             node = new Node(rootName, convention);
@@ -142,7 +144,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
                 processElement();
                 return;
             } else if (newObj instanceof JSONObject) {
-                node = new Node(nextKey, (JSONObject) newObj, convention);
+                node = new Node((Node)nodes.peek(), nextKey, (JSONObject) newObj, convention);
                 nodes.push(node);
                 event = START_ELEMENT;
                 return;
@@ -167,8 +169,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
     }
 
     public NamespaceContext getNamespaceContext() {
-        // TODO Auto-generated method stub
-        return null;
+        return ctx;
     }
 
     public String getText() {

@@ -17,6 +17,7 @@ package org.codehaus.jettison.badgerfish;
 
 import java.util.Iterator;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
@@ -57,7 +58,14 @@ public class BadgerFishConvention implements Convention {
                     }
                 } else {
                     String strValue = (String) o; 
-                    QName name = createQName(k, n);
+                    QName name = null;
+                    // note that a non-prefixed attribute name implies NO namespace,
+                    // i.e. as opposed to the in-scope default namespace
+                    if (k.contains(":")) {
+                        name = createQName(k, n);
+                    } else {
+                        name = new QName(XMLConstants.DEFAULT_NS_PREFIX, k);
+                    }                    
                     n.setAttribute(name, strValue);
                 }
                 itr.remove();

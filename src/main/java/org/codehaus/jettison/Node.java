@@ -26,6 +26,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+
 public class Node {
     
     JSONObject object;
@@ -36,10 +37,13 @@ public class Node {
     JSONArray array;
     int arrayIndex;
     String currentKey;
+    Node parent;
     
-    public Node(String name, JSONObject object, Convention con) 
+    public Node(Node parent, String name, JSONObject object, Convention con) 
         throws JSONException, XMLStreamException {
+        this.parent = parent;
         this.object = object;
+        
         /* Should really use a _Linked_ HashMap to preserve
          * ordering (insert order) -- regular one has arbitrary ordering.
          * But there are some funky dependencies within unit tests
@@ -72,7 +76,11 @@ public class Node {
     }
 
     public String getNamespaceURI(String prefix) {
-        return (String) namespaces.get(prefix);
+        String result = (String) namespaces.get(prefix);
+        if (result == null && parent != null) {
+            result = parent.getNamespaceURI(prefix);
+        }
+        return result;
     }
 
     public String getNamespaceURI(int index) {
@@ -87,13 +95,17 @@ public class Node {
     }
 
     public String getNamespacePrefix(String URI) {
+        String result = null;
         for (Iterator nsItr = namespaces.entrySet().iterator(); nsItr.hasNext();) {
             Map.Entry e = (Map.Entry) nsItr.next();
             if (e.getValue().equals(URI)) {
-                return (String) e.getKey();
+                result = (String) e.getKey();
             }
         }
-        return null;
+        if (result == null && parent != null) {
+            result = parent.getNamespacePrefix(URI);
+        }
+        return result;
     }
 
     public String getNamespacePrefix(int index) {
