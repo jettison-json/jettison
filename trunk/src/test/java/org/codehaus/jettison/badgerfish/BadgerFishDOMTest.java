@@ -17,27 +17,17 @@ package org.codehaus.jettison.badgerfish;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.codehaus.jettison.DOMTest;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
 
 /**
  * Test BadgerFish DOM API
  * 
  * @author Thomas.Diesler@jboss.com
  * @author <a href="mailto:dejan@nighttale.net">Dejan Bosanac</a>
+ * @author <a href="http://treleis.org">twayne</a>
  * @since 21-Mar-2008
  */
 public class BadgerFishDOMTest extends DOMTest {
@@ -97,6 +87,26 @@ public class BadgerFishDOMTest extends DOMTest {
 		String resXML = toXML(resStr);
 		assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
 	}
+	
+	public void testParentScopedElementNamespace() throws Exception {
+        String xmlStr = "<ns:A xmlns:ns=\"http://json/test\"><ns:B><ns:C><ns:D><ns:E>10</ns:E></ns:D></ns:C></ns:B></ns:A>";
+        String expStr = "{\"ns:A\":{\"@xmlns\":{\"ns\":\"http:\\/\\/json\\/test\"},\"ns:B\":{\"ns:C\":{\"ns:D\":{\"ns:E\":{\"$\":\"10\"}}}}}}";
+        String resStr = toJSON(parse(xmlStr));
+        assertEquals("Unexpected result: " + resStr, expStr, resStr);
+
+        String resXML = toXML(resStr).replace(System.getProperty("line.separator"), "");
+        assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
+    }
+	
+	public void testParentScopedAttributeNamespace() throws Exception {
+        String xmlStr = "<P xmlns=\"http://json/test\"><Q><R xmlns:ns=\"http://foo\"><S ns:a=\"bar\"><T>30</T></S></R></Q></P>";
+        String expStr = "{\"P\":{\"@xmlns\":{\"$\":\"http:\\/\\/json\\/test\"},\"Q\":{\"R\":{\"@xmlns\":{\"ns\":\"http:\\/\\/foo\"},\"S\":{\"@ns:a\":\"bar\",\"T\":{\"$\":\"30\"}}}}}}";
+        String resStr = toJSON(parse(xmlStr));
+        assertEquals("Unexpected result: " + resStr, expStr, resStr);
+
+        String resXML = toXML(resStr).replace(System.getProperty("line.separator"), "");
+        assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
+    }
 
 	private String toJSON(Element srcDOM) throws Exception {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();

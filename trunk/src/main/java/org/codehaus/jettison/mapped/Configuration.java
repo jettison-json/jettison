@@ -72,7 +72,7 @@ public class Configuration {
     private boolean supressAtAttributes; 
     private String attributeKey = "@";
     private boolean implicitCollections = false;
-
+    private boolean ignoreNamespaces;
     
     private TypeConverter typeConverter = converterFactory.newDefaultConverterInstance();
 
@@ -92,7 +92,13 @@ public class Configuration {
         this.attributesAsElements = attributesAsElements;
         this.ignoredElements = ignoredElements;
     }
-    
+
+    public boolean isIgnoreNamespaces() {
+        return ignoreNamespaces;
+   }   
+   public void setIgnoreNamespaces( boolean ignoreNamespaces ) {    
+       this.ignoreNamespaces = ignoreNamespaces;
+   }
     public List getAttributesAsElements() {
         return attributesAsElements;
     }

@@ -34,8 +34,7 @@ public class BadgerFishXMLStreamReader extends AbstractXMLStreamReader {
     public BadgerFishXMLStreamReader(JSONObject obj) 
         throws JSONException, XMLStreamException {
         String rootName = (String) obj.keys().next();
-        
-        this.node = new Node(rootName, obj.getJSONObject(rootName), CONVENTION);
+        this.node = new Node(null, rootName, obj.getJSONObject(rootName), CONVENTION);
         this.nodes = new FastStack();
         nodes.push(node);
         event = START_DOCUMENT;
@@ -97,7 +96,7 @@ public class BadgerFishXMLStreamReader extends AbstractXMLStreamReader {
             currentText = (String) newObj;
             return;
         } else if (newObj instanceof JSONObject) {
-            node = new Node(nextKey, (JSONObject) newObj, CONVENTION);
+            node = new Node((Node)nodes.peek(), nextKey, (JSONObject) newObj, CONVENTION);
             nodes.push(node);
             event = START_ELEMENT;
             return;

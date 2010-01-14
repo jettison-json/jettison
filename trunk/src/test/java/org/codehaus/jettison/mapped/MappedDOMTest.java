@@ -41,36 +41,48 @@ public class MappedDOMTest extends DOMTest {
 	public void testSimple() throws Exception {
 		String xmlStr = "<kermit>the frog</kermit>";
 		String expStr = "{\"kermit\":\"the frog\"}";
-		String resStr = toJSON(parse(xmlStr));
+		String resStr = toJSON(parse(xmlStr), false);
 		assertEquals("Unexpected result: " + resStr, expStr, resStr);
 
-		String resXML = toXML(resStr);
+		String resXML = toXML(resStr, false);
 		assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
 	}
 
 	public void testSimpleAttribute() throws Exception {
 		String xmlStr = "<kermit mygirl=\"piggy\">the frog</kermit>";
 		String expStr = "{\"kermit\":{\"@mygirl\":\"piggy\",\"$\":\"the frog\"}}";
-		String resStr = toJSON(parse(xmlStr));
+		String resStr = toJSON(parse(xmlStr), false);
 		assertEquals("Unexpected result: " + resStr, expStr, resStr);
 
-		String resXML = toXML(resStr);
+		String resXML = toXML(resStr, false);
 		assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
 	}
 
 	public void testDefaultNamespace() throws Exception {
 		String xmlStr = "<kermit xmlns=\"http://somens\">the frog</kermit>";
 		String expStr = "{\"somens.kermit\":\"the frog\"}";
-		String resStr = toJSON(parse(xmlStr));
+		String resStr = toJSON(parse(xmlStr), false);
 		assertEquals("Unexpected result: " + resStr, expStr, resStr);
 
-		String resXML = toXML(resStr);
+		String resXML = toXML(resStr, false);
 		assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
 	}
+	
+	public void testIgnoreNamespaces() throws Exception {
+        String xmlStr = "<A xmlns=\"http://foo\"><B xmlns:bar=\"http://baz\" bar:c=\"1\">2</B></A>";
+        String expStr = "{\"A\":{\"B\":{\"@c\":\"1\",\"$\":\"2\"}}}";
+        String resStr = toJSON(parse(xmlStr), true);
+        assertEquals("Unexpected result: " + resStr, expStr, resStr);
+        resStr="{\"somens.kermit\":\"the frog\"}";
+        String resXML = toXML(resStr, true);
+        xmlStr = "<kermit>the frog</kermit>";
+        assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
+    }
 
-	private String toJSON(Element srcDOM) throws Exception {
+	private String toJSON(Element srcDOM, boolean ignoreNamespaces) throws Exception {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		Configuration conf = new Configuration();
+		conf.setIgnoreNamespaces(ignoreNamespaces);
 		Map xnsToJns = new HashMap();
 		xnsToJns.put("http://somens", "somens");
 		conf.setXmlToJsonNamespaces(xnsToJns);
@@ -78,9 +90,10 @@ public class MappedDOMTest extends DOMTest {
 		return new String(baos.toByteArray());
 	}
 
-	private String toXML(String jsonStr) throws Exception {
+	private String toXML(String jsonStr, boolean ignoreNamespaces) throws Exception {
 		ByteArrayInputStream bais = new ByteArrayInputStream(jsonStr.getBytes());
 		Configuration conf = new Configuration();
+		conf.setIgnoreNamespaces(ignoreNamespaces);
 		Map xnsToJns = new HashMap();
 		xnsToJns.put("http://somens", "somens");
 		conf.setXmlToJsonNamespaces(xnsToJns);
