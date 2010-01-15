@@ -54,7 +54,7 @@ public abstract class AbstractXMLStreamReader implements XMLStreamReader {
 
     public int nextTag() throws XMLStreamException {
         int event = next();
-        while (event != START_ELEMENT && event != END_DOCUMENT) {
+        while (event != START_ELEMENT && event != END_ELEMENT) {
             event = next();
         }
         return event;
