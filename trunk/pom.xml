@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.codehaus.jettison</groupId>
   <artifactId>jettison</artifactId>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.2</version>
   <packaging>bundle</packaging>
   <name>Jettison</name>
   <description>A StAX implementation for JSON.</description>
@@ -26,9 +26,9 @@
 	</dependency>    
   </dependencies>
   <scm>
-    <connection>scm:svn:https://svn.codehaus.org/jettison/trunk</connection>
-    <developerConnection>scm:svn:https://svn.codehaus.org/jettison/trunk</developerConnection>
-    <url>https://svn.codehaus.org/jettison/trunk</url>
+    <connection>scm:svn:https://svn.codehaus.org/jettison/tags/jettison-1.2</connection>
+    <developerConnection>scm:svn:https://svn.codehaus.org/jettison/tags/jettison-1.2</developerConnection>
+    <url>https://svn.codehaus.org/jettison/tags/jettison-1.2</url>
   </scm>
   <build>
     <extensions>
