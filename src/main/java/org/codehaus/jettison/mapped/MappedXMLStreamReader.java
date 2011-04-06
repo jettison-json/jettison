@@ -48,7 +48,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
         if (top instanceof JSONObject) {
             this.node = new Node(null, rootName, (JSONObject)top, convention);
         } else if (top instanceof JSONArray && !(((JSONArray)top).length() == 1 && ((JSONArray)top).get(0).equals(""))) {
-            this.node = new Node(null, rootName, ((JSONArray)top).getJSONObject(0), convention);
+            this.node = new Node(null, rootName, obj, convention);
         } else {
             // TODO: check JSONArray and report an error
             node = new Node(rootName, convention);
@@ -124,6 +124,9 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
                 }
                 newObj = node.getArray().get(index++);
                 nextKey = node.getName().getLocalPart();
+                if (!"".equals(node.getName().getNamespaceURI())) {
+                    nextKey = this.convention.getPrefix(node.getName().getNamespaceURI()) + "." + nextKey;
+                }
                 node.setArrayIndex(index);
             } else {
                 nextKey = (String) node.getKeys().next();
