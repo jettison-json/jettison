@@ -218,6 +218,9 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals("root", reader.getName().getLocalPart());
         
         assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart());
+                
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
         assertEquals("relationships", reader.getName().getLocalPart());
 
         assertEquals(XMLStreamReader.CHARACTERS, reader.next());
@@ -258,9 +261,83 @@ public class MappedXMLStreamReaderTest extends TestCase {
         
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
         assertEquals("root", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart());
 
     }
     
+    public void testSingleArrayWithOneElement() throws Exception {
+		JSONObject obj = new JSONObject("{ \"root\": " 
+										+ " [ "
+											+ " { "
+											+ "     \"relationship\":\"friend\" , "
+											+ "     \"email\":\"f@foo.com\" "
+											+ " } "
+											+ " , "
+											+ " { "
+											+ "     \"relationship\":\"relative\" , "
+											+ "     \"email\":\"b@foo.com\" "
+											+ " } "
+										+ " ] "
+									+ " } ");
+
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        XMLStreamReader reader = new MappedXMLStreamReader(obj, con);
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("relationship", reader.getName().getLocalPart());
+
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("friend", reader.getText());
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("relationship", reader.getName().getLocalPart());
+
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("email", reader.getName().getLocalPart());
+
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("f@foo.com", reader.getText());
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("email", reader.getName().getLocalPart());
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("relationship", reader.getName().getLocalPart());
+
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("relative", reader.getText());
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("relationship", reader.getName().getLocalPart());
+
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("email", reader.getName().getLocalPart());
+
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("b@foo.com", reader.getText());
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("email", reader.getName().getLocalPart());
+                
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart());
+
+    }
+        
     public void testAttributes() throws Exception {
         JSONObject obj = 
             new JSONObject("{ " +
