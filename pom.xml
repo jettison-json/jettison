@@ -6,6 +6,13 @@
   <packaging>bundle</packaging>
   <name>Jettison</name>
   <description>A StAX implementation for JSON.</description>
+
+  <parent>
+    <groupId>org.codehaus</groupId>
+    <artifactId>codehaus-parent</artifactId>
+    <version>3</version>
+  </parent>
+  
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -99,7 +106,8 @@
       </plugin>
     </plugins>
   </reporting>
-  
+
+  <!--
   <distributionManagement>
     <repository>
       <id>codehaus.org</id>
@@ -116,5 +124,5 @@
       <url>dav:https://dav.codehaus.org/jettison/</url>
     </site>
   </distributionManagement>
-
+  -->
 </project>
