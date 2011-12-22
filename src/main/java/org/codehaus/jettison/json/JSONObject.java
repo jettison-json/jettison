@@ -16,6 +16,7 @@ limitations under the License.
 package org.codehaus.jettison.json;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -76,7 +77,7 @@ import java.util.Map;
  * @author JSON.org
  * @version 2
  */
-public class JSONObject {
+public class JSONObject implements Serializable {
 
     /**
      * JSONObject.NULL is equivalent to the value that JavaScript calls null,
