@@ -177,12 +177,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
     public String getText() {
         return currentValue;
     }
-
-    public int getTextCharacters(int arg0, char[] arg1, int arg2, int arg3) throws XMLStreamException {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
+    
 	public void setValueKey(String valueKey) {
 		this.valueKey = valueKey;
 	}
