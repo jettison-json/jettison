@@ -25,14 +25,18 @@ public class DefaultConverter implements TypeConverter {
     /* Were there a constants class, this key would live there. */
     private static final String ENFORCE_32BIT_INTEGER_KEY = "jettison.mapped.typeconverter.enforce_32bit_integer";
     public static final boolean ENFORCE_32BIT_INTEGER = Boolean.getBoolean( ENFORCE_32BIT_INTEGER_KEY );
+    private boolean enforce32BitInt = ENFORCE_32BIT_INTEGER; 
 
+   	public void setEnforce32BitInt(boolean enforce32BitInt) {
+		this.enforce32BitInt = enforce32BitInt;
+	}
 
-    public Object convertToJSONPrimitive(String text) {
+	public Object convertToJSONPrimitive(String text) {
         if(text == null) return text;
 		Object primitive = null;
 		// Attempt to convert to Integer
 		try {
-			primitive = ENFORCE_32BIT_INTEGER ? Integer.valueOf(text) : Long.valueOf(text);
+			primitive = enforce32BitInt ? Integer.valueOf(text) : Long.valueOf(text);
 		} catch (Exception e) {/**/}
 		// Attempt to convert to double
 		if (primitive == null) {

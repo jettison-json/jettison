@@ -25,10 +25,12 @@ public class DefaultTypeConverterEnforcedIntegerTest extends TestCase {
      * @see DefaultTypeConverterUnenforcedIntegerTest
      */
     public void testPrimitiveEnforcedInteger() throws Exception {
-        System.setProperty( "jettison.mapped.typeconverter.enforce_32bit_integer", "true" );
-        assertTrue( DefaultConverter.ENFORCE_32BIT_INTEGER );
+        Configuration cfg = new Configuration();
+        DefaultConverter converter = new DefaultConverter();
+        converter.setEnforce32BitInt(true);
+        cfg.setTypeConverter(converter);
         StringWriter strWriter = new StringWriter();
-        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        MappedNamespaceConvention con = new MappedNamespaceConvention(cfg);
         AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
 
         w.writeStartDocument();
