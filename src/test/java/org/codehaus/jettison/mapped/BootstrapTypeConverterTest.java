@@ -23,9 +23,10 @@ import java.io.StringWriter;
 public class BootstrapTypeConverterTest extends TestCase {
 
     public void testBootstrapConverter() throws Exception {
-        System.setProperty( "jettison.mapped.typeconverter.class", ReplacementTypeConverter.class.getName() );
+    	Configuration cfg = new Configuration();
+        cfg.setTypeConverter(new ReplacementTypeConverter());
         StringWriter strWriter = new StringWriter();
-        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        MappedNamespaceConvention con = new MappedNamespaceConvention(cfg);
         AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
         w.writeStartDocument();
         w.writeStartElement("root");
