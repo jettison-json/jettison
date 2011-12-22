@@ -92,7 +92,16 @@ public class BadgerFishXMLStreamReader extends AbstractXMLStreamReader {
     private void processKey(String nextKey, Object newObj) throws JSONException, XMLStreamException {
         if (nextKey.equals("$")) {
             event = CHARACTERS;
-            currentText = newObj == null ? null : newObj.toString();
+            if (newObj instanceof JSONArray) {
+                JSONArray arr = (JSONArray)newObj;
+                StringBuffer buf = new StringBuffer();
+                for (int i = 0; i < arr.length(); i++) {
+                    buf.append(arr.get(i));
+                }
+                currentText = buf.toString();
+            } else {
+                currentText = newObj == null ? null : newObj.toString();
+            }
             return;
         } else if (newObj instanceof JSONObject) {
             node = new Node((Node)nodes.peek(), nextKey, (JSONObject) newObj, CONVENTION);
