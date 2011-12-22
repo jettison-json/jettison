@@ -92,8 +92,7 @@ public class BadgerFishXMLStreamReader extends AbstractXMLStreamReader {
     private void processKey(String nextKey, Object newObj) throws JSONException, XMLStreamException {
         if (nextKey.equals("$")) {
             event = CHARACTERS;
-            // TODO I think there is a possibility this could be array
-            currentText = (String) newObj;
+            currentText = newObj == null ? null : newObj.toString();
             return;
         } else if (newObj instanceof JSONObject) {
             node = new Node((Node)nodes.peek(), nextKey, (JSONObject) newObj, CONVENTION);

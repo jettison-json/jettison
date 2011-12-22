@@ -490,6 +490,34 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
     }
     
+    public void testNonStringAttributes() throws Exception {
+        JSONObject obj = 
+            new JSONObject("{ " +
+                           "\"root\" : { " +
+                           "\"@att\" : 1," +
+                           "\"child1\" : \"child1\"" +
+                           "} }");
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        XMLStreamReader reader = new MappedXMLStreamReader(obj, con);
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart());
+        
+        assertEquals(1, reader.getAttributeCount());
+        assertEquals("att", reader.getAttributeLocalName(0));
+        assertEquals("", reader.getAttributeNamespace(0));
+        assertEquals("1", reader.getAttributeValue(0));
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("child1", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("child1", reader.getText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("child1", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart()); 
+    }
+    
     // issue 29
     public void testComplexElements() throws Exception {
     	JSONObject obj = new JSONObject("{\"a\":{\"o\":{\"@class\":\"string\",\"$\":\"1\"}}}");
