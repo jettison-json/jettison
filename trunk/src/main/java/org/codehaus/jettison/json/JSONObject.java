@@ -225,6 +225,16 @@ public class JSONObject implements Serializable {
         this.myHashMap = (map == null) ?
                 new LinkedHashMap() :
                 new LinkedHashMap(map);
+        // ensure a pure hierarchy of JSONObjects and JSONArrays
+        for (Object k : myHashMap.keySet()) {
+            Object v = myHashMap.get(k);
+            if (v instanceof Collection) {
+                myHashMap.put(k, new JSONArray((Collection) v));
+            }
+            if (v instanceof Map) {
+                myHashMap.put(k, new JSONObject((Map) v));
+            }
+        }                
     }
 
     
