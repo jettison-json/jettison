@@ -91,7 +91,8 @@ public class Node {
         while (--index >= 0) {
             itr.next();
         }
-        return itr.next().toString();
+        Object ns = itr.next();
+        return ns == null ? "" : ns.toString();
     }
 
     public String getNamespacePrefix(String URI) {
