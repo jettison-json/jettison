@@ -28,6 +28,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
+	private static final String MIXED_CONTENT_VALUE_KEY = "$";
 	private MappedNamespaceConvention convention;
 	protected Writer writer;
 	private NamespaceContext namespaceContext;
@@ -35,7 +36,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	 * What key is used for text content, when an element has both text and
 	 * other content?
 	 */
-	private String valueKey = "$";
+	private String valueKey = MIXED_CONTENT_VALUE_KEY;
 	/** Stack of open elements. */
 	private Stack<JSONProperty> stack = new Stack<JSONProperty>();
 	/** Element currently being processed. */
@@ -87,7 +88,14 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 			JSONObject jo = new JSONObject();
 			try {
 				// only add the text property if it's non-empty
-				if (object.length() > 0) jo.put(valueKey, getValue());
+				String strValue = getValue().toString();
+				if (MIXED_CONTENT_VALUE_KEY == valueKey) {
+					strValue = strValue.trim();
+				}
+				if (strValue.length() > 0) {
+					jo.put(valueKey, strValue);
+				}
+				
 				Object value = property.getValue();
 				if(add && value instanceof String) {
 				    value = convention.convertToJSONPrimitive((String)value);
@@ -119,12 +127,13 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	        return object;
 	    }
 	    public void addText(String text) {
+	    	if (MIXED_CONTENT_VALUE_KEY == valueKey) {
+	    		text = text.trim();
+	    		if (text.length() == 0) {
+	    			return;
+	    		}
+	    	}
 	        try {
-	            // append to existing text
-	            // FIXME: should we store text segments in an array
-	            // when they are separated by child elements? That
-	            // would be an easy feature to add but we can worry
-	            // about that later.
 	            text = object.getString(valueKey) + text;
 	        } catch (JSONException e) {
 	            // no existing text, that's fine
