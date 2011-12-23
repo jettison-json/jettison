@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ListIterator;
 import java.util.Map;
 
 /**
@@ -147,6 +148,16 @@ public class JSONArray implements Serializable {
         this.myArrayList = (collection == null) ?
                 new ArrayList() :
                 new ArrayList(collection);
+        // ensure a pure hierarchy of JSONObjects and JSONArrays
+        for (ListIterator iter = myArrayList.listIterator(); iter.hasNext();) {
+             Object e = iter.next();
+             if (e instanceof Collection) {
+                 iter.set(new JSONArray((Collection) e));
+             }
+             if (e instanceof Map) {
+                 iter.set(new JSONObject((Map) e));
+             }
+        }        
     }
 
 
