@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -193,7 +194,7 @@ public class JSONObject implements Serializable {
             } else if (c != ':') {
                 throw x.syntaxError("Expected a ':' after a key");
             }
-            put(key, x.nextValue());
+            doPut(key, x.nextValue(), true);
 
             /*
              * Pairs are separated by ','. We will also tolerate ';'.
@@ -877,12 +878,29 @@ public class JSONObject implements Serializable {
      *  or if the key is null.
      */
     public JSONObject put(String key, Object value) throws JSONException {
+        return doPut(key, value, false);
+    }
+    
+    private JSONObject doPut(String key, Object value, boolean checkExistingValue) 
+    		throws JSONException {
         if (key == null) {
             throw new JSONException("Null key.");
         }
         if (value != null) {
             testValidity(value);
-            this.myHashMap.put(key, value);
+            if (!checkExistingValue || !this.myHashMap.containsKey(key)) {
+                this.myHashMap.put(key, value);
+            } else {
+            	JSONArray array = null;
+            	Object existingValue = this.myHashMap.get(key);
+            	if (existingValue instanceof JSONArray) {
+            		array = ((JSONArray)existingValue);
+            	} else {
+            		array = new JSONArray(Collections.singletonList(existingValue));
+            		this.myHashMap.put(key, array);
+            	}
+            	array.put(value);
+            }
         } else {
             remove(key);
         }

@@ -79,6 +79,36 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals("root", reader.getName().getLocalPart()); 
     }
     
+    public void testMultipleChildrenWithSameName() throws Exception {
+        JSONObject obj = 
+            new JSONObject("{ " +
+                           "\"root\" : { " +
+                           "\"child1\" : \"child1\"," +
+                           "\"child1\" : \"child11\"" +
+                           "} }");
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        XMLStreamReader reader = new MappedXMLStreamReader(obj, con);
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("child1", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("child1", reader.getText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("child1", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("child1", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("child11", reader.getText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("child1", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart()); 
+    }
+    
     public void testNestedArrayOfChildren() throws Exception {
         JSONObject obj = 
             new JSONObject("{" +
