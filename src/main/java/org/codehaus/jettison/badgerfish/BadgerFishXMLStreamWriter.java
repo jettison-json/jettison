@@ -30,20 +30,34 @@ import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.util.FastStack;
 
 public class BadgerFishXMLStreamWriter extends AbstractXMLStreamWriter {
-    JSONObject root;
-    JSONObject currentNode;
-    Writer writer;
-    FastStack nodes = new FastStack();
-    String currentKey;
-    int depth = 0;
-    NamespaceContext ctx = new XsonNamespaceContext(nodes);
+    private JSONObject root;
+    private JSONObject currentNode;
+    private Writer writer;
+    private FastStack nodes;
+    private String currentKey;
+    private NamespaceContext ctx;
     
     public BadgerFishXMLStreamWriter(Writer writer) {
-        super();
-        currentNode = new JSONObject();
-        root = currentNode;
-        this.writer = writer;
+        this(writer, new JSONObject());
     }
+    
+    public BadgerFishXMLStreamWriter(Writer writer, 
+    		                         JSONObject currentNode) {
+    	this(writer, new JSONObject(), new FastStack());
+    }
+    
+    public BadgerFishXMLStreamWriter(Writer writer, 
+                                     JSONObject currentNode,
+                                     FastStack nodes) {
+		super();
+		this.currentNode = currentNode;
+		this.root = currentNode;
+		this.writer = writer;
+		this.nodes = nodes;
+		this.ctx = new XsonNamespaceContext(nodes);
+		
+	}
+        
 
     public void close() throws XMLStreamException {
     }
@@ -78,7 +92,7 @@ public class BadgerFishXMLStreamWriter extends AbstractXMLStreamWriter {
     public void writeAttribute(String p, String ns, String local, String value) throws XMLStreamException {
         String key = createAttributeKey(p, ns, local);
         try {
-            currentNode.put(key, value);
+            getCurrentNode().put(key, value);
         } catch (JSONException e) {
             throw new XMLStreamException(e);
         }
@@ -106,16 +120,16 @@ public class BadgerFishXMLStreamWriter extends AbstractXMLStreamWriter {
 
     public void writeCharacters(String text) throws XMLStreamException {
         try {
-            Object o = currentNode.opt("$");
+            Object o = getCurrentNode().opt("$");
             if (o instanceof JSONArray) {
                 ((JSONArray) o).put(text);
             } else if (o instanceof String) {
                 JSONArray arr = new JSONArray();
                 arr.put(o);
                 arr.put(text);
-                currentNode.put("$", arr);
+                getCurrentNode().put("$", arr);
             } else {
-                currentNode.put("$", text);
+                getCurrentNode().put("$", text);
             }
         } catch (JSONException e) {
             throw new XMLStreamException(e);
@@ -127,11 +141,10 @@ public class BadgerFishXMLStreamWriter extends AbstractXMLStreamWriter {
     }
 
     public void writeEndElement() throws XMLStreamException {
-        if (nodes.size() > 1) {
-            nodes.pop();
-            currentNode = ((Node) nodes.peek()).getObject();
+        if (getNodes().size() > 1) {
+            getNodes().pop();
+            currentNode = ((Node) getNodes().peek()).getObject();
         }
-        depth--;
     }
 
     public void writeEntityRef(String arg0) throws XMLStreamException {
@@ -140,12 +153,12 @@ public class BadgerFishXMLStreamWriter extends AbstractXMLStreamWriter {
     }
 
     public void writeNamespace(String prefix, String ns) throws XMLStreamException {
-        ((Node) nodes.peek()).setNamespace(prefix, ns);
+        ((Node) getNodes().peek()).setNamespace(prefix, ns);
         try {
-            JSONObject nsObj = currentNode.optJSONObject("@xmlns");
+            JSONObject nsObj = getCurrentNode().optJSONObject("@xmlns");
             if (nsObj == null) {
                 nsObj = new JSONObject();
-                currentNode.put("@xmlns", nsObj);
+                getCurrentNode().put("@xmlns", nsObj);
             }
             if (prefix.equals("")) {
                 prefix = "$";
@@ -182,14 +195,12 @@ public class BadgerFishXMLStreamWriter extends AbstractXMLStreamWriter {
     }
 
     public void writeStartElement(String prefix, String local, String ns) throws XMLStreamException {
-        depth++;
-        
         try {
 
             // TODO ns
             currentKey = createKey(prefix, ns, local);
             
-            Object existing = currentNode.opt(currentKey);
+            Object existing = getCurrentNode().opt(currentKey);
             if (existing instanceof JSONObject) {
                 JSONArray array = new JSONArray();
                 array.put(existing);
@@ -197,26 +208,34 @@ public class BadgerFishXMLStreamWriter extends AbstractXMLStreamWriter {
                 JSONObject newCurrent = new JSONObject();
                 array.put(newCurrent);
                 
-                currentNode.put(currentKey, array);
+                getCurrentNode().put(currentKey, array);
                 
                 currentNode = newCurrent;
                 Node node = new Node(currentNode);
-                nodes.push(node);
+                getNodes().push(node);
             } else {
                 JSONObject newCurrent = new JSONObject();
                 
                 if (existing instanceof JSONArray) {
                     ((JSONArray) existing).put(newCurrent);
                 } else {
-                    currentNode.put(currentKey, newCurrent);
+                    getCurrentNode().put(currentKey, newCurrent);
                 }
                 
                 currentNode = newCurrent;
                 Node node = new Node(currentNode);
-                nodes.push(node);
+                getNodes().push(node);
             }
         } catch (JSONException e) {
             throw new XMLStreamException("Could not write start element!", e);
         }
+    }
+    
+    protected JSONObject getCurrentNode() {
+    	return currentNode;
+    }
+    
+    protected FastStack getNodes() {
+    	return nodes;
     }
 }
