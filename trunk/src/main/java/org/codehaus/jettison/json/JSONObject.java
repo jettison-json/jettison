@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.codehaus.jettison.JSONSequenceTooLargeException;
+
 /**
  * A JSONObject is an unordered collection of name/value pairs. Its
  * external form is a string wrapped in curly braces with colons between the
@@ -194,7 +196,7 @@ public class JSONObject implements Serializable {
             } else if (c != ':') {
                 throw x.syntaxError("Expected a ':' after a key");
             }
-            doPut(key, x.nextValue(), true);
+            doPut(key, x.nextValue(), x.getThreshold(), true);
 
             /*
              * Pairs are separated by ','. We will also tolerate ';'.
@@ -878,10 +880,13 @@ public class JSONObject implements Serializable {
      *  or if the key is null.
      */
     public JSONObject put(String key, Object value) throws JSONException {
-        return doPut(key, value, false);
+        return doPut(key, value, -1, false);
     }
     
-    private JSONObject doPut(String key, Object value, boolean checkExistingValue) 
+    protected JSONObject doPut(String key, 
+    		                   Object value,
+    		                   int threshold,
+    		                   boolean checkExistingValue) 
     		throws JSONException {
         if (key == null) {
             throw new JSONException("Null key.");
@@ -890,6 +895,9 @@ public class JSONObject implements Serializable {
             testValidity(value);
             if (!checkExistingValue || !this.myHashMap.containsKey(key)) {
                 this.myHashMap.put(key, value);
+                if (threshold > 0 && myHashMap.size() > threshold) {
+                	throw new JSONSequenceTooLargeException("Threshold has been exceeded");
+                }
             } else {
             	JSONArray array = null;
             	Object existingValue = this.myHashMap.get(key);

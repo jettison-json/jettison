@@ -40,10 +40,14 @@ public class MappedXMLInputFactory extends AbstractXMLInputFactory {
     
     public XMLStreamReader createXMLStreamReader(JSONTokener tokener) throws XMLStreamException {
         try {
-            JSONObject root = new JSONObject(tokener);
+            JSONObject root = createJSONObject(tokener);
             return new MappedXMLStreamReader(root, convention);
         } catch (JSONException e) {
             throw new XMLStreamException(e);
         }
+    }
+    
+    protected JSONObject createJSONObject(JSONTokener tokener) throws JSONException {
+    	return new JSONObject(tokener);
     }
 }
