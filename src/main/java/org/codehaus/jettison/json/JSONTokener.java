@@ -36,6 +36,8 @@ public class JSONTokener {
     private String mySource;
 
 
+    private int threshold = -1;
+    
     /**
      * Construct a JSONTokener from a string.
      *
@@ -45,7 +47,22 @@ public class JSONTokener {
         this.myIndex = 0;
         this.mySource = s;
     }
+    
+    /**
+     * Construct a JSONTokener from a string.
+     *
+     * @param s     A source string.
+     * @param t     A source threshold.
+     */
+    public JSONTokener(String s, int threshold) {
+        this.myIndex = 0;
+        this.mySource = s;
+        this.threshold = threshold;
+    }
 
+    public int getThreshold() {
+    	return threshold;
+    }
 
     /**
      * Back up one character. This provides a sort of lookahead capability,
@@ -307,10 +324,10 @@ public class JSONTokener {
                 return nextString(c);
             case '{':
                 back();
-                return new JSONObject(this);
+                return newJSONObject();
             case '[':
                 back();
-                return new JSONArray(this);
+                return newJSONArray();
         }
 
         /*
@@ -391,7 +408,14 @@ public class JSONTokener {
         return s;
     }
 
-
+    protected JSONObject newJSONObject() throws JSONException {
+    	return new JSONObject(this);
+    }
+    
+    protected JSONArray newJSONArray() throws JSONException {
+    	return new JSONArray(this);
+    }
+    
     /**
      * Skip characters until the next character is the requested character.
      * If the requested character is not found, no characters are skipped.

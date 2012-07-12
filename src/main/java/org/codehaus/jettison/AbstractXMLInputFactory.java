@@ -33,8 +33,18 @@ import org.codehaus.jettison.json.JSONTokener;
 
 public abstract class AbstractXMLInputFactory extends XMLInputFactory {
 
-    final static int INPUT_BUF_SIZE = 512;
+    private final static int INPUT_BUF_SIZE = 1024;
 
+    private int bufSize = INPUT_BUF_SIZE;
+    
+    protected AbstractXMLInputFactory() {
+    	
+    }
+    
+    protected AbstractXMLInputFactory(int bufSize) {
+    	this.bufSize = bufSize;
+    }
+    
     public XMLEventReader createFilteredReader(XMLEventReader arg0, EventFilter arg1) throws XMLStreamException {
         // TODO Auto-generated method stub
         return null;
@@ -103,12 +113,16 @@ public abstract class AbstractXMLInputFactory extends XMLInputFactory {
         }
         try {
             String doc = readAll(is, charset);
-            return createXMLStreamReader(new JSONTokener(doc));
+            return createXMLStreamReader(createNewJSONTokener(doc));
         } catch (IOException e) {
             throw new XMLStreamException(e);
         }
     }
 
+    protected JSONTokener createNewJSONTokener(String doc) {
+    	return new JSONTokener(doc);
+    }
+    
     /**
      * This helper method tries to read and decode input efficiently
      * into a result String.
@@ -116,7 +130,7 @@ public abstract class AbstractXMLInputFactory extends XMLInputFactory {
     private String readAll(InputStream in, String encoding)
         throws IOException
     {
-        final byte[] buffer = new byte[INPUT_BUF_SIZE];
+        final byte[] buffer = new byte[bufSize];
         ByteArrayOutputStream bos = null;
         while (true) {
             int count = in.read(buffer);
@@ -131,9 +145,9 @@ public abstract class AbstractXMLInputFactory extends XMLInputFactory {
                 int cap;
                 if (count < 64) {
                     cap = 64;
-                } else if (count == INPUT_BUF_SIZE) {
+                } else if (count == bufSize) {
                     // Let's assume there's more coming, not just this chunk
-                    cap = INPUT_BUF_SIZE * 4;
+                    cap = bufSize * 4;
                 } else {
                     cap = count;
                 }
@@ -158,7 +172,7 @@ public abstract class AbstractXMLInputFactory extends XMLInputFactory {
         throws IOException
     {
         // Let's see if it's a small doc, can read it all in a single buffer
-        char[] buf = new char[INPUT_BUF_SIZE];
+        char[] buf = new char[bufSize];
         int len = 0;
 
         do {
@@ -172,7 +186,7 @@ public abstract class AbstractXMLInputFactory extends XMLInputFactory {
         /* Filled the read buffer, need to coalesce. Let's assume there'll
          * be a bit more data coming
          */
-        CharArrayWriter wrt = new CharArrayWriter(INPUT_BUF_SIZE * 4);
+        CharArrayWriter wrt = new CharArrayWriter(bufSize * 4);
         wrt.write(buf, 0, len);
 
         while ((len = r.read(buf)) != -1) {
