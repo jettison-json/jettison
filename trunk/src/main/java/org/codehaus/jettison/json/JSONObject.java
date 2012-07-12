@@ -895,7 +895,7 @@ public class JSONObject implements Serializable {
             testValidity(value);
             if (!checkExistingValue || !this.myHashMap.containsKey(key)) {
                 this.myHashMap.put(key, value);
-                if (threshold > 0 && myHashMap.size() > threshold) {
+                if (threshold > 0 && myHashMap.size() >= threshold) {
                 	throw new JSONSequenceTooLargeException("Threshold has been exceeded");
                 }
             } else {
