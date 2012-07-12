@@ -88,6 +88,13 @@ public class JSONArray implements Serializable {
     public JSONArray() {
         this.myArrayList = new ArrayList();
     }
+    
+    /**
+     * Construct an empty JSONArray with a given capacity.
+     */
+    public JSONArray(int capacity) {
+        this.myArrayList = new ArrayList(capacity);
+    }
 
     /**
      * Construct a JSONArray from a JSONTokener.
