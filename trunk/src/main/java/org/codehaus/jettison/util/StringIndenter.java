@@ -278,7 +278,7 @@ public class StringIndenter {
    * @return the string
    */
   private static String repeat(String theString, int times) {
-    StringBuffer result = new StringBuffer();
+    StringBuilder result = new StringBuilder();
     //loop through, keep appending
     for (int i = 0; i < times; i++) {
       result.append(theString);

@@ -94,7 +94,7 @@ public class BadgerFishXMLStreamReader extends AbstractXMLStreamReader {
             event = CHARACTERS;
             if (newObj instanceof JSONArray) {
                 JSONArray arr = (JSONArray)newObj;
-                StringBuffer buf = new StringBuffer();
+                StringBuilder buf = new StringBuilder();
                 for (int i = 0; i < arr.length(); i++) {
                     buf.append(arr.get(i));
                 }
