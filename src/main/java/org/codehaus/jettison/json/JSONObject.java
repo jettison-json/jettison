@@ -833,7 +833,7 @@ public class JSONObject implements Serializable {
      * @throws JSONException If the key is null.
      */
     public JSONObject put(String key, int value) throws JSONException {
-        put(key, new Integer(value));
+        put(key, Integer.valueOf(value));
         return this;
     }
 

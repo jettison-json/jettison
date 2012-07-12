@@ -573,7 +573,7 @@ public class JSONArray implements Serializable {
      * @return this.
      */
     public JSONArray put(int value) {
-        put(new Integer(value));
+        put(Integer.valueOf(value));
         return this;
     }
 
@@ -671,7 +671,7 @@ public class JSONArray implements Serializable {
      * @throws JSONException If the index is negative.
      */
     public JSONArray put(int index, int value) throws JSONException {
-        put(index, new Integer(value));
+        put(index, Integer.valueOf(value));
         return this;
     }
 

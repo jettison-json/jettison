@@ -361,14 +361,14 @@ public class JSONTokener {
                 if (s.length() > 2 &&
                         (s.charAt(1) == 'x' || s.charAt(1) == 'X')) {
                     try {
-                        return new Integer(Integer.parseInt(s.substring(2),
+                        return Integer.valueOf(Integer.parseInt(s.substring(2),
                                 16));
                     } catch (Exception e) {
                         /* Ignore the error */
                     }
                 } else {
                     try {
-                        return new Integer(Integer.parseInt(s, 8));
+                        return Integer.valueOf(Integer.parseInt(s, 8));
                     } catch (Exception e) {
                         /* Ignore the error */
                     }
