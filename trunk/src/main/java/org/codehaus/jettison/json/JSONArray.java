@@ -620,6 +620,11 @@ public class JSONArray implements Serializable {
         this.myArrayList.add(value);
         return this;
     }
+    
+    public JSONArray remove(Object value) {
+        this.myArrayList.remove(value);
+        return this;
+    }
 
 
     /**
