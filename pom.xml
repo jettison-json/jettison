@@ -6,7 +6,12 @@
   <packaging>bundle</packaging>
   <name>Jettison</name>
   <description>A StAX implementation for JSON.</description>
-
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+    </license>
+  </licenses>
   <parent>
     <groupId>org.codehaus</groupId>
     <artifactId>codehaus-parent</artifactId>
