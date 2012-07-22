@@ -230,7 +230,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         if ( !this.supressAtAttributes ) {
             builder.append( attributeKey );
         }
-        String jns = getJSONNamespace( ns );
+        String jns = getJSONNamespace(p, ns);
         //        String jns = getPrefix(ns);
         if ( jns != null && jns.length() != 0 ) {
             builder.append( jns ).append( '.' );
@@ -238,23 +238,25 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         return builder.append( local ).toString();
     }
 
-    private String getJSONNamespace( String ns ) {
+    private String getJSONNamespace(String providedPrefix, String ns ) {
 
         if ( ns == null || ns.length() == 0 || ignoreNamespaces )
             return "";
 
         String jns = (String) xnsToJns.get( ns );
+        if (jns == null && providedPrefix != null && providedPrefix.length() > 0) {
+        	jns = providedPrefix;
+        }
         if ( jns == null ) {
             throw new IllegalStateException( "Invalid JSON namespace: " + ns );
         }
         return jns;
-        //return getPrefix(ns);
     }
 
     public String createKey( String p, String ns, String local ) {
 
         StringBuilder builder = new StringBuilder();
-        String jns = getJSONNamespace( ns );
+        String jns = getJSONNamespace(p, ns);
         //        String jns = getPrefix(ns);
         if ( jns != null && jns.length() != 0 ) {
             builder.append( jns ).append( '.' );
