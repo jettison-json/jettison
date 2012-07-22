@@ -15,6 +15,7 @@
  */
 package org.codehaus.jettison.badgerfish;
 
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.TestCase;
@@ -239,5 +240,18 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
         assertEquals("alice", reader.getName().getLocalPart());
     }
-    
+
+    public void testElementWithInvalidValue() throws Exception {
+        JSONObject obj = new JSONObject("{ \"alice\": { \"foo\" : \"bob\" } }");
+        AbstractXMLStreamReader reader = new BadgerFishXMLStreamReader(obj);
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("alice", reader.getName().getLocalPart());
+        
+        try {
+        	reader.next();
+        	fail("Must cause exception");
+        } catch (XMLStreamException e) {
+        }
+    }
 }

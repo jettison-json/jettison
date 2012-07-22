@@ -123,6 +123,9 @@ public class BadgerFishXMLStreamReader extends AbstractXMLStreamReader {
             
             processKey(nextKey, arr.get(0));
         }
+        else {
+            throw new JSONException("Element [" + nextKey + "] did not contain object, array or text content.");
+        }        
     }
 
     public void close() throws XMLStreamException {
