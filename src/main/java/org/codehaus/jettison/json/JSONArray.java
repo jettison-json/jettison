@@ -841,6 +841,19 @@ public class JSONArray implements Serializable {
         return sb.toString();
     }
 
+    @Override
+    public int hashCode() {
+    	return myArrayList.hashCode();
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+    	if (obj instanceof JSONArray) {
+    		return myArrayList.equals(((JSONArray)obj).myArrayList);
+    	} else {
+    		return false;
+    	}
+    }
 
     /**
      * Write the contents of the JSONArray as JSON text to a writer.
