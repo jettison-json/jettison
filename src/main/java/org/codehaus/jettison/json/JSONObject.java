@@ -1048,6 +1048,20 @@ public class JSONObject implements Serializable {
         return ja;
     }
 
+    @Override
+    public int hashCode() {
+    	return myHashMap.hashCode();
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+    	if (obj instanceof JSONObject) {
+    		return myHashMap.equals(((JSONObject)obj).myHashMap);
+    	} else {
+    		return false;
+    	}
+    }
+    
     /**
      * Make a JSON text of this JSONObject. For compactness, no whitespace
      * is added. If this would not result in a syntactically correct JSON text,
