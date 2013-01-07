@@ -402,8 +402,51 @@ public class MappedXMLStreamWriterTest extends TestCase {
         
         w.close();
         strWriter.close();
-        System.out.println(strWriter.toString());
         assertEquals("{\"SearchResult\":{\"results\":[{\"field\":[1,2]},{\"field\":[1,2]}],\"total\":2}}", 
+        	strWriter.toString());
+    }
+    
+    public void testMixedArrayAndJSONObject2() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        w.writeStartDocument();
+        w.writeStartElement("TestResult");
+        w.writeStartElement("company");
+        w.writeStartElement("name");
+        w.writeCharacters("Acme");
+        w.writeEndElement();
+        w.writeStartElement("phone");
+        w.writeStartElement("type");
+        w.writeCharacters("main");
+        w.writeEndElement();
+        w.writeStartElement("number");
+        w.writeCharacters("123");
+        w.writeEndElement();
+        w.writeEndElement();
+        
+        w.writeStartElement("ceo");
+        w.writeStartElement("firstname");
+        w.writeCharacters("John");
+        w.writeEndElement();
+        w.writeStartElement("phone");
+        w.writeCharacters("567");
+        w.writeEndElement();
+        w.writeEndElement();
+        
+        w.writeStartElement("address");
+        w.writeCharacters("Main st");
+        w.writeEndElement();
+        
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        assertEquals("{\"TestResult\":{\"company\":{\"name\":\"Acme\",\"phone\":"
+        		+ "{\"type\":\"main\",\"number\":123},\"ceo\":{\"firstname\":\"John\","
+        		+ "\"phone\":567},\"address\":\"Main st\"}}}", 
         	strWriter.toString());
     }
     
