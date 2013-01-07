@@ -25,11 +25,17 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.TestCase;
 
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.codehaus.jettison.json.JSONTokener;
 
 public class MappedXMLStreamReaderTest extends TestCase {
     public void testStreamReader() throws Exception {
@@ -873,6 +879,86 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals("test", reader.getElementText());
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
     }
+    // Issue 59
+    public void testListOfObject() throws Exception {
+        String json = "{\"folders\":{" +
+                        "\"folder\" : [" +
+                            "{" +
+                                "\"name\":\"folder1\"," +
+                                "\"subfolder\":" +
+                                "[" +
+                                    "{\"name\":\"subfolder1\"}," +
+                                    "{\"name\":\"subfolder2\"}" +
+                                "]," +
+                                "\"file\":" +
+                                "[" +
+                                    "{\"name\":\"file1\"}," +
+                                    "{\"name\":\"file2\"}" +
+                                "]" +                               
+                            "}," +
+                        "]" +
+                       "}}";
+        // Expected XML
+        String expXml = "<folders>" +
+                            "<folder>" +
+                                "<name>folder1</name>" +
+                                "<subfolder>" +
+                                    "<name>subfolder1</name>" +
+                                "</subfolder>" +
+                                "<subfolder>" +
+                                    "<name>subfolder2</name>" +
+                                "</subfolder>" +
+                                "<file>" +
+                                    "<name>file1</name>" +
+                                "</file>" +
+                                "<file>" +
+                                    "<name>file2</name>" +
+                                "</file>" +
+                            "</folder>" +
+                        "</folders>";
 
+        doTestEvents(json, expXml);
+    }
+
+    private void doTestEvents(String json, String expXml) throws JSONException, XMLStreamException,
+            FactoryConfigurationError {
+        JSONObject obj = new JSONObject(new JSONTokener(json));
+        Configuration config = new Configuration();
+
+        
+        ArrayList refEvents = new ArrayList();
+
+        // reference reader
+        XMLStreamReader refReader = XMLInputFactory.newInstance().createXMLStreamReader(new StringReader(expXml));
+        while (refReader.hasNext()) {
+            refEvents.add(Integer.valueOf(refReader.next()));            
+        }
+        refReader.close();
+
+        // tested reader
+        MappedXMLStreamReader mpdReader = new MappedXMLStreamReader(obj, new MappedNamespaceConvention(config));
+
+        ArrayList mpdEvents = new ArrayList();        
+        StringBuilder sb = new StringBuilder();
+        while (mpdReader.hasNext()) {
+            int eventType = mpdReader.next();
+        
+            mpdEvents.add(Integer.valueOf(eventType));
+            
+            if (eventType == XMLStreamConstants.START_ELEMENT) {
+                sb.append("<").append(mpdReader.getName()).append(">");
+            } else if (eventType == XMLStreamConstants.CHARACTERS) {
+                sb.append(mpdReader.getTextCharacters());
+            } else if (eventType == XMLStreamConstants.END_ELEMENT) {
+                sb.append("</").append(mpdReader.getName()).append(">");                
+            }
+        }
+        mpdReader.close();
+
+        String mpdXml = sb.toString();
+        
+        assertEquals(expXml, mpdXml);
+        assertEquals(refEvents, mpdEvents);
+    }
     
 }
