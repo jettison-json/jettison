@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
@@ -40,8 +41,8 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
     private boolean supressAtAttributes;
     private boolean ignoreNamespaces;
     private String attributeKey = "@";
-    
     private TypeConverter typeConverter;
+    private Set primitiveArrayKeys;
     
     public MappedNamespaceConvention() {
         super();
@@ -54,7 +55,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         this.supressAtAttributes = config.isSupressAtAttributes();
         this.ignoreNamespaces = config.isIgnoreNamespaces();
         this.attributeKey = config.getAttributeKey();
-
+        this.primitiveArrayKeys = config.getPrimitiveArrayKeys();
         
         for (Iterator itr = xnsToJns.entrySet().iterator(); itr.hasNext();) {
             Map.Entry entry = (Map.Entry) itr.next();
@@ -284,4 +285,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         return typeConverter.convertToJSONPrimitive( text );
     }
 
+    public Set getPrimitiveArrayKeys() {
+		return primitiveArrayKeys;
+	}
 }
