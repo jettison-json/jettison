@@ -209,16 +209,23 @@ public abstract class AbstractXMLStreamReader implements XMLStreamReader {
     }
 
     public char[] getTextCharacters() {
-        return getText().toCharArray();
+    	String text = getText();
+        return text != null ? text.toCharArray() : new char[]{};
     }
 
     public int getTextCharacters(int sourceStart, char[] target, int targetStart, int length) throws XMLStreamException {
-        getText().getChars(sourceStart,sourceStart+length,target,targetStart);
-        return length;
+    	String text = getText();
+    	if (text != null) {
+            text.getChars(sourceStart,sourceStart+length,target,targetStart);
+            return length;
+    	} else {
+    		return 0;
+    	}
     }
 
     public int getTextLength() {
-        return getText().length();
+    	String text = getText();
+        return text != null ? text.length() : 0;
     }
 
     public int getTextStart() {
