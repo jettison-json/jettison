@@ -17,6 +17,7 @@ package org.codehaus.jettison;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.xml.namespace.QName;
@@ -49,8 +50,8 @@ public class Node {
          * But there are some funky dependencies within unit tests
          * that will fail right now, need to investigate that bit more
          */
-        this.namespaces = new HashMap();
-        this.attributes = new HashMap();
+        this.namespaces = new LinkedHashMap();
+        this.attributes = new LinkedHashMap();
         
         con.processAttributesAndNamespaces(this, object);
         
