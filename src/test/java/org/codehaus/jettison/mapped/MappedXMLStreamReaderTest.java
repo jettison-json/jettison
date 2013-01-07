@@ -919,7 +919,7 @@ public class MappedXMLStreamReaderTest extends TestCase {
 
         doTestEvents(json, expXml);
     }
-
+    
     private void doTestEvents(String json, String expXml) throws JSONException, XMLStreamException,
             FactoryConfigurationError {
         JSONObject obj = new JSONObject(new JSONTokener(json));

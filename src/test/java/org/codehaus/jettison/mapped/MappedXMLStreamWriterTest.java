@@ -369,6 +369,44 @@ public class MappedXMLStreamWriterTest extends TestCase {
         assertEquals("{\"root\":{\"child\":[\"first\",\"second\",\"third\"]},\"other\":\"test\"}", strWriter.toString());
     }
     
+    public void testMixedArrayAndJSONObject() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        w.serializeAsArray("results");
+        w.writeStartDocument();
+        w.writeStartElement("SearchResult");
+        w.writeStartElement("results");
+        w.writeStartElement("field");
+        w.writeCharacters("1");
+        w.writeEndElement();
+        w.writeStartElement("field");
+        w.writeCharacters("2");
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeStartElement("results");
+        w.writeStartElement("field");
+        w.writeCharacters("1");
+        w.writeEndElement();
+        w.writeStartElement("field");
+        w.writeCharacters("2");
+        w.writeEndElement();
+        w.writeEndElement();
+        
+        w.writeStartElement("total");
+        w.writeCharacters("2");
+        w.writeEndElement();
+        
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        System.out.println(strWriter.toString());
+        assertEquals("{\"SearchResult\":{\"results\":[{\"field\":[1,2]},{\"field\":[1,2]}],\"total\":2}}", 
+        	strWriter.toString());
+    }
+    
     public void testComplexArrayOfChildren() throws Exception {
         StringWriter strWriter = new StringWriter();
         MappedNamespaceConvention con = new MappedNamespaceConvention();
