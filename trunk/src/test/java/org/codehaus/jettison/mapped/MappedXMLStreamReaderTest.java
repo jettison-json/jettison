@@ -26,6 +26,7 @@ import java.util.Set;
 
 import javax.xml.namespace.QName;
 import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.stream.Location;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -393,6 +394,21 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
         assertEquals("theBook", reader.getName().getLocalPart());
     	
+    }
+    
+    public void testExceptionLocation() throws Exception {
+    	String str = "{\"junk";
+    	Configuration config = new Configuration();
+    	MappedXMLInputFactory factory = new MappedXMLInputFactory(config);
+    	try {
+    	    factory.createXMLStreamReader(new StringReader(str));
+    	    fail("Exception expected");
+    	} catch (XMLStreamException ex) {
+    		Location loc = ex.getLocation();
+    		assertNotNull(loc);
+    		assertEquals(0, loc.getLineNumber());
+    		assertEquals(6, loc.getColumnNumber());
+    	}
     }
     
     public void testArrayWithNotSameJSONObjects() throws Exception {

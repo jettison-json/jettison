@@ -17,6 +17,7 @@ package org.codehaus.jettison.mapped;
 
 import java.util.Map;
 
+import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
@@ -43,11 +44,50 @@ public class MappedXMLInputFactory extends AbstractXMLInputFactory {
             JSONObject root = createJSONObject(tokener);
             return new MappedXMLStreamReader(root, convention);
         } catch (JSONException e) {
-            throw new XMLStreamException(e);
+        	int column = e.getColumn();
+        	if (column == -1) {
+        		throw new XMLStreamException(e);
+        	} else {
+                throw new XMLStreamException(e.getMessage(),
+                		                     new ErrorLocation(e.getLine(), e.getColumn()),
+                		                     e);
+        	}
         }
     }
     
     protected JSONObject createJSONObject(JSONTokener tokener) throws JSONException {
     	return new JSONObject(tokener);
+    }
+    
+    private static class ErrorLocation implements Location {
+
+    	private int line = -1;
+        private int column = -1;
+    	
+        public ErrorLocation(int line, int column) {
+            this.line = line;
+            this.column = column;
+        }
+        
+		public int getCharacterOffset() {
+			return 0;
+		}
+
+		public int getColumnNumber() {
+			return column;
+		}
+
+		public int getLineNumber() {
+			return line;
+		}
+
+		public String getPublicId() {
+			return null;
+		}
+
+		public String getSystemId() {
+			return null;
+		}
+    	
     }
 }
