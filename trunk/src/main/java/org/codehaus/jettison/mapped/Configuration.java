@@ -15,9 +15,11 @@
  */
 package org.codehaus.jettison.mapped;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Configuration {
     /* Were there a constants class, this key would live there. */
@@ -73,6 +75,7 @@ public class Configuration {
     private String attributeKey = "@";
     private boolean implicitCollections = false;
     private boolean ignoreNamespaces;
+    private Set primitiveArrayKeys = Collections.EMPTY_SET;
     
     private TypeConverter typeConverter = converterFactory.newDefaultConverterInstance();
 
@@ -150,8 +153,16 @@ public class Configuration {
 		this.implicitCollections = implicitCollections;
 	}
 
-    static TypeConverter newDefaultConverterInstance() {
+	static TypeConverter newDefaultConverterInstance() {
         return converterFactory.newDefaultConverterInstance();
     }
+
+	public Set getPrimitiveArrayKeys() {
+		return primitiveArrayKeys;
+	}
+
+	public void setPrimitiveArrayKeys(Set primitiveArrayKeys) {
+		this.primitiveArrayKeys = primitiveArrayKeys;
+	}
 
 }

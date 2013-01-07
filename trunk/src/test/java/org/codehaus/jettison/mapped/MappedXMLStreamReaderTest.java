@@ -15,10 +15,14 @@
  */
 package org.codehaus.jettison.mapped;
 
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamReader;
@@ -230,6 +234,205 @@ public class MappedXMLStreamReaderTest extends TestCase {
 		assertEquals("root", reader.getName().getLocalPart());
 		assertEquals("http://foo/", reader.getName().getNamespaceURI());
 	}    
+    
+    public void testArrayWithSameJSONObjects() throws Exception {
+    	String str = "{\"theBook\":"
+           + "{" 
+           + "\"Names\":[{\"Name\":\"1\"}, {\"Name\":\"2\"}]"
+           + " }                   "
+           + "} ";
+    	Configuration config = new Configuration();
+    	config.setPrimitiveArrayKeys(Collections.singleton("Names"));
+    	MappedXMLInputFactory factory = new MappedXMLInputFactory(config);
+    	XMLStreamReader reader = factory.createXMLStreamReader(new StringReader(str));
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("theBook", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("Names", reader.getName().getLocalPart());
+                
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("Name", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("1", reader.getText());
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("Name", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("Name", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("2", reader.getText());
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("Name", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("Names", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("theBook", reader.getName().getLocalPart());
+    	
+    }
+    
+    public void testArrayWithSameJSONObjects2() throws Exception {
+    	String str = "{\"theBook\":[{\"Name\":\"1\"}, {\"Name\":\"2\"}]}";
+    	Configuration config = new Configuration();
+    	config.setPrimitiveArrayKeys(Collections.singleton("theBook"));
+    	MappedXMLInputFactory factory = new MappedXMLInputFactory(config);
+    	XMLStreamReader reader = factory.createXMLStreamReader(new StringReader(str));
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("theBook", reader.getName().getLocalPart());
+                
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("Name", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("1", reader.getText());
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("Name", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("Name", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("2", reader.getText());
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("Name", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("theBook", reader.getName().getLocalPart());
+    	
+    }
+    
+    public void testArrayWithSameJSONObjects3() throws Exception {
+    	String str = "{\"theBook\":"
+           + "{" 
+           + "\"Names\":["
+           + "{\"Name\":[{\"value\":\"11\"}, {\"value\":\"12\"}]},"
+           + "{\"Name\":[{\"value\":\"21\"}, {\"value\":\"22\"}]}"
+           + "]}"
+           + "} ";
+    	Configuration config = new Configuration();
+    	Set<String> set = new HashSet<String>();
+    	set.add("Names");
+    	set.add("Name");
+    	config.setPrimitiveArrayKeys(set);
+    	MappedXMLInputFactory factory = new MappedXMLInputFactory(config);
+    	XMLStreamReader reader = factory.createXMLStreamReader(new StringReader(str));
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("theBook", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("Names", reader.getName().getLocalPart());
+                
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("Name", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("value", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("11", reader.getText());
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("value", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("value", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("12", reader.getText());
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("value", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("Name", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("Name", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("value", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("21", reader.getText());
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("value", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("value", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("22", reader.getText());
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("value", reader.getName().getLocalPart());
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("Name", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("Names", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("theBook", reader.getName().getLocalPart());
+    	
+    }
+    
+    public void testArrayWithNotSameJSONObjects() throws Exception {
+    	String str = "{\"theBook\":[{\"Name\":\"1\"}, {\"Bar\":\"2\"}]}";
+    	Configuration config = new Configuration();
+    	config.setPrimitiveArrayKeys(Collections.singleton("theBook"));
+    	MappedXMLInputFactory factory = new MappedXMLInputFactory(config);
+    	XMLStreamReader reader = factory.createXMLStreamReader(new StringReader(str));
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("theBook", reader.getName().getLocalPart());
+                
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("theBook", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("Name", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("1", reader.getText());
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("Name", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("theBook", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("theBook", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("Bar", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("2", reader.getText());
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("Bar", reader.getName().getLocalPart());
+        
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("theBook", reader.getName().getLocalPart());
+    	
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("theBook", reader.getName().getLocalPart());
+    }
+    
     
     public void testMultipleArrays() throws Exception {
 		JSONObject obj = new JSONObject("{ \"root\": " 
@@ -670,7 +873,6 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals("test", reader.getElementText());
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
     }
-    
-    
+
     
 }
