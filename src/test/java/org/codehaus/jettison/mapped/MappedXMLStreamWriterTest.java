@@ -178,6 +178,46 @@ public class MappedXMLStreamWriterTest extends TestCase {
         assertEquals("{\"root\":{\"child\":\"testtesttest\"}}", strWriter.toString());
     }
     
+    public void testTextNullAsString() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        w.writeStartElement("child");
+        w.writeCharacters(null);
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        assertEquals("{\"root\":{\"child\":\"null\"}}", strWriter.toString());
+    }
+    
+    public void testTextNullAsNull() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        Configuration c = new Configuration();
+        c.setWriteNullAsString(false);
+        MappedNamespaceConvention con = new MappedNamespaceConvention(c);
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        w.writeStartElement("child");
+        w.writeCharacters(null);
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        assertEquals("{\"root\":{\"child\":null}}", strWriter.toString());
+    }
+    
     public void testAttributes() throws Exception {
         StringWriter strWriter = new StringWriter();
         

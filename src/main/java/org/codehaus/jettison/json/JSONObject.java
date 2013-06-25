@@ -127,6 +127,7 @@ public class JSONObject implements Serializable {
     private LinkedHashMap myHashMap;
     private boolean dropRootElement;
     private List ignoredElements;
+    private boolean writeNullAsString = true;
     /**
      * It is sometimes more convenient and less ambiguous to have a
      * <code>NULL</code> object than to use Java's <code>null</code> value.
@@ -140,17 +141,18 @@ public class JSONObject implements Serializable {
      * Construct an empty JSONObject.
      */
     public JSONObject() {
-        this(false, null);
+        this(false, null, true);
     }
 
     public JSONObject(List ignoredElements) {
-    	this(false, ignoredElements);
+    	this(false, ignoredElements, true);
     }
     
-    public JSONObject(boolean dropRootElement, List ignoredElements) {
+    public JSONObject(boolean dropRootElement, List ignoredElements, boolean writeNullAsString) {
         this.myHashMap = new LinkedHashMap();
         this.dropRootElement = dropRootElement;
         this.ignoredElements = ignoredElements;
+        this.writeNullAsString = writeNullAsString;
     }
 
 
@@ -920,8 +922,10 @@ public class JSONObject implements Serializable {
             	}
             	array.put(value);
             }
+        } else if (!writeNullAsString) {
+        	this.myHashMap.put(key, null);
         } else {
-            remove(key);
+        	remove(key);
         }
         return this;
     }
@@ -1097,7 +1101,7 @@ public class JSONObject implements Serializable {
                 Object o = keys.next();
                 sb.append(quote(o.toString()));
                 sb.append(':');
-                sb.append(valueToString(this.myHashMap.get(o)));
+                sb.append(valueToString(this.myHashMap.get(o), writeNullAsString));
             }
             sb.append('}');
             return sb.toString();
@@ -1198,6 +1202,11 @@ public class JSONObject implements Serializable {
      * @throws JSONException If the value is or contains an invalid number.
      */
     static String valueToString(Object value) throws JSONException {
+    	return valueToString(value, true);
+    }
+    
+   	static String valueToString(Object value, boolean nullAsString) throws JSONException {	
+    	
         if (value == null || value.equals(null)) {
             return "null";
         }
@@ -1317,7 +1326,7 @@ public class JSONObject implements Serializable {
                 } else if (v instanceof JSONArray) {
                     ((JSONArray)v).write(writer);
                 } else if (!mayBeDropSimpleElement) {
-                    writer.write(valueToString(v));
+                	writer.write(valueToString(v, writeNullAsString));
                 }
                 if (!mayBeDropSimpleElement) {
                     b = true;
