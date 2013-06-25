@@ -18,6 +18,7 @@ package org.codehaus.jettison.mapped;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -62,6 +63,97 @@ public class MappedXMLStreamWriterTest extends TestCase {
         strWriter.close();
         
         assertEquals("{\"root\":{\"child\":\"\"}}", strWriter.toString());
+    }
+    
+    public void testChildDropElement() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        Configuration c = new Configuration();
+        c.setDropRootElement(true);
+        MappedNamespaceConvention con = new MappedNamespaceConvention(c);
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        w.writeStartElement("child");
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        assertEquals("{\"child\":\"\"}", strWriter.toString());
+    }
+    
+    public void testChildDropElement2() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        Configuration c = new Configuration();
+        c.setDropRootElement(true);
+        MappedNamespaceConvention con = new MappedNamespaceConvention(c);
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        w.writeStartElement("root2");
+        w.writeStartElement("child");
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        assertEquals("{\"root2\":{\"child\":\"\"}}", strWriter.toString());
+    }
+    
+    public void testChildDropElement3() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        Configuration c = new Configuration();
+        List<String> ignoredElements = new LinkedList<String>();
+        ignoredElements.add("root");
+        ignoredElements.add("root2");
+        c.setIgnoredElements(ignoredElements);
+        MappedNamespaceConvention con = new MappedNamespaceConvention(c);
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        w.writeStartElement("root2");
+        w.writeStartElement("child");
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        assertEquals("{\"child\":\"\"}", strWriter.toString());
+    }
+    
+    public void testChildDropElement4() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        Configuration c = new Configuration();
+        List<String> ignoredElements = new LinkedList<String>();
+        ignoredElements.add("child");
+        c.setIgnoredElements(ignoredElements);
+        MappedNamespaceConvention con = new MappedNamespaceConvention(c);
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        w.writeStartElement("child");
+        w.writeEndElement();
+        w.writeStartElement("child2");
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        assertEquals("{\"root\":{\"child2\":\"\"}}", strWriter.toString());
     }
     
     public void testText() throws Exception {
@@ -929,7 +1021,6 @@ public class MappedXMLStreamWriterTest extends TestCase {
     public void x_testImplicitCollections() throws Exception {
         StringWriter strWriter = new StringWriter();
         Configuration conf = new Configuration();
-        conf.setImplicitCollections(true);
         MappedNamespaceConvention con = new MappedNamespaceConvention(conf);
         AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
         
@@ -959,7 +1050,6 @@ public class MappedXMLStreamWriterTest extends TestCase {
 
         StringWriter strWriter = new StringWriter();
         Configuration conf = new Configuration();
-        conf.setImplicitCollections(true);
         MappedNamespaceConvention con = new MappedNamespaceConvention(conf);
         AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
 

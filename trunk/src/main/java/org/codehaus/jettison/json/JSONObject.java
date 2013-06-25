@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.codehaus.jettison.JSONSequenceTooLargeException;
@@ -124,8 +125,8 @@ public class JSONObject implements Serializable {
      * The hash map where the JSONObject's properties are kept.
      */
     private LinkedHashMap myHashMap;
-
-
+    private boolean dropRootElement;
+    private List ignoredElements;
     /**
      * It is sometimes more convenient and less ambiguous to have a
      * <code>NULL</code> object than to use Java's <code>null</code> value.
@@ -139,7 +140,17 @@ public class JSONObject implements Serializable {
      * Construct an empty JSONObject.
      */
     public JSONObject() {
+        this(false, null);
+    }
+
+    public JSONObject(List ignoredElements) {
+    	this(false, ignoredElements);
+    }
+    
+    public JSONObject(boolean dropRootElement, List ignoredElements) {
         this.myHashMap = new LinkedHashMap();
+        this.dropRootElement = dropRootElement;
+        this.ignoredElements = ignoredElements;
     }
 
 
@@ -1269,28 +1280,52 @@ public class JSONObject implements Serializable {
       */
      public Writer write(Writer writer) throws JSONException {
         try {
-            boolean  b = false;
-            Iterator keys = keys();
-            writer.write('{');
+        	int hashMapSize = this.myHashMap.size();
+        	
+        	boolean dropObjectKeyName = false;
+        	if (hashMapSize == 1) {
+        		dropObjectKeyName = dropRootElement 
+        			|| ignoredElements != null && ignoredElements.contains(keys().next());
+        	}
+        	
+            if (!dropObjectKeyName) {
+                writer.write('{');
+            }
 
+            boolean  b = false;
+            
+            Iterator keys = keys();
             while (keys.hasNext()) {
                 if (b) {
                     writer.write(',');
                 }
-                Object k = keys.next();
-                writer.write(quote(k.toString()));
-                writer.write(':');
+                String k = keys.next().toString();
                 Object v = this.myHashMap.get(k);
+                
+                boolean mayBeDropSimpleElement = false;
+                if (!dropObjectKeyName) {
+                	mayBeDropSimpleElement = hashMapSize > 1 
+                		&& ignoredElements != null && ignoredElements.contains(k);
+                	if (!mayBeDropSimpleElement) {
+                        writer.write(quote(k));
+                        writer.write(':');
+                	}
+                }
+                
                 if (v instanceof JSONObject) {
                     ((JSONObject)v).write(writer);
                 } else if (v instanceof JSONArray) {
                     ((JSONArray)v).write(writer);
-                } else {
+                } else if (!mayBeDropSimpleElement) {
                     writer.write(valueToString(v));
                 }
-                b = true;
+                if (!mayBeDropSimpleElement) {
+                    b = true;
+                }
             }
-            writer.write('}');
+            if (!dropObjectKeyName) {
+                writer.write('}');
+            }
             return writer;
         } catch (IOException e) {
             throw new JSONException(e);

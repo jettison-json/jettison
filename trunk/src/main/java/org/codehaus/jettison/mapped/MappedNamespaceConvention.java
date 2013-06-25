@@ -37,12 +37,14 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
     private Map xnsToJns = new HashMap();
     private Map jnsToXns = new HashMap();
     private List attributesAsElements;
+    private List ignoredElements;
     private List jsonAttributesAsElements;
     private boolean supressAtAttributes;
     private boolean ignoreNamespaces;
     private String attributeKey = "@";
     private TypeConverter typeConverter;
     private Set primitiveArrayKeys;
+    private boolean dropRootElement;
     
     public MappedNamespaceConvention() {
         super();
@@ -54,9 +56,10 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         this.attributesAsElements = config.getAttributesAsElements();
         this.supressAtAttributes = config.isSupressAtAttributes();
         this.ignoreNamespaces = config.isIgnoreNamespaces();
+        this.dropRootElement = config.isDropRootElement();
         this.attributeKey = config.getAttributeKey();
         this.primitiveArrayKeys = config.getPrimitiveArrayKeys();
-        
+        this.ignoredElements = config.getIgnoredElements();
         for (Iterator itr = xnsToJns.entrySet().iterator(); itr.hasNext();) {
             Map.Entry entry = (Map.Entry) itr.next();
             jnsToXns.put(entry.getValue(), entry.getKey());
@@ -288,4 +291,16 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
     public Set getPrimitiveArrayKeys() {
 		return primitiveArrayKeys;
 	}
+	public boolean isDropRootElement() {
+		return dropRootElement;
+	}
+	public void setDropRootElement(boolean dropRootElement) {
+		this.dropRootElement = dropRootElement;
+	}
+	public List getIgnoredElements() {
+        return ignoredElements;
+    }
+    public void setIgnoredElements(List ignoredElements) {
+        this.ignoredElements = ignoredElements;
+    }
 }
