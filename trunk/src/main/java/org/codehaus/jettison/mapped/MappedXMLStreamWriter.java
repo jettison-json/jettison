@@ -85,7 +85,9 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 			// Duplicate some code from JSONPropertyObject
 			// because we can do things with fewer checks, and
 			// therefore more efficiently.
-			JSONObject jo = new JSONObject(convention.getIgnoredElements());
+			JSONObject jo = new JSONObject(false,
+					                       convention.getIgnoredElements(),
+					                       convention.isWriteNullAsString());
 			try {
 				// only add the text property if it's non-empty
 				String strValue = getValue().toString();
@@ -212,7 +214,9 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	public void writeStartDocument() throws XMLStreamException {
 		// The document is an object with one property -- the root element
 		current = new JSONPropertyObject(null, 
-		    new JSONObject(convention.isDropRootElement(), convention.getIgnoredElements()));
+		    new JSONObject(convention.isDropRootElement(), 
+		    		       convention.getIgnoredElements(),
+		    		       convention.isWriteNullAsString()));
 		stack.clear();
 	}
 	

@@ -76,6 +76,8 @@ public class Configuration {
     private boolean ignoreNamespaces;
     private boolean dropRootElement;
     private Set primitiveArrayKeys = Collections.EMPTY_SET;
+    private boolean writeNullAsString = true;
+    private boolean readNullAsEmptyString = true;
     
     private TypeConverter typeConverter = converterFactory.newDefaultConverterInstance();
 
@@ -163,6 +165,22 @@ public class Configuration {
 
 	public void setDropRootElement(boolean dropRootElement) {
 		this.dropRootElement = dropRootElement;
+	}
+
+	public boolean isWriteNullAsString() {
+		return writeNullAsString;
+	}
+
+	public void setWriteNullAsString(boolean writeNullAsString) {
+		this.writeNullAsString = writeNullAsString;
+	}
+
+	public boolean isReadNullAsEmptyString() {
+		return readNullAsEmptyString;
+	}
+
+	public void setReadNullAsEmptyString(boolean readNullAsString) {
+		this.readNullAsEmptyString = readNullAsString;
 	}
 
 }

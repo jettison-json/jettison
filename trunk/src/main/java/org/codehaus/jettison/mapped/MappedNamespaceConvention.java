@@ -45,7 +45,8 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
     private TypeConverter typeConverter;
     private Set primitiveArrayKeys;
     private boolean dropRootElement;
-    
+    private boolean writeNullAsString = true;
+    private boolean readNullAsEmptyString;
     public MappedNamespaceConvention() {
         super();
         typeConverter = Configuration.newDefaultConverterInstance();
@@ -74,7 +75,12 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
                                                                 q.getLocalPart()));
             }
         }
+        this.readNullAsEmptyString = config.isReadNullAsEmptyString();
+        this.writeNullAsString = config.isWriteNullAsString();
         typeConverter = config.getTypeConverter();
+        if (!writeNullAsString && typeConverter != null) {
+        	typeConverter = new NullStringConverter(typeConverter);
+        }
     }
 
     /* (non-Javadoc)
@@ -294,13 +300,29 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
 	public boolean isDropRootElement() {
 		return dropRootElement;
 	}
-	public void setDropRootElement(boolean dropRootElement) {
-		this.dropRootElement = dropRootElement;
-	}
 	public List getIgnoredElements() {
         return ignoredElements;
     }
-    public void setIgnoredElements(List ignoredElements) {
-        this.ignoredElements = ignoredElements;
-    }
+    public boolean isWriteNullAsString() {
+		return writeNullAsString;
+	}
+	public boolean isReadNullAsEmptyString() {
+		return readNullAsEmptyString;
+	}
+    
+	private static class NullStringConverter implements TypeConverter {
+		private static final String NULL_STRING = "null";
+        private TypeConverter converter;
+		
+		public NullStringConverter(TypeConverter converter) {
+			this.converter = converter;
+		}
+		public Object convertToJSONPrimitive(String text) {
+			if (text != null && NULL_STRING.equals(text)) {
+				return null;
+			}
+			return converter.convertToJSONPrimitive(text);
+		} 
+		
+	}
 }
