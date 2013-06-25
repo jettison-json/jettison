@@ -73,8 +73,8 @@ public class Configuration {
     private List ignoredElements;
     private boolean supressAtAttributes; 
     private String attributeKey = "@";
-    private boolean implicitCollections = false;
     private boolean ignoreNamespaces;
+    private boolean dropRootElement;
     private Set primitiveArrayKeys = Collections.EMPTY_SET;
     
     private TypeConverter typeConverter = converterFactory.newDefaultConverterInstance();
@@ -145,14 +145,6 @@ public class Configuration {
         this.attributeKey = attributeKey;
     }
 
-	public boolean isImplicitCollections() {
-		return implicitCollections;
-	}
-
-	public void setImplicitCollections(boolean implicitCollections) {
-		this.implicitCollections = implicitCollections;
-	}
-
 	static TypeConverter newDefaultConverterInstance() {
         return converterFactory.newDefaultConverterInstance();
     }
@@ -163,6 +155,14 @@ public class Configuration {
 
 	public void setPrimitiveArrayKeys(Set primitiveArrayKeys) {
 		this.primitiveArrayKeys = primitiveArrayKeys;
+	}
+
+	public boolean isDropRootElement() {
+		return dropRootElement;
+	}
+
+	public void setDropRootElement(boolean dropRootElement) {
+		this.dropRootElement = dropRootElement;
 	}
 
 }
