@@ -26,8 +26,7 @@ public abstract class AbstractXMLStreamReader implements XMLStreamReader {
     protected int event;
     protected Node node;
     
-    public boolean isAttributeSpecified(int arg0) {
-        // TODO Auto-generated method stub
+    public boolean isAttributeSpecified(int index) {
         return false;
     }
 
@@ -40,7 +39,6 @@ public abstract class AbstractXMLStreamReader implements XMLStreamReader {
     }
 
     public boolean isStandalone() {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -105,8 +103,8 @@ public abstract class AbstractXMLStreamReader implements XMLStreamReader {
         return (String) node.getAttributes().get(new QName(ns, local));
     }
 
-    public String getAttributeType(int arg0) {
-        return null;
+    public String getAttributeType(int index) {
+        return "CDATA";
     }
 
     public String getLocalName() {
