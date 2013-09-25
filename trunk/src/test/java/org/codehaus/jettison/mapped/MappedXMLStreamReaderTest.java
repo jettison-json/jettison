@@ -60,37 +60,14 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals("root", reader.getName().getLocalPart()); 
     }
     
-    public void testStreamReaderNullTextAsEmptyString() throws Exception {
+    public void testStreamReaderNullTextAsString() throws Exception {
         JSONObject obj = 
             new JSONObject("{ " +
                            "\"root\" : { " +
                            "\"child1\" : \"null\"" +
                            "} }");
         Configuration c = new Configuration();
-        c.setReadNullAsEmptyString(true);
-        MappedNamespaceConvention con = new MappedNamespaceConvention(c);
-        XMLStreamReader reader = new MappedXMLStreamReader(obj, con);
-        
-        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
-        assertEquals("root", reader.getName().getLocalPart());
-        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
-        assertEquals("child1", reader.getName().getLocalPart());
-        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
-        assertEquals("", reader.getText());
-        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
-        assertEquals("child1", reader.getName().getLocalPart());
-        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
-        assertEquals("root", reader.getName().getLocalPart()); 
-    }
-    
-    public void testStreamReaderNullText() throws Exception {
-        JSONObject obj = 
-            new JSONObject("{ " +
-                           "\"root\" : { " +
-                           "\"child1\" : \"null\"" +
-                           "} }");
-        Configuration c = new Configuration();
-        c.setReadNullAsEmptyString(false);
+        c.setReadNullAsString(true);
         MappedNamespaceConvention con = new MappedNamespaceConvention(c);
         XMLStreamReader reader = new MappedXMLStreamReader(obj, con);
         
@@ -100,6 +77,28 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals("child1", reader.getName().getLocalPart());
         assertEquals(XMLStreamReader.CHARACTERS, reader.next());
         assertEquals("null", reader.getText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("child1", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart()); 
+    }
+    
+    public void testStreamReaderNullTextAsNull() throws Exception {
+        JSONObject obj = 
+            new JSONObject("{ " +
+                           "\"root\" : { " +
+                           "\"child1\" : \"null\"" +
+                           "} }");
+        Configuration c = new Configuration();
+        MappedNamespaceConvention con = new MappedNamespaceConvention(c);
+        XMLStreamReader reader = new MappedXMLStreamReader(obj, con);
+        
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("root", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("child1", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals(null, reader.getText());
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
         assertEquals("child1", reader.getName().getLocalPart());
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());

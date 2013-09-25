@@ -244,10 +244,11 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
     }
 
     public String getText() {
-    	if (convention.isReadNullAsEmptyString() && currentValue != null
-    			&& "null".equals(currentValue)) {
-    		return "";		
-        }
+    	if (currentValue != null 
+    		&& "null".equals(currentValue)
+    		&& !convention.isReadNullAsString()) {
+    		return null;
+    	}
         return currentValue;
     }
     

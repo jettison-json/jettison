@@ -77,7 +77,7 @@ public class Configuration {
     private boolean dropRootElement;
     private Set primitiveArrayKeys = Collections.EMPTY_SET;
     private boolean writeNullAsString = true;
-    private boolean readNullAsEmptyString = true;
+    private boolean readNullAsString;
     
     private TypeConverter typeConverter = converterFactory.newDefaultConverterInstance();
 
@@ -175,12 +175,12 @@ public class Configuration {
 		this.writeNullAsString = writeNullAsString;
 	}
 
-	public boolean isReadNullAsEmptyString() {
-		return readNullAsEmptyString;
+	public boolean isReadNullAsString() {
+		return readNullAsString;
 	}
 
-	public void setReadNullAsEmptyString(boolean readNullAsString) {
-		this.readNullAsEmptyString = readNullAsString;
+	public void setReadNullAsString(boolean readNullString) {
+		this.readNullAsString = readNullString;
 	}
 
 }

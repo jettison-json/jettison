@@ -46,7 +46,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
     private Set primitiveArrayKeys;
     private boolean dropRootElement;
     private boolean writeNullAsString = true;
-    private boolean readNullAsEmptyString;
+    private boolean readNullAsString;
     public MappedNamespaceConvention() {
         super();
         typeConverter = Configuration.newDefaultConverterInstance();
@@ -75,7 +75,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
                                                                 q.getLocalPart()));
             }
         }
-        this.readNullAsEmptyString = config.isReadNullAsEmptyString();
+        this.readNullAsString = config.isReadNullAsString();
         this.writeNullAsString = config.isWriteNullAsString();
         typeConverter = config.getTypeConverter();
         if (!writeNullAsString && typeConverter != null) {
@@ -306,8 +306,8 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
     public boolean isWriteNullAsString() {
 		return writeNullAsString;
 	}
-	public boolean isReadNullAsEmptyString() {
-		return readNullAsEmptyString;
+	public boolean isReadNullAsString() {
+		return readNullAsString;
 	}
     
 	private static class NullStringConverter implements TypeConverter {
