@@ -342,7 +342,7 @@ public class JSONObject implements Serializable {
             throw new JSONException("JSONObject[" + key + 
                         "] is not a JSONArray.");
         } else {
-            put(key, new JSONArray().put(o).put(value));
+        	((JSONArray)o).put(value);
         }
         return this;
     }
