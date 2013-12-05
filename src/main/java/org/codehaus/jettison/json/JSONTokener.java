@@ -45,7 +45,7 @@ public class JSONTokener {
      */
     public JSONTokener(String s) {
         this.myIndex = 0;
-        this.mySource = s;
+        this.mySource = s.trim();
     }
     
     /**
@@ -56,7 +56,7 @@ public class JSONTokener {
      */
     public JSONTokener(String s, int threshold) {
         this.myIndex = 0;
-        this.mySource = s;
+        this.mySource = s.trim();
         this.threshold = threshold;
     }
 

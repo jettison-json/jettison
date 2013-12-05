@@ -106,12 +106,21 @@ public class JSONArray implements Serializable {
         if (x.nextClean() != '[') {
             throw x.syntaxError("A JSONArray text must start with '['");
         }
-        if (x.nextClean() == ']') {
+        char c = x.nextClean();
+        if (c == 0) {
+        	throw x.syntaxError("JSONArray text must end with ']'");
+        } else if (c == ',') {
+        	throw x.syntaxError("JSONArray text has a trailing ','");
+        } 
+        if (c == ']') {
             return;
         }
         x.back();
         for (;;) {
             if (x.nextClean() == ',') {
+            	if (c == '[') {
+            		throw x.syntaxError("JSONArray text has a trailing ','");
+            	}
                 x.back();
                 this.myArrayList.add(null);
             } else {
