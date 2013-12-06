@@ -1101,7 +1101,7 @@ public class JSONObject implements Serializable {
                 Object o = keys.next();
                 sb.append(quote(o.toString()));
                 sb.append(':');
-                sb.append(valueToString(this.myHashMap.get(o), writeNullAsString));
+                sb.append(valueToString(this.myHashMap.get(o)));
             }
             sb.append('}');
             return sb.toString();
@@ -1201,11 +1201,7 @@ public class JSONObject implements Serializable {
      *  with <code>}</code>&nbsp;<small>(right brace)</small>.
      * @throws JSONException If the value is or contains an invalid number.
      */
-    static String valueToString(Object value) throws JSONException {
-    	return valueToString(value, true);
-    }
-    
-   	static String valueToString(Object value, boolean nullAsString) throws JSONException {	
+    static String valueToString(Object value) throws JSONException {	
     	
         if (value == null || value.equals(null)) {
             return "null";
@@ -1326,7 +1322,7 @@ public class JSONObject implements Serializable {
                 } else if (v instanceof JSONArray) {
                     ((JSONArray)v).write(writer);
                 } else if (!mayBeDropSimpleElement) {
-                	writer.write(valueToString(v, writeNullAsString));
+                	writer.write(valueToString(v));
                 }
                 if (!mayBeDropSimpleElement) {
                     b = true;
