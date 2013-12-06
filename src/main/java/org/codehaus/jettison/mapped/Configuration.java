@@ -183,4 +183,7 @@ public class Configuration {
 		this.readNullAsString = readNullString;
 	}
 
+	@Deprecated
+	public void setReadNullAsEmptyString(boolean read) {
+	}
 }
