@@ -362,7 +362,7 @@ public class JSONTokener {
             return Boolean.FALSE;
         }
         if (s.equalsIgnoreCase("null")) {
-            return JSONObject.NULL;
+            return JSONObject.EXPLICIT_NULL;
         }
 
         /*

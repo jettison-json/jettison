@@ -90,6 +90,16 @@ public class JSONObject implements Serializable {
      */
      private static final class Null {
 
+    	 boolean explicitNull;
+    	 
+    	 public Null() { 
+    		 
+    	 }
+
+         public Null(boolean explicitNull) { 
+    		 this.explicitNull = explicitNull;
+    	 }
+    	 
         /**
          * There is only intended to be a single instance of the NULL object,
          * so the clone method returns itself.
@@ -116,7 +126,11 @@ public class JSONObject implements Serializable {
          * @return The string "null".
          */
         public String toString() {
-            return "null";
+            return isExplicitNull() ? null : "null";
+        }
+        
+        public boolean isExplicitNull() {
+            return explicitNull;
         }
     }
 
@@ -135,6 +149,7 @@ public class JSONObject implements Serializable {
      * <code>JSONObject.NULL.toString()</code> returns <code>"null"</code>.
      */
     public static final Object NULL = new Null();
+    public static final Object EXPLICIT_NULL = new Null(true);
 
 
     /**

@@ -50,4 +50,14 @@ public class JSONObjectTest extends TestCase {
     		assertTrue(ex.getMessage().startsWith("JSONArray text has a trailing ','"));
     	}
     }
+    
+    public void testNullInQuotesGetString() throws Exception {
+    	JSONObject obj = new JSONObject("{\"a\":\"null\"}");
+    	assertEquals("null", obj.getString("a"));
+    }
+    
+    public void testExplicitNullGetString() throws Exception {
+    	JSONObject obj = new JSONObject("{\"a\":null}");
+    	assertNull(obj.getString("a"));
+    }
 }
