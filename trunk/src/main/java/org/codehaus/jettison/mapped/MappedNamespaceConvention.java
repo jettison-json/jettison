@@ -46,6 +46,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
     private Set primitiveArrayKeys;
     private boolean dropRootElement;
     private boolean writeNullAsString = true;
+    private boolean ignoreEmptyArrayValues;
     private boolean readNullAsString;
     public MappedNamespaceConvention() {
         super();
@@ -61,6 +62,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         this.attributeKey = config.getAttributeKey();
         this.primitiveArrayKeys = config.getPrimitiveArrayKeys();
         this.ignoredElements = config.getIgnoredElements();
+        this.ignoreEmptyArrayValues = config.isIgnoreEmptyArrayValues();
         for (Iterator itr = xnsToJns.entrySet().iterator(); itr.hasNext();) {
             Map.Entry entry = (Map.Entry) itr.next();
             jnsToXns.put(entry.getValue(), entry.getKey());
@@ -310,6 +312,11 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
 		return readNullAsString;
 	}
     
+	public boolean isIgnoreEmptyArrayValues() {
+		return ignoreEmptyArrayValues;
+	}
+	
+
 	private static class NullStringConverter implements TypeConverter {
 		private static final String NULL_STRING = "null";
         private TypeConverter converter;
