@@ -78,6 +78,7 @@ public class Configuration {
     private Set primitiveArrayKeys = Collections.EMPTY_SET;
     private boolean writeNullAsString = true;
     private boolean readNullAsString;
+    private boolean ignoreEmptyArrayValues;
     
     private TypeConverter typeConverter = converterFactory.newDefaultConverterInstance();
 
@@ -183,6 +184,13 @@ public class Configuration {
 		this.readNullAsString = readNullString;
 	}
 
+	public boolean isIgnoreEmptyArrayValues() {
+		return ignoreEmptyArrayValues;
+	}
+	public void setIgnoreEmptyArrayValues(boolean ignoreEmptyArrayValues) {
+		this.ignoreEmptyArrayValues = ignoreEmptyArrayValues;
+	}
+	
 	@Deprecated
 	public void setReadNullAsEmptyString(boolean read) {
 	}

@@ -99,13 +99,18 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 				}
 				
 				Object value = property.getValue();
-				if(add && value instanceof String) {
+				boolean emptyString = value instanceof String && ((String)value).isEmpty();
+				if(add && value instanceof String && !emptyString) {
 				    value = convention.convertToJSONPrimitive((String)value);
 				}
 				if(getSerializedAsArrays().contains(property.getKey())) {
 				    JSONArray values = new JSONArray();
-				    values.put(value);
-				    value = values;
+				    if (!convention.isIgnoreEmptyArrayValues() 
+				    		|| (!emptyString && value != null)) {
+				    	values.put(value);
+				    }
+					value = values;
+				    
 				}
 				jo.put(property.getKey(), value);
 			} catch (JSONException e) {
@@ -173,7 +178,11 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	                object.put(property.getKey(), values);
 	            } else if(getSerializedAsArrays().contains(property.getKey())) {
 	                JSONArray values = new JSONArray();
-	                values.put(value);
+	                boolean emptyString = value instanceof String && ((String)value).isEmpty();
+	                if (!convention.isIgnoreEmptyArrayValues()  
+				    		|| (!emptyString && value != null)) {
+				    	values.put(value);
+				    }
 	                object.put(property.getKey(), values);
 	            } else {
 	                // Add the property directly.
