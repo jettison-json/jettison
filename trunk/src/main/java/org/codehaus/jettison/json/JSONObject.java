@@ -548,7 +548,7 @@ public class JSONObject implements Serializable {
      *  the value is the JSONObject.NULL object.
      */
     public boolean isNull(String key) {
-        return JSONObject.NULL.equals(opt(key));
+        return JSONObject.NULL.equals(opt(key)) || JSONObject.EXPLICIT_NULL.equals(opt(key));
     }
 
 
