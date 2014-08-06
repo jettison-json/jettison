@@ -22,7 +22,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 public abstract class AbstractXMLStreamWriter implements XMLStreamWriter {
 	
-	ArrayList serializedAsArrays = new ArrayList();
+	ArrayList<String> serializedAsArrays = new ArrayList<String>();
 
     public void writeCData(String text) throws XMLStreamException {
         writeCharacters(text);
@@ -84,7 +84,7 @@ public abstract class AbstractXMLStreamWriter implements XMLStreamWriter {
     	serializedAsArrays.add(name);
     }
     
-    public ArrayList getSerializedAsArrays() {
+    public ArrayList<String> getSerializedAsArrays() {
     	return serializedAsArrays;
     }
 

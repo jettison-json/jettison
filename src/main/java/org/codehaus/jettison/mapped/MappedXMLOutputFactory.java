@@ -28,7 +28,7 @@ public class MappedXMLOutputFactory extends AbstractXMLOutputFactory {
 
     private MappedNamespaceConvention convention;
 
-    public MappedXMLOutputFactory(Map nstojns) {
+    public MappedXMLOutputFactory(Map<?, ?> nstojns) {
         this(new Configuration(nstojns));
     }
 

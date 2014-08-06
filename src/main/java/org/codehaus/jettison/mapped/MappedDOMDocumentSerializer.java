@@ -16,8 +16,6 @@
 package org.codehaus.jettison.mapped;
 
 import java.io.OutputStream;
-import java.util.HashMap;
-
 import org.codehaus.jettison.AbstractDOMDocumentSerializer;
 
 /**

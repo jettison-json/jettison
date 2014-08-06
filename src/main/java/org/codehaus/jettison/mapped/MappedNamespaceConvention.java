@@ -33,17 +33,21 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+/**
+ * 
+ *
+ */
 public class MappedNamespaceConvention implements Convention, NamespaceContext {
-    private Map xnsToJns = new HashMap();
-    private Map jnsToXns = new HashMap();
-    private List attributesAsElements;
-    private List ignoredElements;
-    private List jsonAttributesAsElements;
+    private Map<Object, Object> xnsToJns = new HashMap<Object, Object>();
+    private Map<Object, Object> jnsToXns = new HashMap<Object, Object>();
+    private List<?> attributesAsElements;
+    private List<?> ignoredElements;
+    private List<String> jsonAttributesAsElements;
     private boolean supressAtAttributes;
     private boolean ignoreNamespaces;
     private String attributeKey = "@";
     private TypeConverter typeConverter;
-    private Set primitiveArrayKeys;
+    private Set<?> primitiveArrayKeys;
     private boolean dropRootElement;
     private boolean writeNullAsString = true;
     private boolean ignoreEmptyArrayValues;
@@ -63,14 +67,14 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         this.primitiveArrayKeys = config.getPrimitiveArrayKeys();
         this.ignoredElements = config.getIgnoredElements();
         this.ignoreEmptyArrayValues = config.isIgnoreEmptyArrayValues();
-        for (Iterator itr = xnsToJns.entrySet().iterator(); itr.hasNext();) {
+        for (Iterator<?> itr = xnsToJns.entrySet().iterator(); itr.hasNext();) {
             Map.Entry entry = (Map.Entry) itr.next();
             jnsToXns.put(entry.getValue(), entry.getKey());
         }
         
-        jsonAttributesAsElements = new ArrayList();
+        jsonAttributesAsElements = new ArrayList<String>();
         if (attributesAsElements != null) {
-            for (Iterator itr = attributesAsElements.iterator(); itr.hasNext();) {
+            for (Iterator<?> itr = attributesAsElements.iterator(); itr.hasNext();) {
                 QName q = (QName) itr.next();
                 jsonAttributesAsElements.add(createAttributeKey(q.getPrefix(), 
                                                                 q.getNamespaceURI(), 
@@ -91,7 +95,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
     public void processAttributesAndNamespaces( Node n, JSONObject object ) throws JSONException {
 
         // Read in the attributes, and stop when there are no more
-        for (Iterator itr = object.keys(); itr.hasNext();) {
+        for (Iterator<?> itr = object.keys(); itr.hasNext();) {
             String k = (String) itr.next();
 
             if ( this.supressAtAttributes ) {
@@ -99,7 +103,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
                     k = k.substring( 1 );
                 }
                 if ( null == this.jsonAttributesAsElements ) {
-                    this.jsonAttributesAsElements = new ArrayList();
+                    this.jsonAttributesAsElements = new ArrayList<String>();
                 }
                 if ( !this.jsonAttributesAsElements.contains( k ) ) {
                     this.jsonAttributesAsElements.add( k );
@@ -114,7 +118,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
                     // if its a string its a default namespace
                     if ( o instanceof JSONObject ) {
                         JSONObject jo = (JSONObject) o;
-                        for (Iterator pitr = jo.keys(); pitr.hasNext();) {
+                        for (Iterator<?> pitr = jo.keys(); pitr.hasNext();) {
                             // set namespace if one is specified on this attribute.
                             String prefix = (String) pitr.next();
                             String uri = jo.getString( prefix );
@@ -182,7 +186,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         }
     }
 
-    public Iterator getPrefixes( String arg0 ) {
+    public Iterator<Object> getPrefixes( String arg0 ) {
 
         if ( ignoreNamespaces ) {
             return Collections.EMPTY_SET.iterator();
@@ -197,6 +201,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         return createQName( rootName );
     }
 
+    @SuppressWarnings("unused")
     private void readAttribute( Node n, String k, JSONArray array ) throws JSONException {
 
         for (int i = 0; i < array.length(); i++) {
@@ -281,7 +286,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         if ( attributesAsElements == null )
             return false;
 
-        for (Iterator itr = attributesAsElements.iterator(); itr.hasNext();) {
+        for (Iterator<?> itr = attributesAsElements.iterator(); itr.hasNext();) {
             QName q = (QName) itr.next();
 
             if ( q.getNamespaceURI().equals( ns ) && q.getLocalPart().equals( local ) ) {
@@ -296,13 +301,13 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         return typeConverter.convertToJSONPrimitive( text );
     }
 
-    public Set getPrimitiveArrayKeys() {
+    public Set<?> getPrimitiveArrayKeys() {
 		return primitiveArrayKeys;
 	}
 	public boolean isDropRootElement() {
 		return dropRootElement;
 	}
-	public List getIgnoredElements() {
+	public List<?> getIgnoredElements() {
         return ignoredElements;
     }
     public boolean isWriteNullAsString() {
