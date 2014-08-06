@@ -257,7 +257,10 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
 	}
 
 	public boolean isAvoidArraySpecificEvents(String key) {
-		Set keys = convention.getPrimitiveArrayKeys();
+		Set<?> keys = convention.getPrimitiveArrayKeys();
 		return keys != null && keys.contains(key);
+	}
+	public MappedNamespaceConvention getConvention() {
+		return convention;
 	}
 }

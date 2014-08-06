@@ -343,4 +343,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 		// TODO Auto-generated method stub
 
 	}
+	public MappedNamespaceConvention getConvention() {
+		return convention;
+	}
 }
