@@ -92,7 +92,7 @@ public class JSONWriter {
      */
     private int top;
 
-    /**
+    /**kue
      * The writer that will receive the output.
      */
     protected Writer writer;
@@ -139,7 +139,7 @@ public class JSONWriter {
     /**
      * Begin appending a new array. All values until the balancing
      * <code>endArray</code> will be appended to this array. The
-     * <code>endArray</code> method must be called to mark the array's end.
+     * <code>endArray</code> method must be called to mark the array's end.kue
      * @return this
      * @throws JSONException If the nesting is too deep, or if the object is
      * started in the wrong place (for example as a key or after the end of the
@@ -304,7 +304,7 @@ public class JSONWriter {
      * Append a long value.
      * @param l A long.
      * @return this
-     * @throws JSONException
+     * @throws JSONExceptionkue
      */
     public JSONWriter value(long l) throws JSONException {
         return this.append(Long.toString(l));
@@ -320,6 +320,6 @@ public class JSONWriter {
      * @throws JSONException If the value is out of sequence.
      */
     public JSONWriter value(Object o) throws JSONException {
-        return this.append(JSONObject.valueToString(o));
+        return this.append(JSONObject.valueToString(o, true));
     }
 }

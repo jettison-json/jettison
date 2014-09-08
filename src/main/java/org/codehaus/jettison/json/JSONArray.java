@@ -343,7 +343,7 @@ public class JSONArray implements Serializable {
             if (i > 0) {
                 sb.append(separator);
             }
-            sb.append(JSONObject.valueToString(this.myArrayList.get(i)));
+            sb.append(JSONObject.valueToString(this.myArrayList.get(i), true));
         }
         return sb.toString();
     }
@@ -835,7 +835,7 @@ public class JSONArray implements Serializable {
         StringBuilder sb = new StringBuilder("[");
         if (len == 1) {
             sb.append(JSONObject.valueToString(this.myArrayList.get(0),
-                    indentFactor, indent));
+                    indentFactor, indent, true));
         } else {
             int newindent = indent + indentFactor;
             sb.append('\n');
@@ -847,7 +847,7 @@ public class JSONArray implements Serializable {
                     sb.append(' ');
                 }
                 sb.append(JSONObject.valueToString(this.myArrayList.get(i),
-                        indentFactor, newindent));
+                        indentFactor, newindent, true));
             }
             sb.append('\n');
             for (i = 0; i < indent; i += 1) {
@@ -898,7 +898,7 @@ public class JSONArray implements Serializable {
                 } else if (v instanceof JSONArray) {
                     ((JSONArray)v).write(writer);
                 } else {
-                    writer.write(JSONObject.valueToString(v));
+                    writer.write(JSONObject.valueToString(v, true));
                 }
                 b = true;
             }

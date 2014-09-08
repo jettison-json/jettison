@@ -79,6 +79,7 @@ public class Configuration {
     private boolean writeNullAsString = true;
     private boolean readNullAsString;
     private boolean ignoreEmptyArrayValues;
+    private boolean escapeForwardSlash = true;
     
     private TypeConverter typeConverter = converterFactory.newDefaultConverterInstance();
 
@@ -193,5 +194,13 @@ public class Configuration {
 	
 	@Deprecated
 	public void setReadNullAsEmptyString(boolean read) {
+	}
+
+	public boolean isEscapeForwardSlash() {
+		return escapeForwardSlash;
+	}
+
+	public void setEscapeForwardSlash(boolean escapeForwardSlash) {
+		this.escapeForwardSlash = escapeForwardSlash;
 	}
 }
