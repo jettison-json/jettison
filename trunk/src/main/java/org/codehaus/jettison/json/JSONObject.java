@@ -142,7 +142,7 @@ public class JSONObject implements Serializable {
     private boolean dropRootElement;
     private List ignoredElements;
     private boolean writeNullAsString = true;
-    private boolean escapeForwardSlash = true;
+    private boolean escapeForwardSlashAlways = true;
     /**
      * It is sometimes more convenient and less ambiguous to have a
      * <code>NULL</code> object than to use Java's <code>null</code> value.
@@ -170,7 +170,7 @@ public class JSONObject implements Serializable {
         this.dropRootElement = dropRootElement;
         this.ignoredElements = ignoredElements;
         this.writeNullAsString = writeNullAsString;
-        this.escapeForwardSlash = escapeForwardSlash;
+        this.escapeForwardSlashAlways = escapeForwardSlash;
     }
 
 
@@ -979,7 +979,7 @@ public class JSONObject implements Serializable {
     public static String quote(String string) {
     	return quote(string, true);
     }
-    public static String quote(String string, boolean escapeForwardSlash) {
+    public static String quote(String string, boolean escapeForwardSlashAlways) {
         if (string == null || string.length() == 0) {
             return "\"\"";
         }
@@ -1000,11 +1000,9 @@ public class JSONObject implements Serializable {
                 sb.append(c);
                 break;
             case '/':
-//                if (b == '<') {
-            	if (escapeForwardSlash) {
+            	if (escapeForwardSlashAlways || i > 0 && string.charAt(i - 1) == '<') {
                     sb.append('\\');
             	}
-//                }
                 sb.append(c);
                 break;
             case '\b':
@@ -1123,9 +1121,9 @@ public class JSONObject implements Serializable {
                     sb.append(',');
                 }
                 Object o = keys.next();
-                sb.append(quote(o.toString(), escapeForwardSlash));
+                sb.append(quote(o.toString(), escapeForwardSlashAlways));
                 sb.append(':');
-                sb.append(valueToString(this.myHashMap.get(o), escapeForwardSlash));
+                sb.append(valueToString(this.myHashMap.get(o), escapeForwardSlashAlways));
             }
             sb.append('}');
             return sb.toString();
@@ -1177,10 +1175,10 @@ public class JSONObject implements Serializable {
         Object       o;
         if (n == 1) {
             o = keys.next();
-            sb.append(quote(o.toString(), escapeForwardSlash));
+            sb.append(quote(o.toString(), escapeForwardSlashAlways));
             sb.append(": ");
             sb.append(valueToString(this.myHashMap.get(o), indentFactor,
-                    indent, escapeForwardSlash));
+                    indent, escapeForwardSlashAlways));
         } else {
             while (keys.hasNext()) {
                 o = keys.next();
@@ -1195,7 +1193,7 @@ public class JSONObject implements Serializable {
                 sb.append(quote(o.toString()));
                 sb.append(": ");
                 sb.append(valueToString(this.myHashMap.get(o), indentFactor,
-                        newindent, escapeForwardSlash));
+                        newindent, escapeForwardSlashAlways));
             }
             if (sb.length() > 1) {
                 sb.append('\n');
@@ -1336,7 +1334,7 @@ public class JSONObject implements Serializable {
                 	mayBeDropSimpleElement = hashMapSize > 1 
                 		&& ignoredElements != null && ignoredElements.contains(k);
                 	if (!mayBeDropSimpleElement) {
-                        writer.write(quote(k, escapeForwardSlash));
+                        writer.write(quote(k, escapeForwardSlashAlways));
                         writer.write(':');
                 	}
                 }
@@ -1346,7 +1344,7 @@ public class JSONObject implements Serializable {
                 } else if (v instanceof JSONArray) {
                     ((JSONArray)v).write(writer);
                 } else if (!mayBeDropSimpleElement) {
-                	writer.write(valueToString(v, escapeForwardSlash));
+                	writer.write(valueToString(v, escapeForwardSlashAlways));
                 }
                 if (!mayBeDropSimpleElement) {
                     b = true;
