@@ -9,6 +9,15 @@ public class JSONObjectTest extends TestCase {
     	assertEquals(aJsonObj,bJsonObj);
     }
     
+    public void testToLong() throws Exception {
+    	String json = "{\"key\":\"10001325703114005\"}";
+    	JSONObject jsonObject = new JSONObject(json);
+    	long actual = jsonObject.getLong("key");
+    	long expected = 10001325703114005L;
+    	assertTrue(expected < Long.MAX_VALUE);
+    	assertEquals(expected, actual);
+    }
+    
     public void testNotEquals() throws Exception {
     	JSONObject aJsonObj = new JSONObject("{\"x\":\"y\"}");
     	JSONObject bJsonObj = new JSONObject("{\"x\":\"b\"}");

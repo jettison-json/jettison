@@ -516,7 +516,7 @@ public class JSONObject implements Serializable {
      */
     public long getLong(String key) throws JSONException {
         Object o = get(key);
-        return o instanceof Number ?
+        return o instanceof String ? Long.parseLong(((String)o)) : o instanceof Number ?
                 ((Number)o).longValue() : (long)getDouble(key);
     }
 
