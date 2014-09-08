@@ -87,7 +87,8 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 			// therefore more efficiently.
 			JSONObject jo = new JSONObject(false,
 					                       convention.getIgnoredElements(),
-					                       convention.isWriteNullAsString());
+					                       convention.isWriteNullAsString(),
+					                       convention.isEscapeForwardSlash());
 			try {
 				// only add the text property if it's non-empty
 				String strValue = getValue().toString();
@@ -225,7 +226,8 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 		current = new JSONPropertyObject(null, 
 		    new JSONObject(convention.isDropRootElement(), 
 		    		       convention.getIgnoredElements(),
-		    		       convention.isWriteNullAsString()));
+		    		       convention.isWriteNullAsString(),
+		    		       convention.isEscapeForwardSlash()));
 		stack.clear();
 	}
 	

@@ -142,6 +142,7 @@ public class JSONObject implements Serializable {
     private boolean dropRootElement;
     private List ignoredElements;
     private boolean writeNullAsString = true;
+    private boolean escapeForwardSlash = true;
     /**
      * It is sometimes more convenient and less ambiguous to have a
      * <code>NULL</code> object than to use Java's <code>null</code> value.
@@ -156,18 +157,20 @@ public class JSONObject implements Serializable {
      * Construct an empty JSONObject.
      */
     public JSONObject() {
-        this(false, null, true);
+        this(false, null, true, true);
     }
 
     public JSONObject(List ignoredElements) {
-    	this(false, ignoredElements, true);
+    	this(false, ignoredElements, true, true);
     }
     
-    public JSONObject(boolean dropRootElement, List ignoredElements, boolean writeNullAsString) {
+    public JSONObject(boolean dropRootElement, List ignoredElements, boolean writeNullAsString, 
+    		          boolean escapeForwardSlash) {
         this.myHashMap = new LinkedHashMap();
         this.dropRootElement = dropRootElement;
         this.ignoredElements = ignoredElements;
         this.writeNullAsString = writeNullAsString;
+        this.escapeForwardSlash = escapeForwardSlash;
     }
 
 
@@ -963,6 +966,7 @@ public class JSONObject implements Serializable {
         return this;
     }
 
+    
 
     /**
      * Produce a string in double quotes with backslash sequences in all the
@@ -973,6 +977,9 @@ public class JSONObject implements Serializable {
      * @return  A String correctly formatted for insertion in a JSON text.
      */
     public static String quote(String string) {
+    	return quote(string, true);
+    }
+    public static String quote(String string, boolean escapeForwardSlash) {
         if (string == null || string.length() == 0) {
             return "\"\"";
         }
@@ -994,7 +1001,9 @@ public class JSONObject implements Serializable {
                 break;
             case '/':
 //                if (b == '<') {
+            	if (escapeForwardSlash) {
                     sb.append('\\');
+            	}
 //                }
                 sb.append(c);
                 break;
@@ -1114,9 +1123,9 @@ public class JSONObject implements Serializable {
                     sb.append(',');
                 }
                 Object o = keys.next();
-                sb.append(quote(o.toString()));
+                sb.append(quote(o.toString(), escapeForwardSlash));
                 sb.append(':');
-                sb.append(valueToString(this.myHashMap.get(o)));
+                sb.append(valueToString(this.myHashMap.get(o), escapeForwardSlash));
             }
             sb.append('}');
             return sb.toString();
@@ -1168,10 +1177,10 @@ public class JSONObject implements Serializable {
         Object       o;
         if (n == 1) {
             o = keys.next();
-            sb.append(quote(o.toString()));
+            sb.append(quote(o.toString(), escapeForwardSlash));
             sb.append(": ");
             sb.append(valueToString(this.myHashMap.get(o), indentFactor,
-                    indent));
+                    indent, escapeForwardSlash));
         } else {
             while (keys.hasNext()) {
                 o = keys.next();
@@ -1186,7 +1195,7 @@ public class JSONObject implements Serializable {
                 sb.append(quote(o.toString()));
                 sb.append(": ");
                 sb.append(valueToString(this.myHashMap.get(o), indentFactor,
-                        newindent));
+                        newindent, escapeForwardSlash));
             }
             if (sb.length() > 1) {
                 sb.append('\n');
@@ -1216,7 +1225,7 @@ public class JSONObject implements Serializable {
      *  with <code>}</code>&nbsp;<small>(right brace)</small>.
      * @throws JSONException If the value is or contains an invalid number.
      */
-    static String valueToString(Object value) throws JSONException {	
+    static String valueToString(Object value, boolean escapeForwardSlash) throws JSONException {	
     	
         if (value == null || value.equals(null)) {
             return "null";
@@ -1240,7 +1249,7 @@ public class JSONObject implements Serializable {
                 value instanceof JSONArray) {
             return value.toString();
         }
-        return quote(value.toString());
+        return quote(value.toString(), escapeForwardSlash);
     }
 
 
@@ -1258,7 +1267,7 @@ public class JSONObject implements Serializable {
      *  with <code>}</code>&nbsp;<small>(right brace)</small>.
      * @throws JSONException If the object contains an invalid number.
      */
-     static String valueToString(Object value, int indentFactor, int indent)
+     static String valueToString(Object value, int indentFactor, int indent, boolean escapeForwardSlash)
             throws JSONException {
         if (value == null || value.equals(null)) {
             return "null";
@@ -1285,7 +1294,7 @@ public class JSONObject implements Serializable {
         if (value instanceof JSONArray) {
             return ((JSONArray)value).toString(indentFactor, indent);
         }
-        return quote(value.toString());
+        return quote(value.toString(), escapeForwardSlash);
     }
 
 
@@ -1327,7 +1336,7 @@ public class JSONObject implements Serializable {
                 	mayBeDropSimpleElement = hashMapSize > 1 
                 		&& ignoredElements != null && ignoredElements.contains(k);
                 	if (!mayBeDropSimpleElement) {
-                        writer.write(quote(k));
+                        writer.write(quote(k, escapeForwardSlash));
                         writer.write(':');
                 	}
                 }
@@ -1337,7 +1346,7 @@ public class JSONObject implements Serializable {
                 } else if (v instanceof JSONArray) {
                     ((JSONArray)v).write(writer);
                 } else if (!mayBeDropSimpleElement) {
-                	writer.write(valueToString(v));
+                	writer.write(valueToString(v, escapeForwardSlash));
                 }
                 if (!mayBeDropSimpleElement) {
                     b = true;

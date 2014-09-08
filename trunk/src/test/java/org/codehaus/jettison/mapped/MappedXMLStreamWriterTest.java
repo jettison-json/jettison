@@ -178,6 +178,46 @@ public class MappedXMLStreamWriterTest extends TestCase {
         assertEquals("{\"root\":{\"child\":\"testtesttest\"}}", strWriter.toString());
     }
     
+    public void testTextEscapeForwardSlash() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        w.writeStartElement("child");
+        
+        w.writeCharacters("http://localhost:8080/json");
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        assertEquals("{\"root\":{\"child\":\"http:\\/\\/localhost:8080\\/json\"}}", strWriter.toString());
+    }
+    public void testTextForwardSlash() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        con.setEscapeForwardSlash(false);
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        w.writeStartElement("child");
+        
+        w.writeCharacters("http://localhost:8080/json");
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        assertEquals("{\"root\":{\"child\":\"http://localhost:8080/json\"}}", strWriter.toString());
+    }
+    
     public void testTextNullAsString() throws Exception {
         StringWriter strWriter = new StringWriter();
         MappedNamespaceConvention con = new MappedNamespaceConvention();
