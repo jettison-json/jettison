@@ -22,7 +22,8 @@ import javax.xml.stream.XMLStreamWriter;
 
 public abstract class AbstractXMLStreamWriter implements XMLStreamWriter {
 	
-	ArrayList<String> serializedAsArrays = new ArrayList<String>();
+	private ArrayList<String> serializedAsArrays = new ArrayList<String>();
+	private boolean arrayKeysWithSlashAvailable;
 
     public void writeCData(String text) throws XMLStreamException {
         writeCharacters(text);
@@ -74,6 +75,9 @@ public abstract class AbstractXMLStreamWriter implements XMLStreamWriter {
     
     public void serializeAsArray(String name) {
     	serializedAsArrays.add(name);
+    	if (!arrayKeysWithSlashAvailable) {
+    	    arrayKeysWithSlashAvailable = name.contains("/");
+    	}
     }
     
     /**
@@ -87,5 +91,11 @@ public abstract class AbstractXMLStreamWriter implements XMLStreamWriter {
     public ArrayList<String> getSerializedAsArrays() {
     	return serializedAsArrays;
     }
+
+	public boolean isArrayKeysWithSlashAvailable() {
+		return arrayKeysWithSlashAvailable;
+	}
+
+	
 
 }
