@@ -236,6 +236,25 @@ public class MappedXMLStreamWriterTest extends TestCase {
         
         assertEquals("{\"root\":{\"child\":\"<\\/abc>\"}}", strWriter.toString());
     }
+    public void testTextForwardSlashFirstChar() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedNamespaceConvention con = new MappedNamespaceConvention();
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        w.writeStartElement("child");
+        
+        w.writeCharacters("/abc");
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        assertEquals("{\"root\":{\"child\":\"/abc\"}}", strWriter.toString());
+    }
     
     public void testTextNullAsString() throws Exception {
         StringWriter strWriter = new StringWriter();
