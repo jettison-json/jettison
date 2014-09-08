@@ -79,7 +79,7 @@ public class Configuration {
     private boolean writeNullAsString = true;
     private boolean readNullAsString;
     private boolean ignoreEmptyArrayValues;
-    private boolean escapeForwardSlashAlways = true;
+    private boolean escapeForwardSlashAlways;
     
     private TypeConverter typeConverter = converterFactory.newDefaultConverterInstance();
 
