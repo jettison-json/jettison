@@ -49,12 +49,20 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	 */
 	private abstract class JSONProperty {
 		private String key;
-		public JSONProperty(String key) {
+		private String parentKey;
+		public JSONProperty(String key, String parentKey) {
 			this.key = key;
+			this.parentKey = parentKey;
 		}
 		/** Get the key of the property. */
 		public String getKey() {
 			return key;
+		}
+		public String getParentKey() {
+			return parentKey;
+		}
+		public String getKeyAndParentKey() {
+			return parentKey == null ? key : key + "." + parentKey;
 		}
 		/** Get the value of the property */
 		public abstract Object getValue();
@@ -72,8 +80,8 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	 */
 	private final class JSONPropertyString extends JSONProperty {
 		private StringBuilder object = new StringBuilder();
-		public JSONPropertyString(String key) {
-			super(key);
+		public JSONPropertyString(String key, String parentKey) {
+			super(key, parentKey);
 		}
 		public Object getValue() {
 			return object.toString();
@@ -88,7 +96,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 			JSONObject jo = new JSONObject(false,
 					                       convention.getIgnoredElements(),
 					                       convention.isWriteNullAsString(),
-					                       convention.isEscapeForwardSlash());
+					                       convention.isEscapeForwardSlashAlways());
 			try {
 				// only add the text property if it's non-empty
 				String strValue = getValue().toString();
@@ -104,7 +112,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 				if(add && value instanceof String && !emptyString) {
 				    value = convention.convertToJSONPrimitive((String)value);
 				}
-				if(getSerializedAsArrays().contains(property.getKey())) {
+				if(getSerializedAsArrays().contains(property.getKeyAndParentKey())) {
 				    JSONArray values = new JSONArray();
 				    if (!convention.isIgnoreEmptyArrayValues() 
 				    		|| (!emptyString && value != null)) {
@@ -118,7 +126,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 				// Impossible by construction
 				throw new AssertionError(e);				
 			}
-			return new JSONPropertyObject(getKey(), jo);
+			return new JSONPropertyObject(getKey(), getParentKey(), jo);
 		}
 	}
 
@@ -127,8 +135,8 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	 */
 	private final class JSONPropertyObject extends JSONProperty {
 	    private JSONObject object;
-	    public JSONPropertyObject(String key, JSONObject object) {
-	        super(key);
+	    public JSONPropertyObject(String key, String parentKey, JSONObject object) {
+	        super(key, parentKey);
 	        this.object = object;
 	    }
 	    public Object getValue() {
@@ -177,7 +185,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	                values.put(value);
 
 	                object.put(property.getKey(), values);
-	            } else if(getSerializedAsArrays().contains(property.getKey())) {
+	            } else if(getSerializedAsArrays().contains(property.getKeyAndParentKey())) {
 	                JSONArray values = new JSONArray();
 	                boolean emptyString = value instanceof String && ((String)value).isEmpty();
 	                if (!convention.isIgnoreEmptyArrayValues()  
@@ -224,24 +232,26 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	public void writeStartDocument() throws XMLStreamException {
 		// The document is an object with one property -- the root element
 		current = new JSONPropertyObject(null, 
+				                         null,
 		    new JSONObject(convention.isDropRootElement(), 
 		    		       convention.getIgnoredElements(),
 		    		       convention.isWriteNullAsString(),
-		    		       convention.isEscapeForwardSlash()));
+		    		       convention.isEscapeForwardSlashAlways()));
 		stack.clear();
 	}
 	
 	public void writeStartElement(String prefix, String local, String ns) throws XMLStreamException {
+		String parentKey = current.getParentKey();
 		stack.push(current);
 		String key = convention.createKey(prefix, ns, local);
-		current = new JSONPropertyString(key);
+		current = new JSONPropertyString(key, parentKey);
 	}
 	
 	public void writeAttribute(String prefix, String ns, String local, String value) throws XMLStreamException {
 		String key = convention.isElement(prefix, ns, local)
 			? convention.createKey(prefix, ns, local)
 			: convention.createAttributeKey(prefix, ns, local);
-		JSONPropertyString prop = new JSONPropertyString(key);
+		JSONPropertyString prop = new JSONPropertyString(key, null);
 		prop.addText(value);
 		current = current.withProperty(prop, false);
 	}

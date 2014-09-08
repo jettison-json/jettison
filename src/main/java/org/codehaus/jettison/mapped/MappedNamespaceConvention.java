@@ -52,7 +52,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
     private boolean writeNullAsString = true;
     private boolean ignoreEmptyArrayValues;
     private boolean readNullAsString;
-    private boolean escapeForwardSlash = true;
+    private boolean escapeForwardSlashAlways;
     public MappedNamespaceConvention() {
         super();
         typeConverter = Configuration.newDefaultConverterInstance();
@@ -68,7 +68,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         this.primitiveArrayKeys = config.getPrimitiveArrayKeys();
         this.ignoredElements = config.getIgnoredElements();
         this.ignoreEmptyArrayValues = config.isIgnoreEmptyArrayValues();
-        this.escapeForwardSlash = config.isEscapeForwardSlash();
+        this.escapeForwardSlashAlways = config.isEscapeForwardSlashAlways();
         for (Iterator<?> itr = xnsToJns.entrySet().iterator(); itr.hasNext();) {
             Map.Entry entry = (Map.Entry) itr.next();
             jnsToXns.put(entry.getValue(), entry.getKey());
@@ -324,11 +324,11 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
 	}
 	
 
-	public boolean isEscapeForwardSlash() {
-		return escapeForwardSlash;
+	public boolean isEscapeForwardSlashAlways() {
+		return escapeForwardSlashAlways;
 	}
-	public void setEscapeForwardSlash(boolean escapeForwardSlash) {
-		this.escapeForwardSlash = escapeForwardSlash;
+	public void setEscapeForwardSlashAlways(boolean escapeForwardSlash) {
+		this.escapeForwardSlashAlways = escapeForwardSlash;
 	}
 
 
