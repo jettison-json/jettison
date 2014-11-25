@@ -418,7 +418,9 @@ public class JSONObject implements Serializable {
      *  if the value is not a Boolean or the String "true" or "false".
      */
     public boolean getBoolean(String key) throws JSONException {
-        Object o = get(key);
+        return doGetBoolean(key, get(key));
+    }
+    private boolean doGetBoolean(String key, Object o) throws JSONException {
         if (o.equals(Boolean.FALSE) ||
                 (o instanceof String &&
                 ((String)o).equalsIgnoreCase("false"))) {
@@ -441,7 +443,9 @@ public class JSONObject implements Serializable {
      *  if the value is not a Number object and cannot be converted to a number.
      */
     public double getDouble(String key) throws JSONException {
-        Object o = get(key);
+        return doGetDouble(key, get(key));
+    }
+    private double doGetDouble(String key, Object o) throws JSONException {
         try {
             return o instanceof Number ?
                 ((Number)o).doubleValue() : 
@@ -463,9 +467,11 @@ public class JSONObject implements Serializable {
      *  be converted to an integer.
      */
     public int getInt(String key) throws JSONException {
-        Object o = get(key);
-        return o instanceof Number ?
-                ((Number)o).intValue() : (int)getDouble(key);
+        return doGetInt(key, get(key));
+        
+    }
+    private int doGetInt(String key, Object o) throws JSONException {
+        return o instanceof Number ? ((Number)o).intValue() : (int)getDouble(key);
     }
 
 
@@ -515,7 +521,10 @@ public class JSONObject implements Serializable {
      *  be converted to a long.
      */
     public long getLong(String key) throws JSONException {
-        Object o = get(key);
+        return doGetLong(key, get(key));
+    }
+
+    private long doGetLong(String key, Object o) throws JSONException {
         return o instanceof String ? Long.parseLong(((String)o)) : o instanceof Number ?
                 ((Number)o).longValue() : (long)getDouble(key);
     }
@@ -651,10 +660,15 @@ public class JSONObject implements Serializable {
      * @return      The truth.
      */
     public boolean optBoolean(String key, boolean defaultValue) {
-        try {
-            return getBoolean(key);
-        } catch (Exception e) {
-            return defaultValue;
+        Object o = opt(key);
+        if (o == null) {
+        	return defaultValue;
+        } else {
+        	try {
+        	    return doGetBoolean(key, o);
+        	} catch (JSONException ex) {
+        		throw new RuntimeException(ex);
+        	}
         }
     }
 
@@ -698,12 +712,15 @@ public class JSONObject implements Serializable {
      * @return      An object which is the value.
      */
     public double optDouble(String key, double defaultValue) {
-        try {
-            Object o = opt(key);
-            return o instanceof Number ? ((Number)o).doubleValue() :
-                new Double((String)o).doubleValue();
-        } catch (Exception e) {
-            return defaultValue;
+    	Object o = opt(key);
+        if (o == null) {
+        	return defaultValue;
+        } else {
+        	try {
+        	    return doGetDouble(key, o);
+        	} catch (JSONException ex) {
+        		throw new RuntimeException(ex);
+        	}
         }
     }
 
@@ -733,10 +750,15 @@ public class JSONObject implements Serializable {
      * @return      An object which is the value.
      */
     public int optInt(String key, int defaultValue) {
-        try {
-            return getInt(key);
-        } catch (Exception e) {
-            return defaultValue;
+    	Object o = opt(key);
+        if (o == null) {
+        	return defaultValue;
+        } else {
+        	try {
+        	    return doGetInt(key, o);
+        	} catch (JSONException ex) {
+        		throw new RuntimeException(ex);
+        	}
         }
     }
 
@@ -794,10 +816,15 @@ public class JSONObject implements Serializable {
      * @return      An object which is the value.
      */
     public long optLong(String key, long defaultValue) {
-        try {
-            return getLong(key);
-        } catch (Exception e) {
-            return defaultValue;
+    	Object o = opt(key);
+        if (o == null) {
+        	return defaultValue;
+        } else {
+        	try {
+        	    return doGetLong(key, o);
+        	} catch (JSONException ex) {
+        		throw new RuntimeException(ex);
+        	}
         }
     }
 
