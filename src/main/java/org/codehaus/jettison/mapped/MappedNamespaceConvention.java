@@ -38,6 +38,7 @@ import org.codehaus.jettison.json.JSONObject;
  *
  */
 public class MappedNamespaceConvention implements Convention, NamespaceContext {
+	private static final String DOT_NAMESPACE_SEP = ".";
     private Map<Object, Object> xnsToJns = new HashMap<Object, Object>();
     private Map<Object, Object> jnsToXns = new HashMap<Object, Object>();
     private List<?> attributesAsElements;
@@ -53,6 +54,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
     private boolean ignoreEmptyArrayValues;
     private boolean readNullAsString;
     private boolean escapeForwardSlashAlways;
+    private String jsonNamespaceSeparator;
     public MappedNamespaceConvention() {
         super();
         typeConverter = Configuration.newDefaultConverterInstance();
@@ -69,8 +71,9 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         this.ignoredElements = config.getIgnoredElements();
         this.ignoreEmptyArrayValues = config.isIgnoreEmptyArrayValues();
         this.escapeForwardSlashAlways = config.isEscapeForwardSlashAlways();
-        for (Iterator<?> itr = xnsToJns.entrySet().iterator(); itr.hasNext();) {
-            Map.Entry entry = (Map.Entry) itr.next();
+        this.jsonNamespaceSeparator = config.getJsonNamespaceSeparator();
+        for (Iterator<Map.Entry<Object, Object>> itr = xnsToJns.entrySet().iterator(); itr.hasNext();) {
+            Map.Entry<?, ?> entry = itr.next();
             jnsToXns.put(entry.getValue(), entry.getKey());
         }
         
@@ -138,7 +141,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
                     QName name = null;
                     // note that a non-prefixed attribute name implies NO namespace,
                     // i.e. as opposed to the in-scope default namespace
-                    if ( k.contains( "." ) ) {
+                    if ( k.contains( getNamespaceSeparator() ) ) {
                         name = createQName( k, n );
                     }
                     else {
@@ -150,7 +153,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
             }
             else {
                 // set namespace if one is specified on this attribute.
-                int dot = k.lastIndexOf( '.' );
+                int dot = k.lastIndexOf( getNamespaceSeparator() );
                 if ( dot != -1 ) {
                     String jns = k.substring( 0, dot );
                     String xns = getNamespaceURI( jns );
@@ -191,7 +194,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
     public Iterator<Object> getPrefixes( String arg0 ) {
 
         if ( ignoreNamespaces ) {
-            return Collections.EMPTY_SET.iterator();
+            return Collections.emptySet().iterator();
         }
         else {
             return jnsToXns.keySet().iterator();
@@ -219,7 +222,8 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
 
     private QName createQName( String name ) {
 
-        int dot = name.lastIndexOf( '.' );
+    	String nsSeparator = getNamespaceSeparator();
+        int dot = name.lastIndexOf( nsSeparator );
         QName qname = null;
         String local = name;
 
@@ -227,7 +231,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
             dot = 0;
         }
         else {
-            local = local.substring( dot + 1 );
+            local = local.substring( dot + nsSeparator.length() );
         }
 
         String jns = name.substring( 0, dot );
@@ -252,7 +256,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         String jns = getJSONNamespace(p, ns);
         //        String jns = getPrefix(ns);
         if ( jns != null && jns.length() != 0 ) {
-            builder.append( jns ).append( '.' );
+            builder.append( jns ).append( getNamespaceSeparator() );
         }
         return builder.append( local ).toString();
     }
@@ -278,7 +282,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         String jns = getJSONNamespace(p, ns);
         //        String jns = getPrefix(ns);
         if ( jns != null && jns.length() != 0 ) {
-            builder.append( jns ).append( '.' );
+            builder.append( jns ).append( getNamespaceSeparator() );
         }
         return builder.append( local ).toString();
     }
@@ -332,6 +336,10 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
 	}
 
 
+	public String getNamespaceSeparator() {
+		return jsonNamespaceSeparator == null ? DOT_NAMESPACE_SEP : jsonNamespaceSeparator;
+	}
+	
 	private static class NullStringConverter implements TypeConverter {
 		private static final String NULL_STRING = "null";
         private TypeConverter converter;
