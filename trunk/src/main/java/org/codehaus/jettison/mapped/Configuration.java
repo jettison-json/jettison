@@ -80,6 +80,7 @@ public class Configuration {
     private boolean readNullAsString;
     private boolean ignoreEmptyArrayValues;
     private boolean escapeForwardSlashAlways;
+    private String jsonNamespaceSeparator;
     
     private TypeConverter typeConverter = converterFactory.newDefaultConverterInstance();
 
@@ -202,5 +203,13 @@ public class Configuration {
 
 	public void setEscapeForwardSlashAlways(boolean escapeForwardSlash) {
 		this.escapeForwardSlashAlways = escapeForwardSlash;
+	}
+
+	public String getJsonNamespaceSeparator() {
+		return jsonNamespaceSeparator;
+	}
+
+	public void setJsonNamespaceSeparator(String jsonNamespaceSeparator) {
+		this.jsonNamespaceSeparator = jsonNamespaceSeparator;
 	}
 }

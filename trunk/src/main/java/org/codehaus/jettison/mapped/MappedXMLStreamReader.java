@@ -137,7 +137,8 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
                 newObj = node.getArray().get(index++);
                 nextKey = node.getName().getLocalPart();
                 if (!"".equals(node.getName().getNamespaceURI())) {
-                    nextKey = this.convention.getPrefix(node.getName().getNamespaceURI()) + "." + nextKey;
+                    nextKey = this.convention.getPrefix(node.getName().getNamespaceURI()) 
+                    		+ this.getConvention().getNamespaceSeparator() + nextKey;
                 }
                 node.setArrayIndex(index);
             } else {
