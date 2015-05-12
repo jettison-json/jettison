@@ -12,12 +12,6 @@
       <url>http://www.apache.org/licenses/LICENSE-2.0</url>
     </license>
   </licenses>
-  <parent>
-    <groupId>org.codehaus</groupId>
-    <artifactId>codehaus-parent</artifactId>
-    <version>3</version>
-  </parent>
-  
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -38,9 +32,9 @@
 	</dependency>    
   </dependencies>
   <scm>
-    <connection>scm:svn:http://svn.codehaus.org/jettison/trunk</connection>
-    <developerConnection>scm:svn:https://svn.codehaus.org/jettison/trunk</developerConnection>
-    <url>http://fisheye.codehaus.org/browse/jettison/</url>
+    <connection>scm:git:http://github.com/jettison-json/jettison.git</connection>
+    <developerConnection>scm:git:https://github.com/jettison-json/jettison.git</developerConnection>
+    <url>https://github.com/jettison-json/jettison</url>
   </scm>
   <build>
     <extensions>
@@ -56,8 +50,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
+          <source>1.6</source>
+          <target>1.6</target>
           <optimize>true</optimize>
           <debug>true</debug>
           <showDeprecation>true</showDeprecation>
@@ -112,22 +106,4 @@
     </plugins>
   </reporting>
 
-  <!--
-  <distributionManagement>
-    <repository>
-      <id>codehaus.org</id>
-      <name>jettison Central Repository</name>
-      <url>dav:https://dav.codehaus.org/repository/jettison/</url>
-    </repository>
-    <snapshotRepository>
-      <id>codehaus.org</id>
-      <name>jettison Central Development Repository</name>
-      <url>dav:https://dav.codehaus.org/snapshots.repository/jettison/</url>
-    </snapshotRepository>
-    <site>
-      <id>codehaus.org</id>
-      <url>dav:https://dav.codehaus.org/jettison/</url>
-    </site>
-  </distributionManagement>
-  -->
 </project>
