@@ -77,4 +77,20 @@ public class JSONObjectTest extends TestCase {
         JSONObject obj = new JSONObject("{\"a\":null}");
         assertTrue(obj.isNull("b"));
     }
+    
+    public void testSlashEscapingTurnedOnByDefault() throws Exception {
+       JSONObject obj = new JSONObject();
+       obj.put("key", "http://example.com/foo");
+       assertEquals(obj.toString(), "{\"key\":\"http:\\/\\/example.com\\/foo\"}");
+    }
+    
+    public void testForwardSlashEscapingModifiedfBySetter() throws Exception {
+      JSONObject obj = new JSONObject();
+      obj.put("key", "http://example.com/foo");
+      assertEquals(obj.toString(), "{\"key\":\"http:\\/\\/example.com\\/foo\"}");
+      obj.setEscapeForwardSlashAlways(false);
+      assertEquals(obj.toString(), "{\"key\":\"http://example.com/foo\"}");
+      obj.setEscapeForwardSlashAlways(true);
+      assertEquals(obj.toString(), "{\"key\":\"http:\\/\\/example.com\\/foo\"}");
+   }
 }
