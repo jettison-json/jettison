@@ -143,6 +143,8 @@ public class JSONObject implements Serializable {
     private List ignoredElements;
     private boolean writeNullAsString = true;
     private boolean escapeForwardSlashAlways = true;
+
+
     /**
      * It is sometimes more convenient and less ambiguous to have a
      * <code>NULL</code> object than to use Java's <code>null</code> value.
@@ -1384,5 +1386,13 @@ public class JSONObject implements Serializable {
         } catch (IOException e) {
             throw new JSONException(e);
         }
+     }
+     
+     public boolean isEscapeForwardSlashAlways() {
+       return escapeForwardSlashAlways;
+     }
+
+     public void setEscapeForwardSlashAlways(boolean escapeForwardSlashAlways) {
+       this.escapeForwardSlashAlways = escapeForwardSlashAlways;
      }
 }
