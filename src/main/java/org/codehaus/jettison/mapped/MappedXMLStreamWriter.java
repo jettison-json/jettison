@@ -109,7 +109,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 				
 				Object value = property.getValue();
 				boolean emptyString = value instanceof String && ((String)value).isEmpty();
-				if (add && value instanceof String && !emptyString) {
+				if (value instanceof String && !emptyString) {
 				    value = convention.convertToJSONPrimitive((String)value);
 				}
 				if (getSerializedAsArrays().contains(getPropertyArrayKey(property))) {
@@ -165,7 +165,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	    }
 	    public JSONPropertyObject withProperty(JSONProperty property, boolean add) {
 	        Object value = property.getValue();
-	        if(add && value instanceof String) {
+	        if(value instanceof String && !((String)value).isEmpty()) {
 	            value = convention.convertToJSONPrimitive((String)value);
 	        }
 	        Object old = object.opt(property.getKey());

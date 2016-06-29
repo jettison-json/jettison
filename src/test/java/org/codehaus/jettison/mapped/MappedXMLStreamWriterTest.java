@@ -25,9 +25,9 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
-import junit.framework.TestCase;
-
 import org.codehaus.jettison.AbstractXMLStreamWriter;
+
+import junit.framework.TestCase;
 
 public class MappedXMLStreamWriterTest extends TestCase {
     
@@ -318,6 +318,44 @@ public class MappedXMLStreamWriterTest extends TestCase {
         
         assertEquals("{\"root\":{\"@att\":\"attvalue\",\"@foo.att2\":\"attvalue\"}}", strWriter.toString());
     }
+    
+    public void testIntAttribute() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        
+        MappedNamespaceConvention con = new MappedNamespaceConvention(new Configuration());
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        w.writeAttribute("att", "123");
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        assertEquals("{\"root\":{\"@att\":123}}", strWriter.toString());
+    }
+    public void testIntAttributeAsString() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        
+        Configuration c = new Configuration();
+        c.setTypeConverter(new SimpleConverter());
+        MappedNamespaceConvention con = new MappedNamespaceConvention(c);
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        w.writeAttribute("att", "123");
+        w.writeEndElement();
+        w.writeEndDocument();
+        
+        w.close();
+        strWriter.close();
+        
+        assertEquals("{\"root\":{\"@att\":\"123\"}}", strWriter.toString());
+    }
+    
 
     public void testAttributesAsElements() throws Exception {
         StringWriter strWriter = new StringWriter();
@@ -1218,7 +1256,7 @@ public class MappedXMLStreamWriterTest extends TestCase {
                 "[{\"@name\":\"reason\"},{\"@name\":\"terms\"}],\"numeric\":[" +
                 "{\"@name\":\"amountasked\"},{\"@name\":\"amountoffered\"}]," +
                 "\"structure\":{\"@name\":\"check\",\"symbolic\":" +
-                "{\"@name\":\"date\"},\"structure\":{\"@name\":\"lines\",\"@repeating\":\"true\",\"symbolic\"" +
+                "{\"@name\":\"date\"},\"structure\":{\"@name\":\"lines\",\"@repeating\":true,\"symbolic\"" +
                 ":{\"@name\":\"type\"},\"numeric\":[{\"@name\":\"amount\"},{\"@name\":\"cost\"}]}}}}}"
                 , strWriter.toString());
     }
