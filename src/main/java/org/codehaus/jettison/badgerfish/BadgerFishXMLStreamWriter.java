@@ -119,6 +119,10 @@ public class BadgerFishXMLStreamWriter extends AbstractXMLStreamWriter {
     }
 
     public void writeCharacters(String text) throws XMLStreamException {
+    	text = text.trim();
+    	if (text.length() == 0) {
+    	    return;
+    	}
         try {
             Object o = getCurrentNode().opt("$");
             if (o instanceof JSONArray) {
