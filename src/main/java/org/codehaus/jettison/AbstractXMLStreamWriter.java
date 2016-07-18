@@ -82,6 +82,7 @@ public abstract class AbstractXMLStreamWriter implements XMLStreamWriter {
     
     /**
      * @deprecated since 1.2 because of misspelling. Use serializeAsArray(String name) instead.
+     * @param name the name
      */
     @Deprecated
     public void seriliazeAsArray(String name) {

@@ -52,7 +52,7 @@ public class JSONTokener {
      * Construct a JSONTokener from a string.
      *
      * @param s     A source string.
-     * @param t     A source threshold.
+     * @param threshold     A source threshold.
      */
     public JSONTokener(String s, int threshold) {
         this.myIndex = 0;
@@ -162,7 +162,7 @@ public class JSONTokener {
     /**
      * Get the next char in the string, skipping whitespace
      * and comments (slashslash, slashstar, and hash).
-     * @throws JSONException
+     * @throws JSONException JSONException
      * @return  A character, or 0 if there are no more characters.
      */
     public char nextClean() throws JSONException {

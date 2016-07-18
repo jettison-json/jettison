@@ -69,7 +69,7 @@ import org.codehaus.jettison.JSONSequenceTooLargeException;
  *     <code>{ } [ ] / \ : , = ; #</code> and if they do not look like numbers
  *     and if they are not the reserved words <code>true</code>,
  *     <code>false</code>, or <code>null</code>.</li>
- * <li>Keys can be followed by <code>=</code> or <code>=></code> as well as
+ * <li>Keys can be followed by <code>=</code> or <code>=&gt;</code> as well as
  *     by <code>:</code>.</li>
  * <li>Values can be followed by <code>;</code> <small>(semicolon)</small> as
  *     well as by <code>,</code> <small>(comma)</small>.</li>
@@ -681,7 +681,7 @@ public class JSONObject implements Serializable {
      * @param key       A key string.
      * @param value     A Collection value.
      * @return          this.
-     * @throws JSONException
+     * @throws JSONException JSONException
      */
     public JSONObject put(String key, Collection value) throws JSONException {
         put(key, new JSONArray(value));
@@ -920,7 +920,7 @@ public class JSONObject implements Serializable {
      * @param key       A key string.
      * @param value     A Map value.
      * @return          this.
-     * @throws JSONException
+     * @throws JSONException JSONException
      */
     public JSONObject put(String key, Map value) throws JSONException {
         put(key, new JSONObject(value));
@@ -999,7 +999,7 @@ public class JSONObject implements Serializable {
 
     /**
      * Produce a string in double quotes with backslash sequences in all the
-     * right places. A backslash will be inserted within </, allowing JSON
+     * right places. A backslash will be inserted within &lt;/, allowing JSON
      * text to be delivered in HTML. In JSON text, a string cannot contain a
      * control character or an unescaped quote or backslash.
      * @param string A String
@@ -1331,8 +1331,9 @@ public class JSONObject implements Serializable {
       * <p>
       * Warning: This method assumes that the data structure is acyclical.
       *
+      * @param writer The writer
       * @return The writer.
-      * @throws JSONException
+      * @throws JSONException JSONException
       */
      public Writer write(Writer writer) throws JSONException {
         try {

@@ -288,6 +288,8 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	
 	/**
 	 * For clients who want to modify the output object before writing to override.
+     * @param root root
+     * @throws XMLStreamException XMLStreamException
 	 */
 	protected void writeJSONObject(JSONObject root) throws XMLStreamException {
 		try {
