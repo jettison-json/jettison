@@ -6,6 +6,7 @@
   <packaging>bundle</packaging>
   <name>Jettison</name>
   <description>A StAX implementation for JSON.</description>
+  <url>https://github.com/jettison-json/jettison</url>
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
@@ -182,5 +183,10 @@
       </plugin>
     </plugins>
   </reporting>
-
+  <developers>
+      <developer>
+          <name>The Jettison Team</name>
+          <url>https://github.com/jettison-json/jettison</url>
+      </developer>
+  </developers>
 </project>
