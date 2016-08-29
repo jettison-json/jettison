@@ -81,6 +81,22 @@ public class JSONArray implements Serializable {
      */
     private ArrayList myArrayList;
 
+    /**
+     * When set to <code>true</code> forward slashes are escaped within the array. 
+     * When set to <code>false</code> no forward slashes are escaped.
+     * This setting is not inherited to any JSONObject or JSONArray members of the array. 
+     * It is only for simple strings.
+     * Escaping needs to be set for each contained JSONObject or JSONArray object.
+     */
+    private boolean escapeForwardSlashAlways = true;
+
+    public boolean isEscapeForwardSlashAlways() {
+      return escapeForwardSlashAlways;
+    }
+
+    public void setEscapeForwardSlashAlways(boolean escapeForwardSlashAlways) {
+      this.escapeForwardSlashAlways = escapeForwardSlashAlways;
+    }
 
     /**
      * Construct an empty JSONArray.
@@ -344,7 +360,7 @@ public class JSONArray implements Serializable {
             if (i > 0) {
                 sb.append(separator);
             }
-            sb.append(JSONObject.valueToString(this.myArrayList.get(i), true));
+            sb.append(JSONObject.valueToString(this.myArrayList.get(i), escapeForwardSlashAlways));
         }
         return sb.toString();
     }
@@ -836,7 +852,7 @@ public class JSONArray implements Serializable {
         StringBuilder sb = new StringBuilder("[");
         if (len == 1) {
             sb.append(JSONObject.valueToString(this.myArrayList.get(0),
-                    indentFactor, indent, true));
+                    indentFactor, indent, escapeForwardSlashAlways));
         } else {
             int newindent = indent + indentFactor;
             sb.append('\n');
@@ -848,7 +864,7 @@ public class JSONArray implements Serializable {
                     sb.append(' ');
                 }
                 sb.append(JSONObject.valueToString(this.myArrayList.get(i),
-                        indentFactor, newindent, true));
+                        indentFactor, newindent, escapeForwardSlashAlways));
             }
             sb.append('\n');
             for (i = 0; i < indent; i += 1) {
@@ -900,7 +916,7 @@ public class JSONArray implements Serializable {
                 } else if (v instanceof JSONArray) {
                     ((JSONArray)v).write(writer);
                 } else {
-                    writer.write(JSONObject.valueToString(v, true));
+                    writer.write(JSONObject.valueToString(v, escapeForwardSlashAlways));
                 }
                 b = true;
             }
