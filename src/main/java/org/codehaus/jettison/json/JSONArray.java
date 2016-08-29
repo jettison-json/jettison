@@ -91,6 +91,7 @@ public class JSONArray implements Serializable {
     
     /**
      * Construct an empty JSONArray with a given capacity.
+     * @param capacity the initial capacity
      */
     public JSONArray(int capacity) {
         this.myArrayList = new ArrayList(capacity);
@@ -809,7 +810,7 @@ public class JSONArray implements Serializable {
      *  representation of the object, beginning
      *  with <code>[</code>&nbsp;<small>(left bracket)</small> and ending
      *  with <code>]</code>&nbsp;<small>(right bracket)</small>.
-     * @throws JSONException
+     * @throws JSONException JSONException
      */
     public String toString(int indentFactor) throws JSONException {
         return toString(indentFactor, 0);
@@ -824,7 +825,7 @@ public class JSONArray implements Serializable {
      * @param indent The indention of the top level.
      * @return a printable, displayable, transmittable
      *  representation of the array.
-     * @throws JSONException
+     * @throws JSONException JSONException
      */
     String toString(int indentFactor, int indent) throws JSONException {
         int len = length();
@@ -878,8 +879,9 @@ public class JSONArray implements Serializable {
      * <p>
      * Warning: This method assumes that the data structure is acyclical.
      *
+     * @param writer The writer.
      * @return The writer.
-     * @throws JSONException
+     * @throws JSONException JSONException
      */
     public Writer write(Writer writer) throws JSONException {
         try {

@@ -70,7 +70,7 @@ public class MappedDOMTest extends DOMTest {
 	
 	public void testIgnoreNamespaces() throws Exception {
         String xmlStr = "<A xmlns=\"http://foo\"><B xmlns:bar=\"http://baz\" bar:c=\"1\">2</B></A>";
-        String expStr = "{\"A\":{\"B\":{\"@c\":\"1\",\"$\":\"2\"}}}";
+        String expStr = "{\"A\":{\"B\":{\"@c\":1,\"$\":\"2\"}}}";
         String resStr = toJSON(parse(xmlStr), true);
         assertEquals("Unexpected result: " + resStr, expStr, resStr);
         resStr="{\"somens.kermit\":\"the frog\"}";
