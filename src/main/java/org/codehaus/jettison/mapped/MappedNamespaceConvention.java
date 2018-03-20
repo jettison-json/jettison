@@ -40,7 +40,7 @@ import org.codehaus.jettison.json.JSONObject;
 public class MappedNamespaceConvention implements Convention, NamespaceContext {
 	private static final String DOT_NAMESPACE_SEP = ".";
     private Map<Object, Object> xnsToJns = new HashMap<Object, Object>();
-    private Map<Object, Object> jnsToXns = new HashMap<Object, Object>();
+    private Map<String, Object> jnsToXns = new HashMap<String, Object>();
     private List<?> attributesAsElements;
     private List<?> ignoredElements;
     private List<String> jsonAttributesAsElements;
@@ -74,7 +74,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         this.jsonNamespaceSeparator = config.getJsonNamespaceSeparator();
         for (Iterator<Map.Entry<Object, Object>> itr = xnsToJns.entrySet().iterator(); itr.hasNext();) {
             Map.Entry<?, ?> entry = itr.next();
-            jnsToXns.put(entry.getValue(), entry.getKey());
+            jnsToXns.put((String)entry.getValue(), entry.getKey());
         }
         
         jsonAttributesAsElements = new ArrayList<String>();
@@ -191,10 +191,10 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         }
     }
 
-    public Iterator<Object> getPrefixes( String arg0 ) {
+    public Iterator<String> getPrefixes( String arg0 ) {
 
         if ( ignoreNamespaces ) {
-            return Collections.emptySet().iterator();
+            return Collections.<String>emptySet().iterator();
         }
         else {
             return jnsToXns.keySet().iterator();
