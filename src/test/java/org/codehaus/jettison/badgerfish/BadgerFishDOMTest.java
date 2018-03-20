@@ -94,7 +94,7 @@ public class BadgerFishDOMTest extends DOMTest {
         String resStr = toJSON(parse(xmlStr));
         assertEquals("Unexpected result: " + resStr, expStr, resStr);
 
-        String resXML = toXML(resStr).replace(System.getProperty("line.separator"), "");
+        String resXML = toXML(resStr).replace(System.getProperty("line.separator"), "").replaceAll(">\\s+<", "><");
         assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
     }
 	
@@ -104,7 +104,7 @@ public class BadgerFishDOMTest extends DOMTest {
         String resStr = toJSON(parse(xmlStr));
         assertEquals("Unexpected result: " + resStr, expStr, resStr);
 
-        String resXML = toXML(resStr).replace(System.getProperty("line.separator"), "");
+        String resXML = toXML(resStr).replace(System.getProperty("line.separator"), "").replaceAll(">\\s+<", "><");
         assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
     }
 
