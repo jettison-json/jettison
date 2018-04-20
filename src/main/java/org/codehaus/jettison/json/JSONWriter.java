@@ -92,7 +92,7 @@ public class JSONWriter {
      */
     private int top;
 
-    /**kue
+    /**
      * The writer that will receive the output.
      */
     protected Writer writer;
@@ -140,7 +140,7 @@ public class JSONWriter {
     /**
      * Begin appending a new array. All values until the balancing
      * <code>endArray</code> will be appended to this array. The
-     * <code>endArray</code> method must be called to mark the array's end.kue
+     * <code>endArray</code> method must be called to mark the array's end.
      * @return this
      * @throws JSONException If the nesting is too deep, or if the object is
      * started in the wrong place (for example as a key or after the end of the
