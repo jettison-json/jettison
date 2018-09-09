@@ -31,37 +31,33 @@ public class DefaultConverter implements TypeConverter {
 		this.enforce32BitInt = enforce32BitInt;
 	}
 
+	@Override
 	public Object convertToJSONPrimitive(String text) {
-        if(text == null) return text;
-		Object primitive = null;
+        if(text == null) {
+        	return null;
+		}
+
 		// Attempt to convert to Integer
 		try {
-			primitive = enforce32BitInt ? Integer.valueOf(text) : Long.valueOf(text);
-		} catch (Exception e) {/**/}
+			return enforce32BitInt ? Integer.valueOf(text) : Long.valueOf(text);
+		} catch (NumberFormatException e) {
+			/* No action needed: text is not an integer or long */
+		}
+
 		// Attempt to convert to double
-		if (primitive == null) {
-			try {
-				Double v = Double.valueOf(text);
-                if( !v.isInfinite() && !v.isNaN() ) {
-                    primitive = v;
-                }
-                else {
-                    primitive = text;
-                }
-			} catch (Exception e) {/**/}
+		try {
+			Double v = Double.valueOf(text);
+			return !v.isInfinite() && !v.isNaN() ? v : text;
+		} catch (NumberFormatException e) {
+			/* No action needed: text is not a double */
 		}
+
 		// Attempt to convert to boolean
-		if (primitive == null) {
-			if(text.trim().equalsIgnoreCase("true") || text.trim().equalsIgnoreCase("false")) {
-				primitive = Boolean.valueOf(text);
-			}
+		if(text.trim().equalsIgnoreCase("true") || text.trim().equalsIgnoreCase("false")) {
+			return Boolean.valueOf(text);
 		}
 
-		if (primitive == null || !primitive.toString().equals(text)) {
-			// Default String
-			primitive = text;
-		}
-
-		return primitive;
+		// Default String
+		return text;
     }
 }
