@@ -135,6 +135,25 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
                             n.setNamespace( prefix, uri );
                         }
                     }
+                    // With the 1.0 release, the default behavior was to treat an @xmlns
+                    // JSON field name (without a namespace prefix), as the attribute for
+                    // the default namespace URI. During JSON->XML serialization, this
+                    // default behavior resulted in an xmlns (without a namespace prefix)
+                    // attribute appearing on the applicable element, with the default
+                    // namespace uri as it's value.
+                    //
+                    // The code refactoring in this processAttributesAndNamespaces
+                    // method back in the 2.0 release, no longer assigns the default
+                    // namespace URI to the xmlns (without a namespace prefix) during JSON->XML
+                    // serialization, which in some cases is causing unmarshaling issues.
+                    // Putting in the following conditional check, restores the previous
+                    // default behavior, without breaking anything added during the earlier
+                    // refactoring exercise.
+                    if (o instanceof String) {
+                        String uri = o.toString();
+                        QName name = new QName( XMLConstants.DEFAULT_NS_PREFIX, k);
+                        n.setAttribute(name, uri);
+                    }
                 }
                 else {
                     String strValue = o == null ? null : o.toString();
