@@ -1396,4 +1396,8 @@ public class JSONObject implements Serializable {
      public void setEscapeForwardSlashAlways(boolean escapeForwardSlashAlways) {
        this.escapeForwardSlashAlways = escapeForwardSlashAlways;
      }
+
+     public LinkedHashMap toMap(){
+         return myHashMap;
+     }
 }
