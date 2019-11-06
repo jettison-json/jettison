@@ -1201,34 +1201,25 @@ public class JSONObject implements Serializable {
         Iterator     keys = keys();
         StringBuilder sb = new StringBuilder("{");
         int          newindent = indent + indentFactor;
-        Object       o;
-        if (n == 1) {
-            o = keys.next();
-            sb.append(quote(o.toString(), escapeForwardSlashAlways));
+        while (keys.hasNext()) {
+            Object o = keys.next();
+            if (sb.length() > 1) {
+                sb.append(",\n");
+            } else {
+                sb.append('\n');
+            }
+            for (i = 0; i < newindent; i += 1) {
+                sb.append(' ');
+            }
+            sb.append(quote(o.toString()));
             sb.append(": ");
             sb.append(valueToString(this.myHashMap.get(o), indentFactor,
-                    indent, escapeForwardSlashAlways));
-        } else {
-            while (keys.hasNext()) {
-                o = keys.next();
-                if (sb.length() > 1) {
-                    sb.append(",\n");
-                } else {
-                    sb.append('\n');
-                }
-                for (i = 0; i < newindent; i += 1) {
-                    sb.append(' ');
-                }
-                sb.append(quote(o.toString()));
-                sb.append(": ");
-                sb.append(valueToString(this.myHashMap.get(o), indentFactor,
-                        newindent, escapeForwardSlashAlways));
-            }
-            if (sb.length() > 1) {
-                sb.append('\n');
-                for (i = 0; i < indent; i += 1) {
-                    sb.append(' ');
-                }
+                    newindent, escapeForwardSlashAlways));
+        }
+        if (sb.length() > 1) {
+            sb.append('\n');
+            for (i = 0; i < indent; i += 1) {
+                sb.append(' ');
             }
         }
         sb.append('}');
