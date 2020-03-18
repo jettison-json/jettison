@@ -1385,4 +1385,8 @@ public class JSONObject implements Serializable {
      public void setEscapeForwardSlashAlways(boolean escapeForwardSlashAlways) {
        this.escapeForwardSlashAlways = escapeForwardSlashAlways;
      }
+    
+     public Map toMap() {
+       return Collections.unmodifiableMap(myHashMap);
+     }
 }
