@@ -21,7 +21,6 @@ package org.codehaus.jettison.json;
  * @version 2
  */
 public class JSONException extends Exception {
-    private Throwable cause;
     private int line = -1;
     private int column = -1;
     /**
@@ -40,11 +39,6 @@ public class JSONException extends Exception {
 
     public JSONException(Throwable t) {
         super(t.getMessage(), t);
-        this.cause = t;
-    }
-
-    public Throwable getCause() {
-        return this.cause;
     }
 
 	public int getColumn() {

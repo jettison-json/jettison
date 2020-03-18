@@ -621,7 +621,7 @@ public class JSONArray implements Serializable {
      * @return this.
      */
     public JSONArray put(long value) {
-        put(new Long(value));
+        put(Long.valueOf(value));
         return this;
     }
 
@@ -727,7 +727,7 @@ public class JSONArray implements Serializable {
      * @throws JSONException If the index is negative.
      */
     public JSONArray put(int index, long value) throws JSONException {
-        put(index, new Long(value));
+        put(index, Long.valueOf(value));
         return this;
     }
 
