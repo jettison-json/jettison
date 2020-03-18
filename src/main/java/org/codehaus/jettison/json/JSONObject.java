@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.codehaus.jettison.JSONSequenceTooLargeException;
 
@@ -91,15 +92,15 @@ public class JSONObject implements Serializable {
      private static final class Null {
 
     	 boolean explicitNull;
-    	 
-    	 public Null() { 
-    		 
+
+    	 public Null() {
+
     	 }
 
-         public Null(boolean explicitNull) { 
+         public Null(boolean explicitNull) {
     		 this.explicitNull = explicitNull;
     	 }
-    	 
+
         /**
          * There is only intended to be a single instance of the NULL object,
          * so the clone method returns itself.
@@ -128,7 +129,7 @@ public class JSONObject implements Serializable {
         public String toString() {
             return isExplicitNull() ? null : "null";
         }
-        
+
         public boolean isExplicitNull() {
             return explicitNull;
         }
@@ -138,7 +139,7 @@ public class JSONObject implements Serializable {
     /**
      * The hash map where the JSONObject's properties are kept.
      */
-    private LinkedHashMap myHashMap;
+    private LinkedHashMap<Object,Object> myHashMap;
     private boolean dropRootElement;
     private List ignoredElements;
     private boolean writeNullAsString = true;
@@ -165,10 +166,10 @@ public class JSONObject implements Serializable {
     public JSONObject(List ignoredElements) {
     	this(false, ignoredElements, true, true);
     }
-    
-    public JSONObject(boolean dropRootElement, List ignoredElements, boolean writeNullAsString, 
+
+    public JSONObject(boolean dropRootElement, List ignoredElements, boolean writeNullAsString,
     		          boolean escapeForwardSlash) {
-        this.myHashMap = new LinkedHashMap();
+        this.myHashMap = new LinkedHashMap<Object,Object>();
         this.dropRootElement = dropRootElement;
         this.ignoredElements = ignoredElements;
         this.writeNullAsString = writeNullAsString;
@@ -259,21 +260,21 @@ public class JSONObject implements Serializable {
      */
     public JSONObject(Map map) {
         this.myHashMap = (map == null) ?
-                new LinkedHashMap() :
-                new LinkedHashMap(map);
+                new LinkedHashMap<Object,Object>() :
+                new LinkedHashMap<Object,Object>(map);
         // ensure a pure hierarchy of JSONObjects and JSONArrays
-        for (Object k : myHashMap.keySet()) {
-            Object v = myHashMap.get(k);
+        for (Entry entry : myHashMap.entrySet()) {
+            Object v = entry.getValue();
             if (v instanceof Collection) {
-                myHashMap.put(k, new JSONArray((Collection) v));
+                myHashMap.put(entry.getKey(), new JSONArray((Collection) v));
             }
             if (v instanceof Map) {
-                myHashMap.put(k, new JSONObject((Map) v));
+                myHashMap.put(entry.getKey(), new JSONObject((Map) v));
             }
-        }                
+        }
     }
 
-    
+
     /**
      * Construct a JSONObject from an Object, using reflection to find the
      * public members. The resulting JSONObject's keys will be the strings
@@ -349,7 +350,7 @@ public class JSONObject implements Serializable {
      * @param key   A key string.
      * @param value An object to be accumulated under the key.
      * @return this.
-     * @throws JSONException If the key is null or if the current value 
+     * @throws JSONException If the key is null or if the current value
      *  associated with the key is not a JSONArray.
      */
     public JSONObject append(String key, Object value)
@@ -359,7 +360,7 @@ public class JSONObject implements Serializable {
         if (o == null) {
             put(key, new JSONArray().put(value));
         } else if (!(o instanceof JSONArray)){
-            throw new JSONException("JSONObject[" + key + 
+            throw new JSONException("JSONObject[" + key +
                         "] is not a JSONArray.");
         } else {
         	((JSONArray)o).put(value);
@@ -450,7 +451,7 @@ public class JSONObject implements Serializable {
     private double doGetDouble(String key, Object o) throws JSONException {
         try {
             return o instanceof Number ?
-                ((Number)o).doubleValue() : 
+                ((Number)o).doubleValue() :
                 Double.valueOf((String)o).doubleValue();
         } catch (Exception e) {
             throw new JSONException("JSONObject[" + quote(key) +
@@ -470,7 +471,7 @@ public class JSONObject implements Serializable {
      */
     public int getInt(String key) throws JSONException {
         return doGetInt(key, get(key));
-        
+
     }
     private int doGetInt(String key, Object o) throws JSONException {
         return o instanceof Number ? ((Number)o).intValue() : (int)getDouble(key);
@@ -674,7 +675,7 @@ public class JSONObject implements Serializable {
         }
     }
 
-    
+
     /**
      * Put a key/value pair in the JSONObject, where the value will be a
      * JSONArray which is produced from a Collection.
@@ -688,7 +689,7 @@ public class JSONObject implements Serializable {
         return this;
     }
 
-    
+
     /**
      * Get an optional double associated with a key,
      * or NaN if there is no such key or if its value is not a number.
@@ -909,11 +910,11 @@ public class JSONObject implements Serializable {
      * @throws JSONException If the key is null.
      */
     public JSONObject put(String key, long value) throws JSONException {
-        put(key, new Long(value));
+        put(key, Long.valueOf(value));
         return this;
     }
 
-     
+
     /**
      * Put a key/value pair in the JSONObject, where the value will be a
      * JSONObject which is produced from a Map.
@@ -926,8 +927,8 @@ public class JSONObject implements Serializable {
         put(key, new JSONObject(value));
         return this;
     }
-    
-    
+
+
     /**
      * Put a key/value pair in the JSONObject. If the value is null,
      * then the key will be removed from the JSONObject if it is present.
@@ -942,11 +943,11 @@ public class JSONObject implements Serializable {
     public JSONObject put(String key, Object value) throws JSONException {
         return doPut(key, value, -1, false);
     }
-    
-    protected JSONObject doPut(String key, 
+
+    protected JSONObject doPut(String key,
     		                   Object value,
     		                   int threshold,
-    		                   boolean checkExistingValue) 
+    		                   boolean checkExistingValue)
     		throws JSONException {
         if (key == null) {
             throw new JSONException("Null key.");
@@ -995,7 +996,7 @@ public class JSONObject implements Serializable {
         return this;
     }
 
-    
+
 
     /**
      * Produce a string in double quotes with backslash sequences in all the
@@ -1118,7 +1119,7 @@ public class JSONObject implements Serializable {
     public int hashCode() {
     	return myHashMap.hashCode();
     }
-    
+
     @Override
     public boolean equals(Object obj) {
     	if (obj instanceof JSONObject) {
@@ -1127,7 +1128,7 @@ public class JSONObject implements Serializable {
     		return false;
     	}
     }
-    
+
     /**
      * Make a JSON text of this JSONObject. For compactness, no whitespace
      * is added. If this would not result in a syntactically correct JSON text,
@@ -1243,21 +1244,21 @@ public class JSONObject implements Serializable {
      *  with <code>}</code>&nbsp;<small>(right brace)</small>.
      * @throws JSONException If the value is or contains an invalid number.
      */
-    static String valueToString(Object value, boolean escapeForwardSlash) throws JSONException {	
-    	
+    static String valueToString(Object value, boolean escapeForwardSlash) throws JSONException {
+
         if (value == null || value.equals(null)) {
             return "null";
         }
         if (value instanceof JSONString) {
-                Object o;
-                try {
+            String o;
+            try {
                 o = ((JSONString)value).toJSONString();
             } catch (Exception e) {
                 throw new JSONException(e);
             }
-            if (o instanceof String) {
-                        return (String) o;
-                }
+            if (o != null) {
+                return o;
+            }
             throw new JSONException("Bad value from toJSONString: " + o);
         }
         if (value instanceof Number) {
@@ -1291,12 +1292,9 @@ public class JSONObject implements Serializable {
             return "null";
         }
         try {
-                if (value instanceof JSONString) {
-                        Object o = ((JSONString)value).toJSONString();
-                        if (o instanceof String) {
-                                return (String)o;
-                        }
-                }
+            if (value instanceof JSONString) {
+                return ((JSONString)value).toJSONString();
+            }
         } catch (Exception e) {
                 /* forget about it */
         }
@@ -1329,19 +1327,19 @@ public class JSONObject implements Serializable {
      public Writer write(Writer writer) throws JSONException {
         try {
         	int hashMapSize = this.myHashMap.size();
-        	
+
         	boolean dropObjectKeyName = false;
         	if (hashMapSize == 1) {
-        		dropObjectKeyName = dropRootElement 
+        		dropObjectKeyName = dropRootElement
         			|| ignoredElements != null && ignoredElements.contains(keys().next());
         	}
-        	
+
             if (!dropObjectKeyName) {
                 writer.write('{');
             }
 
             boolean  b = false;
-            
+
             Iterator keys = keys();
             while (keys.hasNext()) {
                 if (b) {
@@ -1349,17 +1347,17 @@ public class JSONObject implements Serializable {
                 }
                 String k = keys.next().toString();
                 Object v = this.myHashMap.get(k);
-                
+
                 boolean mayBeDropSimpleElement = false;
                 if (!dropObjectKeyName) {
-                	mayBeDropSimpleElement = hashMapSize > 1 
+                	mayBeDropSimpleElement = hashMapSize > 1
                 		&& ignoredElements != null && ignoredElements.contains(k);
                 	if (!mayBeDropSimpleElement) {
                         writer.write(quote(k, escapeForwardSlashAlways));
                         writer.write(':');
                 	}
                 }
-                
+
                 if (v instanceof JSONObject) {
                     ((JSONObject)v).write(writer);
                 } else if (v instanceof JSONArray) {
@@ -1379,7 +1377,7 @@ public class JSONObject implements Serializable {
             throw new JSONException(e);
         }
      }
-     
+
      public boolean isEscapeForwardSlashAlways() {
        return escapeForwardSlashAlways;
      }

@@ -78,7 +78,7 @@ public class StringIndenter {
       return null;
     }
     String resultString = this.result.toString();
-    return resultString == null ? null : resultString.trim();
+    return resultString.trim();
   }
 
   /**
