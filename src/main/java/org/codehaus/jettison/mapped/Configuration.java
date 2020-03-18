@@ -75,6 +75,7 @@ public class Configuration {
     private String attributeKey = "@";
     private boolean ignoreNamespaces;
     private boolean dropRootElement;
+    private boolean rootElementArrayWrapper = true;
     private Set primitiveArrayKeys = Collections.EMPTY_SET;
     private boolean writeNullAsString = true;
     private boolean readNullAsString;
@@ -169,7 +170,14 @@ public class Configuration {
 	public void setDropRootElement(boolean dropRootElement) {
 		this.dropRootElement = dropRootElement;
 	}
+	public boolean isRootElementArrayWrapper() {
+            return rootElementArrayWrapper;
+        }
 
+        public void setRootElementArrayWrapper(boolean rootElementArrayWrapper) {
+            this.rootElementArrayWrapper = rootElementArrayWrapper;
+        }
+	
 	public boolean isWriteNullAsString() {
 		return writeNullAsString;
 	}

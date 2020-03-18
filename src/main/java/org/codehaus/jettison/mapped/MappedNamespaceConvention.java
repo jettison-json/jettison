@@ -51,6 +51,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
     private Set<?> primitiveArrayKeys;
     private boolean dropRootElement;
     private boolean writeNullAsString = true;
+    private boolean rootElementArrayWrapper = true;
     private boolean ignoreEmptyArrayValues;
     private boolean readNullAsString;
     private boolean escapeForwardSlashAlways;
@@ -66,6 +67,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         this.supressAtAttributes = config.isSupressAtAttributes();
         this.ignoreNamespaces = config.isIgnoreNamespaces();
         this.dropRootElement = config.isDropRootElement();
+        this.rootElementArrayWrapper = config.isRootElementArrayWrapper();
         this.attributeKey = config.getAttributeKey();
         this.primitiveArrayKeys = config.getPrimitiveArrayKeys();
         this.ignoredElements = config.getIgnoredElements();
@@ -332,10 +334,13 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
 	public boolean isDropRootElement() {
 		return dropRootElement;
 	}
+	public boolean isRootElementArrayWrapper() {
+	    return rootElementArrayWrapper;
+	}
 	public List<?> getIgnoredElements() {
-        return ignoredElements;
-    }
-    public boolean isWriteNullAsString() {
+            return ignoredElements;
+        }
+        public boolean isWriteNullAsString() {
 		return writeNullAsString;
 	}
 	public boolean isReadNullAsString() {

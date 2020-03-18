@@ -50,7 +50,11 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
         if (top instanceof JSONObject) {
             this.node = new Node(null, rootName, (JSONObject)top, convention);
         } else if (top instanceof JSONArray && !(((JSONArray)top).length() == 1 && ((JSONArray)top).get(0).equals(""))) {
-            this.node = new Node(null, rootName, obj, convention);
+            if (con.isRootElementArrayWrapper()) {
+                this.node = new Node(null, rootName, obj, convention);
+            } else {
+                this.node = new Node(null, rootName, ((JSONArray)top).getJSONObject(0), convention);
+            }
         } else {
             node = new Node(rootName, convention);
             convention.processAttributesAndNamespaces(node, obj);
