@@ -1050,6 +1050,12 @@ public class JSONObject implements Serializable {
             case '\r':
                 sb.append("\\r");
                 break;
+            case '\u2028':
+                sb.append("\\u2028");
+                break;
+            case '\u2029':
+                sb.append("\\u2029");
+                break;
             default:
                 if (c < ' ') {
                     t = "000" + Integer.toHexString(c);
