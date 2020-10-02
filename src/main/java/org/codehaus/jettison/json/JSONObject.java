@@ -1350,6 +1350,7 @@ public class JSONObject implements Serializable {
             while (keys.hasNext()) {
                 if (b) {
                     writer.write(',');
+                    b = false;
                 }
                 String k = keys.next().toString();
                 Object v = this.myHashMap.get(k);
