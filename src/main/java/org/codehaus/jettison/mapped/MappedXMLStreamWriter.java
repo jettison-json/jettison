@@ -243,6 +243,10 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	}
 	
 	public void writeStartElement(String prefix, String local, String ns) throws XMLStreamException {
+		if (current == null) {
+			this.writeStartDocument();
+		}
+
 		String parentKey = current.getTreeKey();
 		stack.push(current);
 		String key = convention.createKey(prefix, ns, local);
