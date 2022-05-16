@@ -15,6 +15,8 @@ limitations under the License.
 */
 package org.codehaus.jettison.json;
 
+import java.math.BigDecimal;
+
 /**
  * A JSONTokener takes a source string and extracts characters and tokens from
  * it. It is used by the JSONObject and JSONArray constructors to parse
@@ -23,6 +25,11 @@ package org.codehaus.jettison.json;
  * @version 2
  */
 public class JSONTokener {
+
+    private static final String USE_BIGDECIMAL_JSONTOKENER_KEY = "jettison.json.jsontokener.use_bigdecimal";
+    public static final boolean USE_BIGDECIMAL_JSONTOKENER = Boolean.getBoolean( USE_BIGDECIMAL_JSONTOKENER_KEY );
+    protected boolean useBigDecimal = USE_BIGDECIMAL_JSONTOKENER; 
+
 
     /**
      * The index of the next character.
@@ -308,7 +315,8 @@ public class JSONTokener {
 
 
     /**
-     * Get the next value. The value can be a Boolean, Double, Integer,
+     * Get the next value. The value can be a Boolean, Double/BigDecimal
+     * (depending on -Djettison.json.jsontokener.use_bigdecimal), Integer,
      * JSONArray, JSONObject, Long, or String, or the JSONObject.NULL object.
      * @throws JSONException If syntax error.
      *
@@ -398,7 +406,11 @@ public class JSONTokener {
                     return Long.valueOf(s);
                 } catch (Exception f) {
                     try {
-                        return new Double(s);
+                        if (useBigDecimal) {
+                            return new BigDecimal(s);
+                        } else {
+                            return new Double(s);
+                        }
                     }  catch (Exception g) {
                         return s;
                     }
