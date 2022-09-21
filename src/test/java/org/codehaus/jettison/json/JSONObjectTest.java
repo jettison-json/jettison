@@ -92,5 +92,60 @@ public class JSONObjectTest extends TestCase {
       assertEquals(obj.toString(), "{\"key\":\"http://example.com/foo\"}");
       obj.setEscapeForwardSlashAlways(true);
       assertEquals(obj.toString(), "{\"key\":\"http:\\/\\/example.com\\/foo\"}");
-   }
+    }
+
+    public void testMalformedObject() throws Exception {
+       try {
+           new JSONObject("{/");
+           fail("Failure expected on malformed JSON");
+       } catch (JSONException ex) {
+           // expected
+       }
+    }
+
+    public void testMalformedObject2() throws Exception {
+        try {
+            new JSONObject("{x");
+            fail("Failure expected on malformed JSON");
+        } catch (JSONException ex) {
+            // expected
+        }
+    }
+
+    public void testMalformedObject3() throws Exception {
+        try {
+            new JSONObject("{/x");
+            fail("Failure expected on malformed JSON");
+        } catch (JSONException ex) {
+            // expected
+        }
+    }
+
+    public void testMalformedObject4() throws Exception {
+        try {
+            new JSONObject("{/*");
+            fail("Failure expected on malformed JSON");
+        } catch (JSONException ex) {
+            // expected
+        }
+    }
+
+    public void testMalformedObject5() throws Exception {
+        try {
+            new JSONObject("{//");
+            fail("Failure expected on malformed JSON");
+        } catch (JSONException ex) {
+            // expected
+        }
+    }
+
+    public void testMalformedArray() throws Exception {
+        try {
+            new JSONObject("{[/");
+            fail("Failure expected on malformed JSON");
+        } catch (JSONException ex) {
+            // expected
+        }
+    }
+
 }
