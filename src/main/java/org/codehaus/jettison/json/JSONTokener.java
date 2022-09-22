@@ -192,7 +192,6 @@ public class JSONTokener {
                             if (next() == '/') {
                                 break;
                             }
-                            back();
                         }
                     }
                     break;

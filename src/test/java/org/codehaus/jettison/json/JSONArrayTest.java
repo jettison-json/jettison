@@ -43,6 +43,24 @@ public class JSONArrayTest extends TestCase {
       String expectedValue = "[\"a string with / character\",{\"key\":\"http://example.com/foo\"}]";
       assertEquals(expectedValue, array.toString());
     }
-    
-    
+
+    public void testInfiniteLoop() {
+        String str = "[*/*A25] **";
+        try {
+            new JSONArray(str);
+            fail("Failure expected on malformed JSON");
+        } catch (JSONException ex) {
+            // expected
+        }
+    }
+
+    public void testInfiniteLoop2() {
+        String str = "[/";
+        try {
+            new JSONArray(str);
+            fail("Failure expected on malformed JSON");
+        } catch (JSONException ex) {
+            // expected
+        }
+    }
 }
