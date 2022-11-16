@@ -85,6 +85,13 @@ import org.codehaus.jettison.JSONSequenceTooLargeException;
 public class JSONObject implements Serializable {
 
     /**
+     * The default recursion depth limit to prevent stack overflow issues on deeply nested structures.
+     */
+    final static int DEFAULT_RECURSION_DEPTH_LIMIT = 500;
+    
+    static int RECURSION_DEPTH_LIMIT = DEFAULT_RECURSION_DEPTH_LIMIT;
+
+    /**
      * JSONObject.NULL is equivalent to the value that JavaScript calls null,
      * whilst Java's null is equivalent to the value that JavaScript calls
      * undefined.
@@ -257,8 +264,17 @@ public class JSONObject implements Serializable {
      * Construct a JSONObject from a Map.
      * @param map A map object that can be used to initialize the contents of
      *  the JSONObject.
+     * @throws JSONException If there is a syntax error.
      */
-    public JSONObject(Map map) {
+    public JSONObject(Map map) throws JSONException {
+        this(map, 0);
+    }
+
+    private JSONObject(Map map, int recursionDepth) throws JSONException {
+
+        if (recursionDepth > RECURSION_DEPTH_LIMIT) {
+            throw new JSONException("JSONObject has reached recursion depth limit of " + RECURSION_DEPTH_LIMIT);
+        }
         this.myHashMap = (map == null) ?
                 new LinkedHashMap<Object,Object>() :
                 new LinkedHashMap<Object,Object>(map);
@@ -268,8 +284,8 @@ public class JSONObject implements Serializable {
             if (v instanceof Collection) {
                 myHashMap.put(entry.getKey(), new JSONArray((Collection) v));
             }
-            if (v instanceof Map) {
-                myHashMap.put(entry.getKey(), new JSONObject((Map) v));
+            if (v instanceof Map && v != map) {
+                myHashMap.put(entry.getKey(), new JSONObject((Map) v, recursionDepth + 1));
             }
         }
     }
@@ -1025,6 +1041,12 @@ public class JSONObject implements Serializable {
             c = string.charAt(i);
             switch (c) {
             case '\\':
+                // Escape a backslash, but only if it isn't already escaped
+                if (i == len - 1 || string.charAt(i + 1) != '\\') {
+                    sb.append('\\');
+                }
+                sb.append(c);
+                break;
             case '"':
                 sb.append('\\');
                 sb.append(c);
@@ -1319,6 +1341,23 @@ public class JSONObject implements Serializable {
         return quote(value.toString(), escapeForwardSlash);
     }
 
+    /**
+     * Set the new recursion depth limit to prevent stack overflow issues on deeply nested structures. The default
+     * value is 500
+     * @param newRecursionDepthLimit the new recursion depth limit to set
+     */
+    public void setRecursionDepthLimit(int newRecursionDepthLimit) {
+        RECURSION_DEPTH_LIMIT = newRecursionDepthLimit;
+    }
+
+    /**
+     * Get the new recursion depth limit to prevent stack overflow issues on deeply nested structures. The default
+     * value is 500
+     * @return the recursion depth limit
+     */
+    public int getRecursionDepthLimit() {
+        return RECURSION_DEPTH_LIMIT;
+    }
 
      /**
       * Write the contents of the JSONObject as JSON text to a writer.
@@ -1396,4 +1435,5 @@ public class JSONObject implements Serializable {
      public Map toMap() {
        return Collections.unmodifiableMap(myHashMap);
      }
+
 }

@@ -2,7 +2,13 @@ package org.codehaus.jettison.json;
 
 import junit.framework.TestCase;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class JSONObjectTest extends TestCase {
+
     public void testEquals() throws Exception {
     	JSONObject aJsonObj = new JSONObject("{\"x\":\"y\"}");
     	JSONObject bJsonObj = new JSONObject("{\"x\":\"y\"}");
@@ -148,4 +154,49 @@ public class JSONObjectTest extends TestCase {
         }
     }
 
+    // https://github.com/jettison-json/jettison/issues/52
+    public void testIssue52() throws Exception {
+        Map<String,Object> map = new HashMap<>();
+        map.put("t",map);
+        new JSONObject(map);
+    }
+
+    // https://github.com/jettison-json/jettison/issues/52
+    public void testIssue52Recursive() throws Exception {
+        try {
+            Map<String, Object> map = new HashMap<>();
+            Map<String, Object> map2 = new HashMap<>();
+            map.put("t", map2);
+            map2.put("t", map);
+            new JSONObject(map);
+            fail("Failure expected");
+        } catch (JSONException e) {
+            assertTrue(e.getMessage().contains("JSONObject has reached recursion depth limit"));
+            // expected
+        }
+    }
+
+    // https://github.com/jettison-json/jettison/issues/45
+    public void testFuzzerTestCase() throws Exception, JSONException {
+        try {
+            new JSONObject("{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{\"G\":[30018084,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,38,1,1,6,1,1]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,1,1,6,1,0]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,1,340282366920938463463374607431768211458,6,1,1]}:[32768,1,1,6,1,0]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,1,340282366920938463463374607431768211458,6,1,1]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,9 68,1,127,1,1]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,6,32768,1,1,6,1,9223372036854775807]}:[3,1,6,32768,1,1,6,1,1]}:[3,1,10,32768,1,1,6,1,1]}");
+            fail("Failure expected");
+        } catch (JSONException ex) {
+            // expected
+        }
+    }
+
+    public void testFuzzerTestCase2() throws Exception {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 100000; i++) {
+            sb.append("{");
+        }
+        try {
+            new JSONObject(sb.toString());
+            fail("Failure expected");
+        } catch (JSONException e) {
+            assertTrue(e.getMessage().contains("JSONTokener has reached recursion depth limit"));
+            // expected
+        }
+    }
 }
