@@ -44,7 +44,9 @@ public class JSONTokener {
 
 
     private int threshold = -1;
-    
+
+    private int recursionDepth;
+
     /**
      * Construct a JSONTokener from a string.
      *
@@ -54,7 +56,7 @@ public class JSONTokener {
         this.myIndex = 0;
         this.mySource = s.trim();
     }
-    
+
     /**
      * Construct a JSONTokener from a string.
      *
@@ -423,11 +425,20 @@ public class JSONTokener {
     }
 
     protected JSONObject newJSONObject() throws JSONException {
+        checkRecursionDepth();
     	return new JSONObject(this);
     }
-    
+
     protected JSONArray newJSONArray() throws JSONException {
+        checkRecursionDepth();
     	return new JSONArray(this);
+    }
+
+    private void checkRecursionDepth() throws JSONException {
+        recursionDepth++;
+        if (recursionDepth > JSONObject.RECURSION_DEPTH_LIMIT) {
+            throw new JSONException("JSONTokener has reached recursion depth limit of " + JSONObject.RECURSION_DEPTH_LIMIT);
+        }
     }
     
     /**

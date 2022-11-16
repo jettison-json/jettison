@@ -179,8 +179,9 @@ public class JSONArray implements Serializable {
     /**
      * Construct a JSONArray from a Collection.
      * @param collection     A Collection.
+     * @throws JSONException If there is a syntax error.
      */
-    public JSONArray(Collection collection) {
+    public JSONArray(Collection collection) throws JSONException {
         this.myArrayList = (collection == null) ?
                 new ArrayList() :
                 new ArrayList(collection);
@@ -580,8 +581,9 @@ public class JSONArray implements Serializable {
      * JSONArray which is produced from a Collection.
      * @param value     A Collection value.
      * @return          this.
+     * @throws JSONException If there is a syntax error.
      */
-    public JSONArray put(Collection value) {
+    public JSONArray put(Collection value) throws JSONException {
         put(new JSONArray(value));
         return this;
     }
@@ -631,8 +633,9 @@ public class JSONArray implements Serializable {
      * JSONObject which is produced from a Map.
      * @param value     A Map value.
      * @return          this.
+     * @throws JSONException If there is a syntax error.
      */
-    public JSONArray put(Map value) {
+    public JSONArray put(Map value) throws JSONException {
         put(new JSONObject(value));
         return this;
     }
