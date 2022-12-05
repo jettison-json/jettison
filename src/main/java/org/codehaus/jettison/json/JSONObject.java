@@ -1346,6 +1346,16 @@ public class JSONObject implements Serializable {
      * value is 500
      * @param newRecursionDepthLimit the new recursion depth limit to set
      */
+    public static void setGlobalRecursionDepthLimit(int newRecursionDepthLimit) {
+        RECURSION_DEPTH_LIMIT = newRecursionDepthLimit;
+    }
+
+    /**
+     * Set the new recursion depth limit to prevent stack overflow issues on deeply nested structures. The default
+     * value is 500
+     * @param newRecursionDepthLimit the new recursion depth limit to set
+     */
+    @Deprecated
     public void setRecursionDepthLimit(int newRecursionDepthLimit) {
         RECURSION_DEPTH_LIMIT = newRecursionDepthLimit;
     }
@@ -1355,6 +1365,16 @@ public class JSONObject implements Serializable {
      * value is 500
      * @return the recursion depth limit
      */
+    public static int getGlobalRecursionDepthLimit() {
+        return RECURSION_DEPTH_LIMIT;
+    }
+
+    /**
+     * Get the new recursion depth limit to prevent stack overflow issues on deeply nested structures. The default
+     * value is 500
+     * @return the recursion depth limit
+     */
+    @Deprecated
     public int getRecursionDepthLimit() {
         return RECURSION_DEPTH_LIMIT;
     }
