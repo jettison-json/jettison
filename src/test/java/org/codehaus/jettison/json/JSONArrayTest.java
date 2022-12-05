@@ -63,4 +63,10 @@ public class JSONArrayTest extends TestCase {
             // expected
         }
     }
+
+    public void testIssue52() throws JSONException {
+        new JSONObject().setRecursionDepthLimit(10);
+        new JSONArray("[{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {a:10}]");
+    }
+
 }

@@ -426,12 +426,16 @@ public class JSONTokener {
 
     protected JSONObject newJSONObject() throws JSONException {
         checkRecursionDepth();
-    	return new JSONObject(this);
+        JSONObject object = new JSONObject(this);
+        recursionDepth--;
+        return object;
     }
 
     protected JSONArray newJSONArray() throws JSONException {
         checkRecursionDepth();
-    	return new JSONArray(this);
+        JSONArray array = new JSONArray(this);
+        recursionDepth--;
+        return array;
     }
 
     private void checkRecursionDepth() throws JSONException {
