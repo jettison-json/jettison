@@ -1041,14 +1041,17 @@ public class JSONObject implements Serializable {
             c = string.charAt(i);
             switch (c) {
             case '\\':
-                // Escape a backslash, but only if it isn't already escaped
-                if (i == len - 1 || string.charAt(i + 1) != '\\') {
+                // Escape a backslash, but not if it's escaping a quotation mark
+                if (i == len - 1 || string.charAt(i + 1) != '"') {
                     sb.append('\\');
                 }
                 sb.append(c);
                 break;
             case '"':
-                sb.append('\\');
+                // Escape a quotation mark, but not if it's already escaped
+                if (i == 0 || string.charAt(i - 1) != '\\') {
+                    sb.append('\\');
+                }
                 sb.append(c);
                 break;
             case '/':
