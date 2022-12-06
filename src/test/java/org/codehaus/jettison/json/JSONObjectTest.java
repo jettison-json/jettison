@@ -204,4 +204,11 @@ public class JSONObjectTest extends TestCase {
             // expected
         }
     }
+
+    public void testIssue58() throws JSONException {
+        Map<String, Object> map = new HashMap<>();
+        map.put("request", "{\"exclude\":[\".\",\"?\",\"+\",\"*\",\"|\",\"{\",\"}\",\"[\",\"]\",\"(\",\")\",\"\\\"\",\"\\\\\",\"#\",\"@\",\"&\",\"<\",\">\",\"~\"]}");
+        JSONObject jsonObject = new JSONObject(map);
+        JSONObject jsonObject1 = new JSONObject(jsonObject.toString());
+    }
 }
