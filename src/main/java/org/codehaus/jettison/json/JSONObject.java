@@ -220,6 +220,8 @@ public class JSONObject implements Serializable {
                 throw x.syntaxError("A JSONObject text must end with '}'");
             case '}':
                 return;
+            case '{':
+                throw x.syntaxError("Expected a key");                
             default:
                 x.back();
                 key = x.nextValue().toString();
@@ -1041,15 +1043,13 @@ public class JSONObject implements Serializable {
             c = string.charAt(i);
             switch (c) {
             case '\\':
-                // Escape a backslash, but only if it isn't already escaped
-                if (i == len - 1 || string.charAt(i + 1) != '\\') {
-                    sb.append('\\');
-                }
-                sb.append(c);
+                sb.append("\\\\");
+                //if (i < (len - 1) && string.charAt(i+1) == '\\') {
+                //    i++;
+                //}
                 break;
             case '"':
-                sb.append('\\');
-                sb.append(c);
+                sb.append("\\\"");
                 break;
             case '/':
             	if (escapeForwardSlashAlways || i > 0 && string.charAt(i - 1) == '<') {

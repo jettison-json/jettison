@@ -87,7 +87,11 @@ public class JSONObjectTest extends TestCase {
     public void testSlashEscapingTurnedOnByDefault() throws Exception {
        JSONObject obj = new JSONObject();
        obj.put("key", "http://example.com/foo");
-       assertEquals(obj.toString(), "{\"key\":\"http:\\/\\/example.com\\/foo\"}");
+       assertEquals("{\"key\":\"http:\\/\\/example.com\\/foo\"}", obj.toString());
+        
+        obj = new JSONObject();
+        obj.put("key", "\\\\");
+        assertEquals("{\"key\":\"\\\\\\\\\"}", obj.toString());
     }
     
     public void testForwardSlashEscapingModifiedfBySetter() throws Exception {
@@ -183,13 +187,14 @@ public class JSONObjectTest extends TestCase {
             fail("Failure expected");
         } catch (JSONException ex) {
             // expected
+            assertTrue(ex.getMessage().contains("Expected a key"));
         }
     }
 
     public void testFuzzerTestCase2() throws Exception {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 100000; i++) {
-            sb.append("{");
+            sb.append("{\"key\":");
         }
         try {
             new JSONObject(sb.toString());
