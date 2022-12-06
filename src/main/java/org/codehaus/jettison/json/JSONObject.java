@@ -1044,9 +1044,6 @@ public class JSONObject implements Serializable {
             switch (c) {
             case '\\':
                 sb.append("\\\\");
-                //if (i < (len - 1) && string.charAt(i+1) == '\\') {
-                //    i++;
-                //}
                 break;
             case '"':
                 sb.append("\\\"");
