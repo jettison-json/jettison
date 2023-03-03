@@ -2,6 +2,9 @@ package org.codehaus.jettison.json;
 
 import junit.framework.TestCase;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class JSONArrayTest extends TestCase {
     public void testInvalidArraySequence() throws Exception {
     	try {
@@ -67,6 +70,18 @@ public class JSONArrayTest extends TestCase {
     public void testIssue52() throws JSONException {
         JSONObject.setGlobalRecursionDepthLimit(10);
         new JSONArray("[{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {a:10}]");
+        JSONObject.setGlobalRecursionDepthLimit(500);
+    }
+
+    // https://github.com/jettison-json/jettison/issues/60
+    public void testIssue60() throws JSONException {
+        List<Object> list = new ArrayList<>();
+        list.add(list);
+        try {
+            new JSONArray(list);
+        } catch (JSONException ex) {
+            assertEquals(ex.getMessage(), "JSONArray has reached recursion depth limit of 500");
+        }
     }
 
 }

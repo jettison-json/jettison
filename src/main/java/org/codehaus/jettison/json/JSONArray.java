@@ -182,21 +182,29 @@ public class JSONArray implements Serializable {
      * @throws JSONException If there is a syntax error.
      */
     public JSONArray(Collection collection) throws JSONException {
+        this(collection, 0);
+    }
+
+    private JSONArray(Collection collection, int recursionDepth) throws JSONException {
+        if (recursionDepth > JSONObject.getGlobalRecursionDepthLimit()) {
+            throw new JSONException("JSONArray has reached recursion depth limit of "
+                    + JSONObject.getGlobalRecursionDepthLimit());
+        }
+
         this.myArrayList = (collection == null) ?
                 new ArrayList() :
                 new ArrayList(collection);
         // ensure a pure hierarchy of JSONObjects and JSONArrays
         for (ListIterator iter = myArrayList.listIterator(); iter.hasNext();) {
-             Object e = iter.next();
-             if (e instanceof Collection) {
-                 iter.set(new JSONArray((Collection) e));
-             }
-             if (e instanceof Map) {
-                 iter.set(new JSONObject((Map) e));
-             }
-        }        
+            Object e = iter.next();
+            if (e instanceof Collection) {
+                iter.set(new JSONArray((Collection) e, recursionDepth + 1));
+            }
+            if (e instanceof Map) {
+                iter.set(new JSONObject((Map) e));
+            }
+        }
     }
-
 
     /**
      * Get the object value associated with an index.
