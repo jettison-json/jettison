@@ -20,7 +20,6 @@ import java.io.StringWriter;
 import junit.framework.TestCase;
 
 import org.codehaus.jettison.AbstractXMLStreamWriter;
-import org.codehaus.jettison.badgerfish.BadgerFishXMLStreamWriter;
 
 public class BadgerFishXMLStreamWriterTest extends TestCase {
     public void testRootWithText() throws Exception {

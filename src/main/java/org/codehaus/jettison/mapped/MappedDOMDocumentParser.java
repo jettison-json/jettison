@@ -15,8 +15,6 @@
  */
 package org.codehaus.jettison.mapped;
 
-import java.util.HashMap;
-
 import org.codehaus.jettison.AbstractDOMDocumentParser;
 
 /**
