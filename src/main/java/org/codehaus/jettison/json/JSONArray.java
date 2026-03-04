@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ListIterator;
 import java.util.Map;
+
+import org.codehaus.jettison.JSONSequenceTooLargeException;
 import java.util.stream.Stream;
 
 /**
@@ -76,6 +78,10 @@ import java.util.stream.Stream;
  */
 public class JSONArray implements Serializable {
 
+    final static int DEFAULT_ARRAY_LENGTH_LIMIT = 1000000;
+
+    static int ARRAY_LENGTH_LIMIT = DEFAULT_ARRAY_LENGTH_LIMIT;
+
 
     /**
      * The arrayList where the JSONArray's properties are kept.
@@ -111,6 +117,10 @@ public class JSONArray implements Serializable {
      * @param capacity the initial capacity
      */
     public JSONArray(int capacity) {
+        if (capacity > ARRAY_LENGTH_LIMIT) {
+            throw new IllegalArgumentException("JSONArray capacity " + capacity
+                    + " exceeds array length limit of " + ARRAY_LENGTH_LIMIT);
+        }
         this.myArrayList = new ArrayList(capacity);
     }
 
@@ -140,9 +150,11 @@ public class JSONArray implements Serializable {
             		throw x.syntaxError("JSONArray text has a trailing ','");
             	}
                 x.back();
+                validateGrowthBy(1);
                 this.myArrayList.add(null);
             } else {
                 x.back();
+                validateGrowthBy(1);
                 this.myArrayList.add(x.nextValue());
             }
             switch (x.nextClean()) {
@@ -190,6 +202,11 @@ public class JSONArray implements Serializable {
         if (recursionDepth > JSONObject.getGlobalRecursionDepthLimit()) {
             throw new JSONException("JSONArray has reached recursion depth limit of "
                     + JSONObject.getGlobalRecursionDepthLimit());
+        }
+
+        if (collection != null && collection.size() > ARRAY_LENGTH_LIMIT) {
+            throw new JSONSequenceTooLargeException("JSONArray length limit of "
+                    + ARRAY_LENGTH_LIMIT + " exceeded");
         }
 
         this.myArrayList = (collection == null) ?
@@ -776,6 +793,10 @@ public class JSONArray implements Serializable {
         if (index < 0) {
             throw new JSONException("JSONArray[" + index + "] not found.");
         }
+        if (index >= ARRAY_LENGTH_LIMIT) {
+            throw new JSONSequenceTooLargeException("JSONArray index " + index
+                    + " exceeds array length limit of " + ARRAY_LENGTH_LIMIT);
+        }
         if (index < length()) {
             this.myArrayList.set(index, value);
         } else {
@@ -785,6 +806,21 @@ public class JSONArray implements Serializable {
             put(value);
         }
         return this;
+    }
+
+    private void validateGrowthBy(int increment) throws JSONException {
+        if (increment > 0 && this.myArrayList.size() > ARRAY_LENGTH_LIMIT - increment) {
+            throw new JSONSequenceTooLargeException("JSONArray length limit of "
+                    + ARRAY_LENGTH_LIMIT + " exceeded");
+        }
+    }
+
+    public static void setGlobalArrayLengthLimit(int newArrayLengthLimit) {
+        ARRAY_LENGTH_LIMIT = newArrayLengthLimit;
+    }
+
+    public static int getGlobalArrayLengthLimit() {
+        return ARRAY_LENGTH_LIMIT;
     }
 
 

@@ -10,4 +10,16 @@ BadgerFish convention users are welcomed.
 
 Jettison was originally created by Dan Diephouse and hosted at Codehause.
 
+## Security limits
+
+Jettison includes default parser safety limits to help prevent excessive memory/stack usage from deeply nested or extremely large JSON payloads:
+
+- Default recursion depth limit: `500` (configured in `JSONObject`).
+- Default `JSONArray` length limit: `1,000,000` elements.
+
+These can be adjusted globally at application startup:
+
+- `JSONObject.setGlobalRecursionDepthLimit(int)`
+- `JSONArray.setGlobalArrayLengthLimit(int)`
+
 

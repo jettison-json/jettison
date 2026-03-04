@@ -93,4 +93,14 @@ public class JSONArrayTest extends TestCase {
         assertEquals("a-mapped|b-mapped|c-mapped", result);
     }
 
+    public void testIssue88() throws JSONException
+    {
+        try {
+            new JSONArray().put(1829517625, 1.0719845412539998E291);
+            fail("Exception expected");
+        } catch (JSONException ex) {
+            assertTrue(ex.getMessage().startsWith("JSONArray index 1829517625 exceeds array length limit of "));
+        }
+    }
+
 }
