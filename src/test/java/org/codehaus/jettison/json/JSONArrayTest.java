@@ -3,7 +3,9 @@ package org.codehaus.jettison.json;
 import junit.framework.TestCase;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class JSONArrayTest extends TestCase {
     public void testInvalidArraySequence() throws Exception {
@@ -14,7 +16,7 @@ public class JSONArrayTest extends TestCase {
     		assertTrue(ex.getMessage().startsWith("JSONArray text has a trailing ','"));
     	}
     }
-    
+
     public void testInvalidArraySequence2() throws Exception {
     	try {
     	    new JSONArray("[32,34");
@@ -23,16 +25,16 @@ public class JSONArrayTest extends TestCase {
     		assertTrue(ex.getMessage().startsWith("Expected a ',' or ']'"));
     	}
     }
-    
+
     public void testEscapingInArrayIsOnByDefault() {
       JSONArray array = new JSONArray();
       array.put("a string with / character");
       String expectedValue = "[\"a string with \\/ character\"]";
       assertEquals(expectedValue, array.toString());
     }
-    
+
     public void testEscapingInArrayIsTrunedOff() throws JSONException {
-   
+
       JSONObject obj = new JSONObject();
       obj.put("key", "http://example.com/foo");
       obj.setEscapeForwardSlashAlways(false);
@@ -41,7 +43,7 @@ public class JSONArrayTest extends TestCase {
       array.put("a string with / character");
       array.put(obj);
       array.setEscapeForwardSlashAlways(false);
-      
+
       System.out.println(array.toString());
       String expectedValue = "[\"a string with / character\",{\"key\":\"http://example.com/foo\"}]";
       assertEquals(expectedValue, array.toString());
@@ -82,6 +84,13 @@ public class JSONArrayTest extends TestCase {
         } catch (JSONException ex) {
             assertEquals(ex.getMessage(), "JSONArray has reached recursion depth limit of 500");
         }
+    }
+
+    public void testStream() throws JSONException
+    {
+        JSONArray jsonArray = new JSONArray(Arrays.asList("a", "b", "c"));
+        String result = jsonArray.stream().map(element -> element + "-mapped").collect(Collectors.joining("|"));
+        assertEquals("a-mapped|b-mapped|c-mapped", result);
     }
 
 }

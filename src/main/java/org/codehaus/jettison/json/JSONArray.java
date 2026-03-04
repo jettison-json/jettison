@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * A JSONArray is an ordered sequence of values. Its external text form is a
@@ -82,9 +83,9 @@ public class JSONArray implements Serializable {
     private ArrayList myArrayList;
 
     /**
-     * When set to <code>true</code> forward slashes are escaped within the array. 
+     * When set to <code>true</code> forward slashes are escaped within the array.
      * When set to <code>false</code> no forward slashes are escaped.
-     * This setting is not inherited to any JSONObject or JSONArray members of the array. 
+     * This setting is not inherited to any JSONObject or JSONArray members of the array.
      * It is only for simple strings.
      * Escaping needs to be set for each contained JSONObject or JSONArray object.
      */
@@ -104,7 +105,7 @@ public class JSONArray implements Serializable {
     public JSONArray() {
         this.myArrayList = new ArrayList();
     }
-    
+
     /**
      * Construct an empty JSONArray with a given capacity.
      * @param capacity the initial capacity
@@ -128,7 +129,7 @@ public class JSONArray implements Serializable {
         	throw x.syntaxError("JSONArray text must end with ']'");
         } else if (c == ',') {
         	throw x.syntaxError("JSONArray text has a trailing ','");
-        } 
+        }
         if (c == ']') {
             return;
         }
@@ -258,7 +259,7 @@ public class JSONArray implements Serializable {
         Object o = get(index);
         try {
             return o instanceof Number ?
-                ((Number)o).doubleValue() : 
+                ((Number)o).doubleValue() :
                 Double.valueOf((String)o).doubleValue();
         } catch (Exception e) {
             throw new JSONException("JSONArray[" + index +
@@ -595,7 +596,7 @@ public class JSONArray implements Serializable {
         put(new JSONArray(value));
         return this;
     }
-    
+
 
     /**
      * Append a double value. This increases the array's length by one.
@@ -647,8 +648,8 @@ public class JSONArray implements Serializable {
         put(new JSONObject(value));
         return this;
     }
-    
-    
+
+
     /**
      * Append an object value. This increases the array's length by one.
      * @param value An object value.  The value should be a
@@ -660,7 +661,7 @@ public class JSONArray implements Serializable {
         this.myArrayList.add(value);
         return this;
     }
-    
+
     public JSONArray remove(Object value) {
         this.myArrayList.remove(value);
         return this;
@@ -681,7 +682,7 @@ public class JSONArray implements Serializable {
         return this;
     }
 
-    
+
     /**
      * Put a value in the JSONArray, where the value will be a
      * JSONArray which is produced from a Collection.
@@ -696,7 +697,7 @@ public class JSONArray implements Serializable {
         return this;
     }
 
-    
+
     /**
      * Put or replace a double value. If the index is greater than the length of
      *  the JSONArray, then null elements will be added as necessary to pad
@@ -756,8 +757,8 @@ public class JSONArray implements Serializable {
         put(index, new JSONObject(value));
         return this;
     }
-    
-    
+
+
     /**
      * Put or replace an object value in the JSONArray. If the index is greater
      *  than the length of the JSONArray, then null elements will be added as
@@ -890,7 +891,7 @@ public class JSONArray implements Serializable {
     public int hashCode() {
     	return myArrayList.hashCode();
     }
-    
+
     @Override
     public boolean equals(Object obj) {
     	if (obj instanceof JSONArray) {
@@ -936,5 +937,14 @@ public class JSONArray implements Serializable {
         } catch (IOException e) {
            throw new JSONException(e);
         }
+    }
+
+    /**
+     * Returns a sequential {@code Stream} with this JSONArray as its source.
+     *
+     * @return a sequential {@code Stream} over the elements in this JSONArray
+     */
+    public Stream<Object> stream() {
+        return myArrayList.stream();
     }
 }
