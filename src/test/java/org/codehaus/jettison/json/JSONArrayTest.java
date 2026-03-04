@@ -103,4 +103,13 @@ public class JSONArrayTest extends TestCase {
         }
     }
 
+    public void testIssue96() throws JSONException
+    {
+        try {
+            new JSONArray(new JSONTokener("[\"\\xgg\"]"));
+            fail("Exception expected");
+        } catch (JSONException ex) {
+            assertTrue(ex.getMessage().startsWith("Illegal escape."));
+        }
+    }
 }

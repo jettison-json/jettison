@@ -255,10 +255,18 @@ public class JSONTokener {
                     sb.append('\r');
                     break;
                 case 'u':
-                    sb.append((char)Integer.parseInt(next(4), 16));
+                    try {
+                        sb.append((char) Integer.parseInt(next(4), 16));
+                    } catch (NumberFormatException e) {
+                        throw syntaxError("Illegal escape.");
+                    }
                     break;
                 case 'x' :
-                    sb.append((char) Integer.parseInt(next(2), 16));
+                    try {
+                        sb.append((char) Integer.parseInt(next(2), 16));
+                    } catch (NumberFormatException e) {
+                        throw syntaxError("Illegal escape.");
+                    }
                     break;
                 default:
                     sb.append(c);
