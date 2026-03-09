@@ -688,7 +688,7 @@ public class JSONObject implements Serializable {
         	try {
         	    return doGetBoolean(key, o);
         	} catch (JSONException ex) {
-        		throw new RuntimeException(ex);
+        		return defaultValue;
         	}
         }
     }
@@ -740,7 +740,7 @@ public class JSONObject implements Serializable {
         	try {
         	    return doGetDouble(key, o);
         	} catch (JSONException ex) {
-        		throw new RuntimeException(ex);
+        		return defaultValue;
         	}
         }
     }
@@ -778,7 +778,7 @@ public class JSONObject implements Serializable {
         	try {
         	    return doGetInt(key, o);
         	} catch (JSONException ex) {
-        		throw new RuntimeException(ex);
+        		return defaultValue;
         	}
         }
     }
@@ -844,7 +844,7 @@ public class JSONObject implements Serializable {
         	try {
         	    return doGetLong(key, o);
         	} catch (JSONException ex) {
-        		throw new RuntimeException(ex);
+        		return defaultValue;
         	}
         }
     }
