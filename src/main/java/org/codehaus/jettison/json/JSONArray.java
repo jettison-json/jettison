@@ -684,6 +684,11 @@ public class JSONArray implements Serializable {
         return this;
     }
 
+    public JSONArray remove(int index) {
+        this.myArrayList.remove(index);
+        return this;
+    }
+
 
     /**
      * Put or replace a boolean value in the JSONArray. If the index is greater
