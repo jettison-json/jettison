@@ -112,4 +112,52 @@ public class JSONArrayTest extends TestCase {
             assertTrue(ex.getMessage().startsWith("Illegal escape."));
         }
     }
+
+    public void testRemoveObjectRemovesMatchingValueAndReturnsSameInstance() {
+        JSONArray array = new JSONArray();
+        array.put("a").put("b").put("c");
+
+        JSONArray result = array.remove("b");
+
+        assertSame(array, result);
+        assertEquals(2, array.length());
+        assertEquals("a", array.optString(0));
+        assertEquals("c", array.optString(1));
+    }
+
+    public void testRemoveObjectNoMatchKeepsArrayUnchangedAndReturnsSameInstance() {
+        JSONArray array = new JSONArray();
+        array.put("a").put("b");
+
+        JSONArray result = array.remove("x");
+
+        assertSame(array, result);
+        assertEquals(2, array.length());
+        assertEquals("a", array.optString(0));
+        assertEquals("b", array.optString(1));
+    }
+
+    public void testRemoveAtRemovesElementAtIndexAndReturnsSameInstance() {
+        JSONArray array = new JSONArray();
+        array.put("a").put("b").put("c");
+
+        JSONArray result = array.removeAt(1);
+
+        assertSame(array, result);
+        assertEquals(2, array.length());
+        assertEquals("a", array.optString(0));
+        assertEquals("c", array.optString(1));
+    }
+
+    public void testRemoveAtOutOfBoundsThrowsIndexOutOfBoundsException() {
+        JSONArray array = new JSONArray();
+        array.put("a");
+
+        try {
+            array.removeAt(1);
+            fail("Exception expected");
+        } catch (IndexOutOfBoundsException ex) {
+            // expected
+        }
+    }
 }

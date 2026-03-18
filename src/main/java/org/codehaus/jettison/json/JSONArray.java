@@ -684,7 +684,7 @@ public class JSONArray implements Serializable {
         return this;
     }
 
-    public JSONArray remove(int index) {
+    public JSONArray removeAt(int index) {
         this.myArrayList.remove(index);
         return this;
     }
