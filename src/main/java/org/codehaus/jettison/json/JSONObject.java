@@ -575,6 +575,16 @@ public class JSONObject implements Serializable {
 
 
     /**
+     * Determine if this JSONObject is null or if there is no value.
+     * @return      true if this JSONObject is the JSONObject.NULL or
+     *  JSONObject.EXPLICIT_NULL object.
+     */
+    public boolean isNull() {
+        return JSONObject.NULL.equals(this) || JSONObject.EXPLICIT_NULL.equals(this);
+    }
+
+
+    /**
      * Determine if the value associated with the key is null or if there is
      *  no value.
      * @param key   A key string.
