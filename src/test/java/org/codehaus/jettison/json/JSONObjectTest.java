@@ -76,6 +76,7 @@ public class JSONObjectTest extends TestCase {
     	JSONObject obj = new JSONObject("{\"a\":null}");
     	assertNull(obj.getString("a"));
     }
+
     public void testExplicitNullIsNull() throws Exception {
         JSONObject obj = new JSONObject("{\"a\":null}");
         assertTrue(obj.isNull("a"));
@@ -83,6 +84,15 @@ public class JSONObjectTest extends TestCase {
     public void testMissingIsNull() throws Exception {
         JSONObject obj = new JSONObject("{\"a\":null}");
         assertTrue(obj.isNull("b"));
+    }
+
+    public void testIsNullOnSelf() throws Exception {
+        JSONObject a = new JSONObject("{\"a\":null}").optJSONObject("a");
+        assertTrue(JSONObject.isNull(a));
+    }
+    public void testIsNullOnSelfMissing() throws Exception {
+        JSONObject b = new JSONObject("{\"a\":null}").optJSONObject("b");
+        assertTrue(JSONObject.isNull(b));
     }
     
     public void testSlashEscapingTurnedOnByDefault() throws Exception {

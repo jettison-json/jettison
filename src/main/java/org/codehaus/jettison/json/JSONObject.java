@@ -575,12 +575,13 @@ public class JSONObject implements Serializable {
 
 
     /**
-     * Determine if this JSONObject is null or if there is no value.
-     * @return      true if this JSONObject is the JSONObject.NULL or
-     *  JSONObject.EXPLICIT_NULL object.
+     * Determine if the value is null, if there is no value.
+     * @param key   The value to check.
+     * @return      true if value is null, JSONObject.NULL,
+     *   or JSONObject.EXPLICIT_NULL.
      */
-    public boolean isNull() {
-        return JSONObject.NULL.equals(this) || JSONObject.EXPLICIT_NULL.equals(this);
+    public static boolean isNull(Object value) {
+        return value == null || value == NULL || value == EXPLICIT_NULL;
     }
 
 
@@ -592,7 +593,7 @@ public class JSONObject implements Serializable {
      *  the value is the JSONObject.NULL object.
      */
     public boolean isNull(String key) {
-        return JSONObject.NULL.equals(opt(key)) || JSONObject.EXPLICIT_NULL.equals(opt(key));
+        return isNull(opt(key));
     }
 
 
