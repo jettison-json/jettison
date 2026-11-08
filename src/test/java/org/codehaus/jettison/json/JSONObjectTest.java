@@ -76,7 +76,6 @@ public class JSONObjectTest extends TestCase {
     	JSONObject obj = new JSONObject("{\"a\":null}");
     	assertNull(obj.getString("a"));
     }
-
     public void testExplicitNullIsNull() throws Exception {
         JSONObject obj = new JSONObject("{\"a\":null}");
         assertTrue(obj.isNull("a"));
