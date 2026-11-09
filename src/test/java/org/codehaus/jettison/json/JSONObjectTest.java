@@ -85,13 +85,25 @@ public class JSONObjectTest extends TestCase {
         assertTrue(obj.isNull("b"));
     }
 
-    public void testIsNullOnSelf() throws Exception {
-        JSONObject a = new JSONObject("{\"a\":null}").optJSONObject("a");
-        assertTrue(JSONObject.isNull(a));
+    public void testIsNullValueOnSelf() throws Exception {
+        JSONObject jo = new JSONObject("{\"a\":null}");
+        assertTrue(JSONObject.isNullValue(jo.optJSONObject("a")));
+        assertTrue(JSONObject.isNullValue(jo.opt("a")));
     }
-    public void testIsNullOnSelfMissing() throws Exception {
-        JSONObject b = new JSONObject("{\"a\":null}").optJSONObject("b");
-        assertTrue(JSONObject.isNull(b));
+    public void testIsNullValueOnSelfMissing() throws Exception {
+        JSONObject jo = new JSONObject("{\"a\":null}");
+        assertTrue(JSONObject.isNullValue(jo.optJSONObject("b")));
+        assertTrue(JSONObject.isNullValue(jo.opt("b")));
+    }
+    public void testIsNullValueOnJONulls() throws Exception {
+        assertTrue(JSONObject.isNullValue(JSONObject.NULL));
+        assertTrue(JSONObject.isNullValue(JSONObject.EXPLICIT_NULL));
+    }
+    public void testIsNullValueVarious() throws Exception {
+        assertFalse(JSONObject.isNullValue(""));
+        assertFalse(JSONObject.isNullValue(0));
+        assertFalse(JSONObject.isNullValue(false));
+        assertFalse(JSONObject.isNullValue(new JSONObject()));
     }
     
     public void testSlashEscapingTurnedOnByDefault() throws Exception {
