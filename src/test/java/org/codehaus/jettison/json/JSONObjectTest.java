@@ -3,6 +3,7 @@ package org.codehaus.jettison.json;
 import junit.framework.TestCase;
 import org.codehaus.jettison.JSONSequenceTooLargeException;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -248,6 +249,84 @@ public class JSONObjectTest extends TestCase {
             fail("Failure expected for nested array-valued keys");
         } catch (JSONException ex) {
             assertTrue(ex.getMessage().contains("Expected a key"));
+        }
+    }
+
+    public void testSerializationOfCyclicObjectIsRejected() throws JSONException {
+        JSONObject obj = new JSONObject();
+        obj.put("self", obj);
+        assertSerializationDepthExceeded(obj);
+    }
+
+    public void testSerializationOfIndirectCycleIsRejected() throws JSONException {
+        JSONObject obj = new JSONObject();
+        JSONArray array = new JSONArray();
+        array.put(obj);
+        obj.put("array", array);
+        assertSerializationDepthExceeded(obj);
+    }
+
+    public void testSerializationOfMaximumParseableDepth() throws JSONException {
+        // The parser accepts up to the recursion depth limit of nested objects,
+        // so serialization must accept the same structures.
+        int limit = JSONObject.getGlobalRecursionDepthLimit();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 1; i < limit; i++) {
+            sb.append("{\"a\":");
+        }
+        sb.append("{}");
+        for (int i = 1; i < limit; i++) {
+            sb.append('}');
+        }
+        String json = sb.toString();
+        JSONObject obj = new JSONObject(json);
+
+        assertEquals(json, obj.toString());
+        assertNotNull(obj.toString(1));
+        assertEquals(json, obj.write(new StringWriter()).toString());
+    }
+
+    public void testSerializationDepthLimitIsConfigurable() throws JSONException {
+        int originalLimit = JSONObject.getGlobalRecursionDepthLimit();
+        JSONObject.setGlobalRecursionDepthLimit(5);
+        try {
+            // Nesting depths 0 to 5 are allowed
+            JSONObject allowed = nestedObjects(6);
+            assertEquals("{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{}}}}}}", allowed.toString());
+            assertNotNull(allowed.toString(2));
+            allowed.write(new StringWriter());
+
+            assertSerializationDepthExceeded(nestedObjects(7));
+        } finally {
+            JSONObject.setGlobalRecursionDepthLimit(originalLimit);
+        }
+    }
+
+    private static JSONObject nestedObjects(int count) throws JSONException {
+        JSONObject root = new JSONObject();
+        JSONObject current = root;
+        for (int i = 1; i < count; i++) {
+            JSONObject child = new JSONObject();
+            current.put("a", child);
+            current = child;
+        }
+        return root;
+    }
+
+    private static void assertSerializationDepthExceeded(JSONObject obj) {
+        // toString() keeps its contract of returning null if the JSON text can't be produced
+        assertNull(obj.toString());
+        try {
+            obj.toString(2);
+            fail("Failure expected on serialization depth limit");
+        } catch (JSONException ex) {
+            assertTrue(ex.getMessage().contains("recursion depth limit"));
+        }
+        try {
+            obj.write(new StringWriter());
+            fail("Failure expected on serialization depth limit");
+        } catch (JSONException ex) {
+            assertTrue(ex.getMessage().contains("recursion depth limit"));
         }
     }
 }

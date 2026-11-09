@@ -1158,31 +1158,19 @@ public class JSONObject implements Serializable {
     /**
      * Make a JSON text of this JSONObject. For compactness, no whitespace
      * is added. If this would not result in a syntactically correct JSON text,
-     * then null will be returned instead.
-     * <p>
-     * Warning: This method assumes that the data structure is acyclical.
+     * then null will be returned instead. This includes structures that are
+     * nested more deeply than the global recursion depth limit, or that
+     * contain a cycle.
      *
      * @return a printable, displayable, portable, transmittable
      *  representation of the object, beginning
      *  with <code>{</code>&nbsp;<small>(left brace)</small> and ending
      *  with <code>}</code>&nbsp;<small>(right brace)</small>.
+     * @see #setGlobalRecursionDepthLimit(int)
      */
     public String toString() {
         try {
-            Iterator     keys = keys();
-            StringBuilder sb = new StringBuilder("{");
-
-            while (keys.hasNext()) {
-                if (sb.length() > 1) {
-                    sb.append(',');
-                }
-                Object o = keys.next();
-                sb.append(quote(o.toString(), escapeForwardSlashAlways));
-                sb.append(':');
-                sb.append(valueToString(this.myHashMap.get(o), escapeForwardSlashAlways));
-            }
-            sb.append('}');
-            return sb.toString();
+            return toCompactString(0);
         } catch (Exception e) {
             return null;
         }
@@ -1190,26 +1178,65 @@ public class JSONObject implements Serializable {
 
 
     /**
+     * Make a compact JSON text of this JSONObject, which is nested at the
+     * given depth.
+     * @param depth The nesting depth of this object (0 for the top level).
+     * @return the JSON text.
+     * @throws JSONException If the object contains an invalid number, or is
+     *  nested too deeply (for example because it contains a cycle).
+     */
+    String toCompactString(int depth) throws JSONException {
+        checkSerializationDepth(depth);
+        Iterator     keys = keys();
+        StringBuilder sb = new StringBuilder("{");
+
+        while (keys.hasNext()) {
+            if (sb.length() > 1) {
+                sb.append(',');
+            }
+            Object o = keys.next();
+            sb.append(quote(o.toString(), escapeForwardSlashAlways));
+            sb.append(':');
+            sb.append(valueToString(this.myHashMap.get(o), escapeForwardSlashAlways, depth + 1));
+        }
+        sb.append('}');
+        return sb.toString();
+    }
+
+
+    /**
+     * Guard against unbounded recursion when serializing nested (or cyclic)
+     * JSONObject and JSONArray structures.
+     * @param depth The nesting depth of the object or array being serialized.
+     * @throws JSONException If the depth exceeds the global recursion depth limit.
+     */
+    static void checkSerializationDepth(int depth) throws JSONException {
+        if (depth > RECURSION_DEPTH_LIMIT) {
+            throw new JSONException("JSON serialization has reached recursion depth limit of "
+                    + RECURSION_DEPTH_LIMIT + "; the structure is nested too deeply or contains a cycle");
+        }
+    }
+
+
+    /**
      * Make a prettyprinted JSON text of this JSONObject.
-     * <p>
-     * Warning: This method assumes that the data structure is acyclical.
      * @param indentFactor The number of spaces to add to each level of
      *  indentation.
      * @return a printable, displayable, portable, transmittable
      *  representation of the object, beginning
      *  with <code>{</code>&nbsp;<small>(left brace)</small> and ending
      *  with <code>}</code>&nbsp;<small>(right brace)</small>.
-     * @throws JSONException If the object contains an invalid number.
+     * @throws JSONException If the object contains an invalid number, or is
+     *  nested more deeply than the global recursion depth limit (for example
+     *  because it contains a cycle).
      */
     public String toString(int indentFactor) throws JSONException {
-        return toString(indentFactor, 0);
+        return toString(indentFactor, 0, 0);
     }
 
 
     /**
      * Make a prettyprinted JSON text of this JSONObject.
-     * <p>
-     * Warning: This method assumes that the data structure is acyclical.
      * @param indentFactor The number of spaces to add to each level of
      *  indentation.
      * @param indent The indentation of the top level.
@@ -1217,9 +1244,27 @@ public class JSONObject implements Serializable {
      *  representation of the object, beginning
      *  with <code>{</code>&nbsp;<small>(left brace)</small> and ending
      *  with <code>}</code>&nbsp;<small>(right brace)</small>.
-     * @throws JSONException If the object contains an invalid number.
+     * @throws JSONException If the object contains an invalid number, or is
+     *  nested too deeply.
      */
     String toString(int indentFactor, int indent) throws JSONException {
+        return toString(indentFactor, indent, 0);
+    }
+
+
+    /**
+     * Make a prettyprinted JSON text of this JSONObject, which is nested at
+     * the given depth.
+     * @param indentFactor The number of spaces to add to each level of
+     *  indentation.
+     * @param indent The indentation of the top level.
+     * @param depth The nesting depth of this object (0 for the top level).
+     * @return the JSON text.
+     * @throws JSONException If the object contains an invalid number, or is
+     *  nested too deeply.
+     */
+    String toString(int indentFactor, int indent, int depth) throws JSONException {
+        checkSerializationDepth(depth);
         int          i;
         int          n = length();
         if (n == 0) {
@@ -1241,7 +1286,7 @@ public class JSONObject implements Serializable {
             sb.append(quote(o.toString()));
             sb.append(": ");
             sb.append(valueToString(this.myHashMap.get(o), indentFactor,
-                    newindent, escapeForwardSlashAlways));
+                    newindent, escapeForwardSlashAlways, depth + 1));
         }
         if (sb.length() > 1) {
             sb.append('\n');
@@ -1262,15 +1307,30 @@ public class JSONObject implements Serializable {
      * method (which is the most common case), then a text will be
      * produced by the rules.
      * <p>
-     * Warning: This method assumes that the data structure is acyclical.
      * @param value The value to be serialized.
      * @return a printable, displayable, transmittable
      *  representation of the object, beginning
      *  with <code>{</code>&nbsp;<small>(left brace)</small> and ending
      *  with <code>}</code>&nbsp;<small>(right brace)</small>.
-     * @throws JSONException If the value is or contains an invalid number.
+     * @throws JSONException If the value is or contains an invalid number,
+     *  or is nested too deeply.
      */
     static String valueToString(Object value, boolean escapeForwardSlash) throws JSONException {
+        return valueToString(value, escapeForwardSlash, 0);
+    }
+
+
+    /**
+     * Make a compact JSON text of an Object value, which is nested at the
+     * given depth.
+     * @param value The value to be serialized.
+     * @param escapeForwardSlash Whether to escape forward slashes in strings.
+     * @param depth The nesting depth of the value (0 for the top level).
+     * @return the JSON text.
+     * @throws JSONException If the value is or contains an invalid number,
+     *  or is nested too deeply.
+     */
+    static String valueToString(Object value, boolean escapeForwardSlash, int depth) throws JSONException {
 
         if (value == null || value.equals(null)) {
             return "null";
@@ -1290,9 +1350,14 @@ public class JSONObject implements Serializable {
         if (value instanceof Number) {
             return numberToString((Number) value);
         }
-        if (value instanceof Boolean || value instanceof JSONObject ||
-                value instanceof JSONArray) {
+        if (value instanceof Boolean) {
             return value.toString();
+        }
+        if (value instanceof JSONObject) {
+            return ((JSONObject)value).toCompactString(depth);
+        }
+        if (value instanceof JSONArray) {
+            return ((JSONArray)value).toCompactString(depth);
         }
         return quote(value.toString(), escapeForwardSlash);
     }
@@ -1300,8 +1365,6 @@ public class JSONObject implements Serializable {
 
     /**
      * Make a prettyprinted JSON text of an object value.
-     * <p>
-     * Warning: This method assumes that the data structure is acyclical.
      * @param value The value to be serialized.
      * @param indentFactor The number of spaces to add to each level of
      *  indentation.
@@ -1310,10 +1373,30 @@ public class JSONObject implements Serializable {
      *  representation of the object, beginning
      *  with <code>{</code>&nbsp;<small>(left brace)</small> and ending
      *  with <code>}</code>&nbsp;<small>(right brace)</small>.
-     * @throws JSONException If the object contains an invalid number.
+     * @throws JSONException If the object contains an invalid number, or is
+     *  nested too deeply.
      */
      static String valueToString(Object value, int indentFactor, int indent, boolean escapeForwardSlash)
             throws JSONException {
+        return valueToString(value, indentFactor, indent, escapeForwardSlash, 0);
+    }
+
+
+    /**
+     * Make a prettyprinted JSON text of an object value, which is nested at
+     * the given depth.
+     * @param value The value to be serialized.
+     * @param indentFactor The number of spaces to add to each level of
+     *  indentation.
+     * @param indent The indentation of the top level.
+     * @param escapeForwardSlash Whether to escape forward slashes in strings.
+     * @param depth The nesting depth of the value (0 for the top level).
+     * @return the JSON text.
+     * @throws JSONException If the object contains an invalid number, or is
+     *  nested too deeply.
+     */
+    static String valueToString(Object value, int indentFactor, int indent, boolean escapeForwardSlash,
+            int depth) throws JSONException {
         if (value == null || value.equals(null)) {
             return "null";
         }
@@ -1331,10 +1414,10 @@ public class JSONObject implements Serializable {
             return value.toString();
         }
         if (value instanceof JSONObject) {
-            return ((JSONObject)value).toString(indentFactor, indent);
+            return ((JSONObject)value).toString(indentFactor, indent, depth);
         }
         if (value instanceof JSONArray) {
-            return ((JSONArray)value).toString(indentFactor, indent);
+            return ((JSONArray)value).toString(indentFactor, indent, depth);
         }
         return quote(value.toString(), escapeForwardSlash);
     }
@@ -1380,14 +1463,29 @@ public class JSONObject implements Serializable {
      /**
       * Write the contents of the JSONObject as JSON text to a writer.
       * For compactness, no whitespace is added.
-      * <p>
-      * Warning: This method assumes that the data structure is acyclical.
       *
       * @param writer The writer
       * @return The writer.
-      * @throws JSONException JSONException
+      * @throws JSONException If writing fails, the object contains an invalid
+      *  number, or it is nested more deeply than the global recursion depth
+      *  limit (for example because it contains a cycle).
       */
      public Writer write(Writer writer) throws JSONException {
+        return write(writer, 0);
+     }
+
+     /**
+      * Write the contents of the JSONObject, which is nested at the given
+      * depth, as JSON text to a writer.
+      *
+      * @param writer The writer
+      * @param depth The nesting depth of this object (0 for the top level).
+      * @return The writer.
+      * @throws JSONException If writing fails, the object contains an invalid
+      *  number, or it is nested too deeply.
+      */
+     Writer write(Writer writer, int depth) throws JSONException {
+        checkSerializationDepth(depth);
         try {
         	int hashMapSize = this.myHashMap.size();
 
@@ -1423,9 +1521,9 @@ public class JSONObject implements Serializable {
                 }
 
                 if (v instanceof JSONObject) {
-                    ((JSONObject)v).write(writer);
+                    ((JSONObject)v).write(writer, depth + 1);
                 } else if (v instanceof JSONArray) {
-                    ((JSONArray)v).write(writer);
+                    ((JSONArray)v).write(writer, depth + 1);
                 } else if (!mayBeDropSimpleElement) {
                 	writer.write(valueToString(v, escapeForwardSlashAlways));
                 }
