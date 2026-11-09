@@ -367,7 +367,7 @@ public class JSONArray implements Serializable {
      * @return true if the value at the index is null, or if there is no value.
      */
     public boolean isNull(int index) {
-        return JSONObject.NULL.equals(opt(index));
+        return JSONObject.isNullValue(opt(index));
     }
 
 

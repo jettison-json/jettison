@@ -195,4 +195,8 @@ public class JSONArrayTest extends TestCase {
         assertEquals("[[1,[2,{\"a\":[3]}]],[]]", array.toString());
         assertEquals("[[1,[2,{\"a\":[3]}]],[]]", array.write(new StringWriter()).toString());
     }
+
+    public void testIsNull() throws Exception {
+        assertTrue(new JSONArray("[null]").isNull(0));
+    }
 }
