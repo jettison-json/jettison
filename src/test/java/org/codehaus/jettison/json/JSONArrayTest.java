@@ -2,6 +2,7 @@ package org.codehaus.jettison.json;
 
 import junit.framework.TestCase;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -161,5 +162,37 @@ public class JSONArrayTest extends TestCase {
         } catch (IndexOutOfBoundsException ex) {
             // expected
         }
+    }
+
+    public void testSerializationOfCyclicArrayIsRejected() throws JSONException {
+        JSONArray array = new JSONArray();
+        array.put(array);
+
+        // toString() keeps its contract of returning null if the JSON text can't be produced
+        assertNull(array.toString());
+        try {
+            array.toString(2);
+            fail("Failure expected on serialization depth limit");
+        } catch (JSONException ex) {
+            assertTrue(ex.getMessage().contains("recursion depth limit"));
+        }
+        try {
+            array.join(",");
+            fail("Failure expected on serialization depth limit");
+        } catch (JSONException ex) {
+            assertTrue(ex.getMessage().contains("recursion depth limit"));
+        }
+        try {
+            array.write(new StringWriter());
+            fail("Failure expected on serialization depth limit");
+        } catch (JSONException ex) {
+            assertTrue(ex.getMessage().contains("recursion depth limit"));
+        }
+    }
+
+    public void testSerializationOfNestedArrays() throws JSONException {
+        JSONArray array = new JSONArray("[[1,[2,{\"a\":[3]}]],[]]");
+        assertEquals("[[1,[2,{\"a\":[3]}]],[]]", array.toString());
+        assertEquals("[[1,[2,{\"a\":[3]}]],[]]", array.write(new StringWriter()).toString());
     }
 }

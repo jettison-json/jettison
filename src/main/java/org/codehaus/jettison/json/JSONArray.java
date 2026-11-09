@@ -374,12 +374,28 @@ public class JSONArray implements Serializable {
     /**
      * Make a string from the contents of this JSONArray. The
      * <code>separator</code> string is inserted between each element.
-     * Warning: This method assumes that the data structure is acyclical.
      * @param separator A string that will be inserted between the elements.
      * @return a string.
-     * @throws JSONException If the array contains an invalid number.
+     * @throws JSONException If the array contains an invalid number, or is
+     *  nested more deeply than the global recursion depth limit (for example
+     *  because it contains a cycle).
      */
     public String join(String separator) throws JSONException {
+        return join(separator, 0);
+    }
+
+
+    /**
+     * Make a string from the contents of this JSONArray, which is nested at
+     * the given depth.
+     * @param separator A string that will be inserted between the elements.
+     * @param depth The nesting depth of this array (0 for the top level).
+     * @return a string.
+     * @throws JSONException If the array contains an invalid number, or is
+     *  nested too deeply.
+     */
+    String join(String separator, int depth) throws JSONException {
+        JSONObject.checkSerializationDepth(depth);
         int len = length();
         StringBuilder sb = new StringBuilder();
 
@@ -387,7 +403,7 @@ public class JSONArray implements Serializable {
             if (i > 0) {
                 sb.append(separator);
             }
-            sb.append(JSONObject.valueToString(this.myArrayList.get(i), escapeForwardSlashAlways));
+            sb.append(JSONObject.valueToString(this.myArrayList.get(i), escapeForwardSlashAlways, depth + 1));
         }
         return sb.toString();
     }
@@ -854,16 +870,16 @@ public class JSONArray implements Serializable {
      * Make a JSON text of this JSONArray. For compactness, no
      * unnecessary whitespace is added. If it is not possible to produce a
      * syntactically correct JSON text then null will be returned instead. This
-     * could occur if the array contains an invalid number.
-     * <p>
-     * Warning: This method assumes that the data structure is acyclical.
+     * could occur if the array contains an invalid number, is nested more
+     * deeply than the global recursion depth limit, or contains a cycle.
      *
      * @return a printable, displayable, transmittable
      *  representation of the array.
+     * @see JSONObject#setGlobalRecursionDepthLimit(int)
      */
     public String toString() {
         try {
-            return '[' + join(",") + ']';
+            return toCompactString(0);
         } catch (Exception e) {
             return null;
         }
@@ -871,32 +887,63 @@ public class JSONArray implements Serializable {
 
 
     /**
+     * Make a compact JSON text of this JSONArray, which is nested at the
+     * given depth.
+     * @param depth The nesting depth of this array (0 for the top level).
+     * @return the JSON text.
+     * @throws JSONException If the array contains an invalid number, or is
+     *  nested too deeply.
+     */
+    String toCompactString(int depth) throws JSONException {
+        return '[' + join(",", depth) + ']';
+    }
+
+
+    /**
      * Make a prettyprinted JSON text of this JSONArray.
-     * Warning: This method assumes that the data structure is acyclical.
      * @param indentFactor The number of spaces to add to each level of
      *  indentation.
      * @return a printable, displayable, transmittable
      *  representation of the object, beginning
      *  with <code>[</code>&nbsp;<small>(left bracket)</small> and ending
      *  with <code>]</code>&nbsp;<small>(right bracket)</small>.
-     * @throws JSONException JSONException
+     * @throws JSONException If the array contains an invalid number, or is
+     *  nested more deeply than the global recursion depth limit (for example
+     *  because it contains a cycle).
      */
     public String toString(int indentFactor) throws JSONException {
-        return toString(indentFactor, 0);
+        return toString(indentFactor, 0, 0);
     }
 
 
     /**
      * Make a prettyprinted JSON text of this JSONArray.
-     * Warning: This method assumes that the data structure is acyclical.
      * @param indentFactor The number of spaces to add to each level of
      *  indentation.
      * @param indent The indention of the top level.
      * @return a printable, displayable, transmittable
      *  representation of the array.
-     * @throws JSONException JSONException
+     * @throws JSONException If the array contains an invalid number, or is
+     *  nested too deeply.
      */
     String toString(int indentFactor, int indent) throws JSONException {
+        return toString(indentFactor, indent, 0);
+    }
+
+
+    /**
+     * Make a prettyprinted JSON text of this JSONArray, which is nested at
+     * the given depth.
+     * @param indentFactor The number of spaces to add to each level of
+     *  indentation.
+     * @param indent The indention of the top level.
+     * @param depth The nesting depth of this array (0 for the top level).
+     * @return the JSON text.
+     * @throws JSONException If the array contains an invalid number, or is
+     *  nested too deeply.
+     */
+    String toString(int indentFactor, int indent, int depth) throws JSONException {
+        JSONObject.checkSerializationDepth(depth);
         int len = length();
         if (len == 0) {
             return "[]";
@@ -905,7 +952,7 @@ public class JSONArray implements Serializable {
         StringBuilder sb = new StringBuilder("[");
         if (len == 1) {
             sb.append(JSONObject.valueToString(this.myArrayList.get(0),
-                    indentFactor, indent, escapeForwardSlashAlways));
+                    indentFactor, indent, escapeForwardSlashAlways, depth + 1));
         } else {
             int newindent = indent + indentFactor;
             sb.append('\n');
@@ -917,7 +964,7 @@ public class JSONArray implements Serializable {
                     sb.append(' ');
                 }
                 sb.append(JSONObject.valueToString(this.myArrayList.get(i),
-                        indentFactor, newindent, escapeForwardSlashAlways));
+                        indentFactor, newindent, escapeForwardSlashAlways, depth + 1));
             }
             sb.append('\n');
             for (i = 0; i < indent; i += 1) {
@@ -945,14 +992,29 @@ public class JSONArray implements Serializable {
     /**
      * Write the contents of the JSONArray as JSON text to a writer.
      * For compactness, no whitespace is added.
-     * <p>
-     * Warning: This method assumes that the data structure is acyclical.
      *
      * @param writer The writer.
      * @return The writer.
-     * @throws JSONException JSONException
+     * @throws JSONException If writing fails, the array contains an invalid
+     *  number, or it is nested more deeply than the global recursion depth
+     *  limit (for example because it contains a cycle).
      */
     public Writer write(Writer writer) throws JSONException {
+        return write(writer, 0);
+    }
+
+    /**
+     * Write the contents of the JSONArray, which is nested at the given
+     * depth, as JSON text to a writer.
+     *
+     * @param writer The writer.
+     * @param depth The nesting depth of this array (0 for the top level).
+     * @return The writer.
+     * @throws JSONException If writing fails, the array contains an invalid
+     *  number, or it is nested too deeply.
+     */
+    Writer write(Writer writer, int depth) throws JSONException {
+        JSONObject.checkSerializationDepth(depth);
         try {
             boolean b = false;
             int     len = length();
@@ -965,9 +1027,9 @@ public class JSONArray implements Serializable {
                 }
                 Object v = this.myArrayList.get(i);
                 if (v instanceof JSONObject) {
-                    ((JSONObject)v).write(writer);
+                    ((JSONObject)v).write(writer, depth + 1);
                 } else if (v instanceof JSONArray) {
-                    ((JSONArray)v).write(writer);
+                    ((JSONArray)v).write(writer, depth + 1);
                 } else {
                     writer.write(JSONObject.valueToString(v, escapeForwardSlashAlways));
                 }
