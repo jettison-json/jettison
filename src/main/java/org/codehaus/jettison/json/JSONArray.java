@@ -836,6 +836,19 @@ public class JSONArray implements Serializable {
         }
     }
 
+    /**
+     * Append a value, enforcing the array length limit.
+     * @param value The value to append.
+     * @return this.
+     * @throws JSONSequenceTooLargeException If the array is already at the
+     *  array length limit.
+     */
+    JSONArray putWithinLimit(Object value) throws JSONException {
+        validateGrowthBy(1);
+        this.myArrayList.add(value);
+        return this;
+    }
+
     public static void setGlobalArrayLengthLimit(int newArrayLengthLimit) {
         ARRAY_LENGTH_LIMIT = newArrayLengthLimit;
     }

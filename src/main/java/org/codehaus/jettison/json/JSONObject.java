@@ -998,7 +998,9 @@ public class JSONObject implements Serializable {
             		array = new JSONArray(Collections.singletonList(existingValue));
             		this.myHashMap.put(key, array);
             	}
-            	array.put(value);
+            	// Duplicate keys don't grow the map, so the object key threshold
+            	// doesn't apply; enforce the array length limit instead
+            	array.putWithinLimit(value);
             }
         } else if (!writeNullAsString) {
         	this.myHashMap.put(key, null);
