@@ -350,4 +350,45 @@ public class JSONObjectTest extends TestCase {
             assertTrue(ex.getMessage().contains("recursion depth limit"));
         }
     }
+
+    public void testDuplicateKeysAreAccumulatedIntoArray() throws JSONException {
+        JSONObject obj = new JSONObject("{\"a\":1,\"a\":2,\"a\":3}");
+        assertEquals(1, obj.length());
+        assertEquals("[1,2,3]", obj.getJSONArray("a").toString());
+    }
+
+    public void testDuplicateKeysCannotExceedArrayLengthLimit() throws JSONException {
+        int originalLimit = JSONArray.getGlobalArrayLengthLimit();
+        JSONArray.setGlobalArrayLengthLimit(3);
+        try {
+            // Accumulating up to the limit is allowed
+            JSONObject obj = new JSONObject("{\"a\":1,\"a\":2,\"a\":3}");
+            assertEquals(3, obj.getJSONArray("a").length());
+
+            try {
+                new JSONObject("{\"a\":1,\"a\":2,\"a\":3,\"a\":4}");
+                fail("Failure expected when duplicate keys exceed the array length limit");
+            } catch (JSONSequenceTooLargeException ex) {
+                assertTrue(ex.getMessage().contains("JSONArray length limit of 3 exceeded"));
+            }
+        } finally {
+            JSONArray.setGlobalArrayLengthLimit(originalLimit);
+        }
+    }
+
+    public void testDuplicateKeyCannotGrowArrayValueBeyondLimit() throws JSONException {
+        int originalLimit = JSONArray.getGlobalArrayLengthLimit();
+        JSONArray.setGlobalArrayLengthLimit(3);
+        try {
+            // A duplicate key appends to an existing array value
+            try {
+                new JSONObject("{\"a\":[1,2,3],\"a\":4}");
+                fail("Failure expected when a duplicate key exceeds the array length limit");
+            } catch (JSONSequenceTooLargeException ex) {
+                assertTrue(ex.getMessage().contains("JSONArray length limit of 3 exceeded"));
+            }
+        } finally {
+            JSONArray.setGlobalArrayLengthLimit(originalLimit);
+        }
+    }
 }
