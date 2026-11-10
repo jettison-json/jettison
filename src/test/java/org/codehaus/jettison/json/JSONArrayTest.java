@@ -198,5 +198,12 @@ public class JSONArrayTest extends TestCase {
 
     public void testIsNull() throws Exception {
         assertTrue(new JSONArray("[null]").isNull(0));
+
+        // Out of bounds indeces result in true
+        assertTrue(new JSONArray("[0, 1, 2]").isNull(3));
+
+        // None of the elements in this array are null, so the assertion should fail for all of them
+        JSONArray ja = new JSONArray("[0, \"\", false, {}, []]");
+        for (int i = 0; i < ja.length(); i++) assertFalse(ja.isNull(i));
     }
 }
