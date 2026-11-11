@@ -146,8 +146,8 @@ public class JSONTokener {
     public char next(char c) throws JSONException {
         char n = next();
         if (n != c) {
-            throw syntaxError("Expected '" + c + "' and instead saw '" +
-                    n + "'.");
+            throw syntaxError("Expected '" + printable(c) + "' and instead saw '" +
+                    printable(n) + "'.");
         }
         return n;
     }
@@ -500,11 +500,92 @@ public class JSONTokener {
 
 
     /**
-     * Make a printable string of this JSONTokener.
+     * Make a printable string of this JSONTokener, giving the current
+     * position and a short excerpt of the source around it. The whole source
+     * is deliberately not included, as it may be large or contain sensitive
+     * data, and the result is often used in exception messages that end up
+     * in logs. Control characters in the excerpt are escaped.
      *
-     * @return " at character [this.myIndex] of [this.mySource]"
+     * @return " at character [this.myIndex] near '[excerpt]'"
      */
     public String toString() {
-        return " at character " + this.myIndex + " of " + this.mySource;
+        return " at character " + this.myIndex + " near '" + excerpt() + "'";
+    }
+
+
+    /**
+     * The number of characters either side of the current position to
+     * include in error messages.
+     */
+    private static final int EXCERPT_RADIUS = 20;
+
+
+    /**
+     * Get an escaped excerpt of the source around the current position,
+     * with "..." marking any text that was cut off.
+     */
+    private String excerpt() {
+        int length = this.mySource.length();
+        int start = Math.max(0, Math.min(this.myIndex, length) - EXCERPT_RADIUS);
+        int end = Math.min(length, Math.max(this.myIndex, 0) + EXCERPT_RADIUS);
+        // Don't split a surrogate pair at either end
+        if (start > 0 && Character.isLowSurrogate(this.mySource.charAt(start))) {
+            start--;
+        }
+        if (end < length && Character.isHighSurrogate(this.mySource.charAt(end - 1))) {
+            end++;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        if (start > 0) {
+            sb.append("...");
+        }
+        for (int i = start; i < end; i++) {
+            appendEscaped(sb, this.mySource.charAt(i));
+        }
+        if (end < length) {
+            sb.append("...");
+        }
+        return sb.toString();
+    }
+
+
+    /**
+     * Append a character, escaping control and line separator characters so
+     * that the result is a single printable line.
+     */
+    private static void appendEscaped(StringBuilder sb, char c) {
+        switch (c) {
+        case '\n':
+            sb.append("\\n");
+            break;
+        case '\r':
+            sb.append("\\r");
+            break;
+        case '\t':
+            sb.append("\\t");
+            break;
+        default:
+            if (Character.isISOControl(c) || c == ' ' || c == ' ') {
+                String hex = Integer.toHexString(c);
+                sb.append("\\u");
+                for (int i = hex.length(); i < 4; i++) {
+                    sb.append('0');
+                }
+                sb.append(hex);
+            } else {
+                sb.append(c);
+            }
+        }
+    }
+
+
+    /**
+     * Get a printable form of a single character for an error message.
+     */
+    private static String printable(char c) {
+        StringBuilder sb = new StringBuilder();
+        appendEscaped(sb, c);
+        return sb.toString();
     }
 }
