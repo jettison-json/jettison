@@ -345,6 +345,8 @@ public class JSONObject implements Serializable {
      * @return this.
      * @throws JSONException If the value is an invalid number
      *  or if the key is null.
+     * @throws org.codehaus.jettison.JSONSequenceTooLargeException If the
+     *  accumulated values would exceed the JSONArray length limit.
      */
     public JSONObject accumulate(String key, Object value)
             throws JSONException {
@@ -353,9 +355,9 @@ public class JSONObject implements Serializable {
         if (o == null) {
             put(key, value);
         } else if (o instanceof JSONArray) {
-            ((JSONArray)o).put(value);
+            ((JSONArray)o).putWithinLimit(value);
         } else {
-            put(key, new JSONArray().put(o).put(value));
+            put(key, new JSONArray().putWithinLimit(o).putWithinLimit(value));
         }
         return this;
     }
@@ -371,18 +373,20 @@ public class JSONObject implements Serializable {
      * @return this.
      * @throws JSONException If the key is null or if the current value
      *  associated with the key is not a JSONArray.
+     * @throws org.codehaus.jettison.JSONSequenceTooLargeException If the
+     *  JSONArray is already at the JSONArray length limit.
      */
     public JSONObject append(String key, Object value)
             throws JSONException {
         testValidity(value);
         Object o = opt(key);
         if (o == null) {
-            put(key, new JSONArray().put(value));
+            put(key, new JSONArray().putWithinLimit(value));
         } else if (!(o instanceof JSONArray)){
             throw new JSONException("JSONObject[" + key +
                         "] is not a JSONArray.");
         } else {
-        	((JSONArray)o).put(value);
+        	((JSONArray)o).putWithinLimit(value);
         }
         return this;
     }
