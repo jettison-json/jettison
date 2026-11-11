@@ -391,4 +391,72 @@ public class JSONObjectTest extends TestCase {
             JSONArray.setGlobalArrayLengthLimit(originalLimit);
         }
     }
+
+    public void testAccumulate() throws JSONException {
+        JSONObject obj = new JSONObject();
+        obj.accumulate("a", 1);
+        assertEquals(1, obj.get("a"));
+        obj.accumulate("a", 2);
+        obj.accumulate("a", 3);
+        assertEquals("[1,2,3]", obj.getJSONArray("a").toString());
+    }
+
+    public void testAccumulateCannotExceedArrayLengthLimit() throws JSONException {
+        int originalLimit = JSONArray.getGlobalArrayLengthLimit();
+        JSONArray.setGlobalArrayLengthLimit(3);
+        try {
+            JSONObject obj = new JSONObject();
+            obj.accumulate("a", 1);
+            obj.accumulate("a", 2);
+            obj.accumulate("a", 3);
+            try {
+                obj.accumulate("a", 4);
+                fail("Failure expected when accumulated values exceed the array length limit");
+            } catch (JSONSequenceTooLargeException ex) {
+                assertTrue(ex.getMessage().contains("JSONArray length limit of 3 exceeded"));
+            }
+            assertEquals("[1,2,3]", obj.getJSONArray("a").toString());
+        } finally {
+            JSONArray.setGlobalArrayLengthLimit(originalLimit);
+        }
+    }
+
+    public void testAccumulateOntoSingleValueRespectsArrayLengthLimit() throws JSONException {
+        int originalLimit = JSONArray.getGlobalArrayLengthLimit();
+        JSONArray.setGlobalArrayLengthLimit(1);
+        try {
+            // Accumulating a second value turns the single value into a two-element array
+            JSONObject obj = new JSONObject();
+            obj.accumulate("a", 1);
+            try {
+                obj.accumulate("a", 2);
+                fail("Failure expected when accumulated values exceed the array length limit");
+            } catch (JSONSequenceTooLargeException ex) {
+                assertTrue(ex.getMessage().contains("JSONArray length limit of 1 exceeded"));
+            }
+            assertEquals(1, obj.get("a"));
+        } finally {
+            JSONArray.setGlobalArrayLengthLimit(originalLimit);
+        }
+    }
+
+    public void testAppendCannotExceedArrayLengthLimit() throws JSONException {
+        int originalLimit = JSONArray.getGlobalArrayLengthLimit();
+        JSONArray.setGlobalArrayLengthLimit(3);
+        try {
+            JSONObject obj = new JSONObject();
+            obj.append("arr", "val1");
+            obj.append("arr", "val2");
+            obj.append("arr", "val3");
+            try {
+                obj.append("arr", "val4");
+                fail("Failure expected when appended values exceed the array length limit");
+            } catch (JSONSequenceTooLargeException ex) {
+                assertTrue(ex.getMessage().contains("JSONArray length limit of 3 exceeded"));
+            }
+            assertEquals(3, obj.getJSONArray("arr").length());
+        } finally {
+            JSONArray.setGlobalArrayLengthLimit(originalLimit);
+        }
+    }
 }
