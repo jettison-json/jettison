@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -81,14 +82,49 @@ public class AbstractDOMDocumentParser {
 
 	private DocumentBuilder getDocumentBuilder() {
 		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory
-					.newInstance();
-			factory.setValidating(false);
-			factory.setNamespaceAware(true);
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			return builder;
+			return createDocumentBuilderFactory().newDocumentBuilder();
 		} catch (ParserConfigurationException e) {
 			throw new RuntimeException("Failed to create DocumentBuilder", e);
+		}
+	}
+
+	/**
+	 * Create the DocumentBuilderFactory used to parse the XML generated from
+	 * the JSON input. That XML is built from the input, and never legitimately
+	 * contains a DOCTYPE, so DOCTYPE declarations are rejected and external
+	 * entities, external DTDs and XInclude are disabled.
+	 */
+	static DocumentBuilderFactory createDocumentBuilderFactory() throws ParserConfigurationException {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setValidating(false);
+		factory.setNamespaceAware(true);
+		factory.setXIncludeAware(false);
+		factory.setExpandEntityReferences(false);
+		// All JAXP implementations are required to support secure processing
+		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		// Defence in depth, for implementations that support these settings
+		setFeatureIfSupported(factory, "http://apache.org/xml/features/disallow-doctype-decl", true);
+		setFeatureIfSupported(factory, "http://xml.org/sax/features/external-general-entities", false);
+		setFeatureIfSupported(factory, "http://xml.org/sax/features/external-parameter-entities", false);
+		setFeatureIfSupported(factory, "http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+		setAttributeIfSupported(factory, XMLConstants.ACCESS_EXTERNAL_DTD, "");
+		setAttributeIfSupported(factory, XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+		return factory;
+	}
+
+	private static void setFeatureIfSupported(DocumentBuilderFactory factory, String feature, boolean value) {
+		try {
+			factory.setFeature(feature, value);
+		} catch (ParserConfigurationException e) {
+			// Not supported by this implementation
+		}
+	}
+
+	private static void setAttributeIfSupported(DocumentBuilderFactory factory, String attribute, Object value) {
+		try {
+			factory.setAttribute(attribute, value);
+		} catch (IllegalArgumentException e) {
+			// Not supported by this implementation
 		}
 	}
 }
