@@ -1021,5 +1021,22 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals(expXml, mpdXml);
         assertEquals(refEvents, mpdEvents);
     }
-    
+
+    public void testEmptyObjectIsRejected() throws Exception {
+        try {
+            new MappedXMLStreamReader(new JSONObject("{}"));
+            fail("Failure expected on a JSON object with no root element");
+        } catch (XMLStreamException ex) {
+            assertEquals("The JSON object has no root element", ex.getMessage());
+        }
+    }
+
+    public void testEmptyObjectIsRejectedByFactory() throws Exception {
+        try {
+            new MappedXMLInputFactory(new Configuration()).createXMLStreamReader(new StringReader(" { } "));
+            fail("Failure expected on a JSON object with no root element");
+        } catch (XMLStreamException ex) {
+            assertEquals("The JSON object has no root element", ex.getMessage());
+        }
+    }
 }
