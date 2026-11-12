@@ -198,7 +198,15 @@ public class JSONArray implements Serializable {
         this(collection, 0);
     }
 
-    private JSONArray(Collection collection, int recursionDepth) throws JSONException {
+    /**
+     * Construct a JSONArray from a Collection, which is nested at the given
+     * depth within the Collection and Map structure being converted.
+     * @param collection     A Collection.
+     * @param recursionDepth The nesting depth of the collection (0 for the top level).
+     * @throws JSONException If the structure is nested more deeply than the
+     *  global recursion depth limit (for example because it contains a cycle).
+     */
+    JSONArray(Collection collection, int recursionDepth) throws JSONException {
         if (recursionDepth > JSONObject.getGlobalRecursionDepthLimit()) {
             throw new JSONException("JSONArray has reached recursion depth limit of "
                     + JSONObject.getGlobalRecursionDepthLimit());
@@ -219,7 +227,7 @@ public class JSONArray implements Serializable {
                 iter.set(new JSONArray((Collection) e, recursionDepth + 1));
             }
             if (e instanceof Map) {
-                iter.set(new JSONObject((Map) e));
+                iter.set(new JSONObject((Map) e, recursionDepth + 1));
             }
         }
     }
