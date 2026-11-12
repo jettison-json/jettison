@@ -15,6 +15,8 @@
  */
 package org.codehaus.jettison.badgerfish;
 
+import java.io.StringReader;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
@@ -251,6 +253,24 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
         	reader.next();
         	fail("Must cause exception");
         } catch (XMLStreamException e) {
+        }
+    }
+
+    public void testEmptyObjectIsRejected() throws Exception {
+        try {
+            new BadgerFishXMLStreamReader(new JSONObject("{}"));
+            fail("Failure expected on a JSON object with no root element");
+        } catch (XMLStreamException ex) {
+            assertEquals("The JSON object has no root element", ex.getMessage());
+        }
+    }
+
+    public void testEmptyObjectIsRejectedByFactory() throws Exception {
+        try {
+            new BadgerFishXMLInputFactory().createXMLStreamReader(new StringReader(" { } "));
+            fail("Failure expected on a JSON object with no root element");
+        } catch (XMLStreamException ex) {
+            assertEquals("The JSON object has no root element", ex.getMessage());
         }
     }
 }

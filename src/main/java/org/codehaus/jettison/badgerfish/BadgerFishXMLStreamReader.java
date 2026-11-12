@@ -33,6 +33,9 @@ public class BadgerFishXMLStreamReader extends AbstractXMLStreamReader {
     
     public BadgerFishXMLStreamReader(JSONObject obj) 
         throws JSONException, XMLStreamException {
+        if (obj.length() == 0) {
+            throw new XMLStreamException("The JSON object has no root element");
+        }
         String rootName = (String) obj.keys().next();
         this.node = new Node(null, rootName, obj.getJSONObject(rootName), CONVENTION);
         this.nodes = new FastStack();

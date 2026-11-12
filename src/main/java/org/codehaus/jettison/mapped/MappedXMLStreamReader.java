@@ -41,6 +41,9 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
 
     public MappedXMLStreamReader(JSONObject obj, MappedNamespaceConvention con)
             throws JSONException, XMLStreamException {
+        if (obj.length() == 0) {
+            throw new XMLStreamException("The JSON object has no root element");
+        }
         String rootName = (String) obj.keys().next();
 
         this.convention = con;
