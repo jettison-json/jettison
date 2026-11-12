@@ -459,4 +459,97 @@ public class JSONObjectTest extends TestCase {
             JSONArray.setGlobalArrayLengthLimit(originalLimit);
         }
     }
+
+    public void testMapListCycleIsRejected() {
+        Map<String, Object> map = new HashMap<>();
+        List<Object> list = new ArrayList<>();
+        map.put("list", list);
+        list.add(map);
+        try {
+            new JSONObject(map);
+            fail("Failure expected on a Map/List cycle");
+        } catch (JSONException ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().contains("recursion depth limit"));
+        }
+    }
+
+    public void testPutMapWithMapListCycleIsRejected() {
+        Map<String, Object> map = new HashMap<>();
+        List<Object> list = new ArrayList<>();
+        map.put("list", list);
+        list.add(map);
+        try {
+            new JSONObject().put("map", map);
+            fail("Failure expected on a Map/List cycle");
+        } catch (JSONException ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().contains("recursion depth limit"));
+        }
+    }
+
+    public void testAlternatingMapListNestingBeyondLimitIsRejected() {
+        try {
+            new JSONObject(nestedMapsAndLists(JSONObject.getGlobalRecursionDepthLimit() + 100));
+            fail("Failure expected on alternating Map/List nesting beyond the recursion depth limit");
+        } catch (JSONException ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().contains("recursion depth limit"));
+        }
+    }
+
+    public void testAlternatingMapListNestingWithinLimit() throws JSONException {
+        int levels = 100;
+        Object current = new JSONObject(nestedMapsAndLists(levels));
+        // Every level is converted to a JSONObject or JSONArray
+        for (int i = 0; i < levels - 1; i++) {
+            if (i % 2 == 0) {
+                assertTrue("Level " + i, current instanceof JSONObject);
+                current = ((JSONObject) current).get("a");
+            } else {
+                assertTrue("Level " + i, current instanceof JSONArray);
+                current = ((JSONArray) current).get(0);
+            }
+        }
+        assertTrue(current instanceof JSONArray);
+        assertEquals(0, ((JSONArray) current).length());
+    }
+
+    public void testAlternatingMapListNestingRespectsConfiguredLimit() throws JSONException {
+        int originalLimit = JSONObject.getGlobalRecursionDepthLimit();
+        JSONObject.setGlobalRecursionDepthLimit(5);
+        try {
+            // Nesting depths 0 to 5 are allowed
+            new JSONObject(nestedMapsAndLists(6));
+            try {
+                new JSONObject(nestedMapsAndLists(7));
+                fail("Failure expected on alternating Map/List nesting beyond the recursion depth limit");
+            } catch (JSONException ex) {
+                assertTrue(ex.getMessage(), ex.getMessage().contains("recursion depth limit of 5"));
+            }
+        } finally {
+            JSONObject.setGlobalRecursionDepthLimit(originalLimit);
+        }
+    }
+
+    /**
+     * Build a structure of the given number of levels, alternating Maps (at
+     * even levels, with the next level under the key "a") and Lists (at odd
+     * levels, with the next level as the only element). The innermost level is
+     * empty.
+     */
+    private static Map<String, Object> nestedMapsAndLists(int levels) {
+        Object inner = (levels - 1) % 2 == 0 ? new HashMap<String, Object>() : new ArrayList<Object>();
+        for (int level = levels - 2; level >= 0; level--) {
+            if (level % 2 == 0) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("a", inner);
+                inner = map;
+            } else {
+                List<Object> list = new ArrayList<>();
+                list.add(inner);
+                inner = list;
+            }
+        }
+        @SuppressWarnings("unchecked")
+        Map<String, Object> root = (Map<String, Object>) inner;
+        return root;
+    }
 }

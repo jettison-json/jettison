@@ -273,7 +273,16 @@ public class JSONObject implements Serializable {
         this(map, 0);
     }
 
-    private JSONObject(Map map, int recursionDepth) throws JSONException {
+    /**
+     * Construct a JSONObject from a Map, which is nested at the given depth
+     * within the Map and Collection structure being converted.
+     * @param map A map object that can be used to initialize the contents of
+     *  the JSONObject.
+     * @param recursionDepth The nesting depth of the map (0 for the top level).
+     * @throws JSONException If the structure is nested more deeply than the
+     *  global recursion depth limit (for example because it contains a cycle).
+     */
+    JSONObject(Map map, int recursionDepth) throws JSONException {
 
         if (recursionDepth > RECURSION_DEPTH_LIMIT) {
             throw new JSONException("JSONObject has reached recursion depth limit of " + RECURSION_DEPTH_LIMIT);
@@ -285,7 +294,7 @@ public class JSONObject implements Serializable {
         for (Entry entry : myHashMap.entrySet()) {
             Object v = entry.getValue();
             if (v instanceof Collection) {
-                myHashMap.put(entry.getKey(), new JSONArray((Collection) v));
+                myHashMap.put(entry.getKey(), new JSONArray((Collection) v, recursionDepth + 1));
             }
             if (v instanceof Map && v != map) {
                 myHashMap.put(entry.getKey(), new JSONObject((Map) v, recursionDepth + 1));

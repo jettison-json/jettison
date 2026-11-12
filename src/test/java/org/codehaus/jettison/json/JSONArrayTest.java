@@ -5,7 +5,9 @@ import junit.framework.TestCase;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class JSONArrayTest extends TestCase {
@@ -205,5 +207,18 @@ public class JSONArrayTest extends TestCase {
         // None of the elements in this array are null, so the assertion should fail for all of them
         JSONArray ja = new JSONArray("[0, \"\", false, {}, []]");
         for (int i = 0; i < ja.length(); i++) assertFalse(ja.isNull(i));
+    }
+
+    public void testListMapCycleIsRejected() {
+        List<Object> list = new ArrayList<>();
+        Map<String, Object> map = new HashMap<>();
+        list.add(map);
+        map.put("list", list);
+        try {
+            new JSONArray(list);
+            fail("Failure expected on a List/Map cycle");
+        } catch (JSONException ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().contains("recursion depth limit"));
+        }
     }
 }
