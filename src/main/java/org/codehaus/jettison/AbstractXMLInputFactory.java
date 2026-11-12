@@ -119,6 +119,14 @@ public abstract class AbstractXMLInputFactory extends XMLInputFactory {
         }
     }
 
+    /**
+     * Create the JSONTokener used to parse a JSON document, whether it was
+     * supplied as an InputStream, a Reader or a Source. Subclasses can
+     * override this to customize the tokener, for example to set a stricter
+     * object key limit.
+     * @param doc The JSON document.
+     * @return the JSONTokener.
+     */
     protected JSONTokener createNewJSONTokener(String doc) {
     	return new JSONTokener(doc);
     }
@@ -162,7 +170,7 @@ public abstract class AbstractXMLInputFactory extends XMLInputFactory {
 
     public XMLStreamReader createXMLStreamReader(Reader reader) throws XMLStreamException {
         try {
-            return createXMLStreamReader(new JSONTokener(readAll(reader)));
+            return createXMLStreamReader(createNewJSONTokener(readAll(reader)));
         } catch (IOException e) {
             throw new XMLStreamException(e);
         }
