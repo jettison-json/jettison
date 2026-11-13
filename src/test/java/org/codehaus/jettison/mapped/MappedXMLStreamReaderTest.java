@@ -1039,4 +1039,65 @@ public class MappedXMLStreamReaderTest extends TestCase {
             assertEquals("The JSON object has no root element", ex.getMessage());
         }
     }
+
+    public void testSupressAtAttributesReading() throws Exception {
+        Configuration config = new Configuration();
+        config.setSupressAtAttributes(true);
+        MappedXMLInputFactory factory = new MappedXMLInputFactory(config);
+
+        assertEquals("<root><@id>1</@id><name>x</name><child><@lang>en</@lang>text</child></root>",
+            readEvents(factory, "{\"root\":{\"@id\":\"1\",\"name\":\"x\",\"child\":{\"@lang\":\"en\",\"$\":\"text\"}}}"));
+        assertEquals("<root><a>1</a><a>2</a><b><@c>3</@c><d>4</d></b></root>",
+            readEvents(factory, "{\"root\":{\"a\":[1,2],\"b\":{\"@c\":\"3\",\"d\":\"4\"}}}"));
+    }
+
+    public void testSupressAtAttributesDoesNotRetainKeys() throws Exception {
+        Configuration config = new Configuration();
+        config.setSupressAtAttributes(true);
+        MappedXMLInputFactory factory = new MappedXMLInputFactory(config);
+
+        // Keys read from the input used to be added to a list on the shared
+        // convention, which grew without bound and made reading quadratic in
+        // the number of distinct keys. The list isn't exposed, so check it
+        // via reflection.
+        MappedNamespaceConvention convention = ((MappedXMLStreamReader) factory.createXMLStreamReader(
+            new StringReader("{\"root\":{\"a\":1}}"))).getConvention();
+        java.lang.reflect.Field field =
+            MappedNamespaceConvention.class.getDeclaredField("jsonAttributesAsElements");
+        field.setAccessible(true);
+        int sizeBefore = ((List<?>) field.get(convention)).size();
+
+        StringBuilder json = new StringBuilder("{\"root\":{");
+        for (int i = 0; i < 1000; i++) {
+            if (i > 0) {
+                json.append(',');
+            }
+            json.append("\"k").append(i).append("\":1");
+        }
+        json.append("}}");
+        readEvents(factory, json.toString());
+
+        assertEquals(sizeBefore, ((List<?>) field.get(convention)).size());
+    }
+
+    private static String readEvents(MappedXMLInputFactory factory, String json) throws Exception {
+        XMLStreamReader reader = factory.createXMLStreamReader(new StringReader(json));
+        StringBuilder sb = new StringBuilder();
+        while (reader.hasNext()) {
+            int event = reader.next();
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                sb.append('<').append(reader.getLocalName());
+                for (int i = 0; i < reader.getAttributeCount(); i++) {
+                    sb.append(' ').append(reader.getAttributeLocalName(i))
+                        .append("=\"").append(reader.getAttributeValue(i)).append('"');
+                }
+                sb.append('>');
+            } else if (event == XMLStreamConstants.CHARACTERS) {
+                sb.append(reader.getText());
+            } else if (event == XMLStreamConstants.END_ELEMENT) {
+                sb.append("</").append(reader.getLocalName()).append('>');
+            }
+        }
+        return sb.toString();
+    }
 }
