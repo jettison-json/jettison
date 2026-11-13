@@ -34,6 +34,31 @@ public class JSONTokener {
 
     static volatile int OBJECT_KEY_LIMIT = DEFAULT_OBJECT_KEY_LIMIT;
 
+    final static int DEFAULT_NUMBER_LENGTH_LIMIT = 1000;
+
+    static volatile int NUMBER_LENGTH_LIMIT = DEFAULT_NUMBER_LENGTH_LIMIT;
+
+    /**
+     * Set the maximum length of a number that is parsed as a BigDecimal, when
+     * BigDecimal parsing is enabled (the
+     * "jettison.json.jsontokener.use_bigdecimal" system property). The time
+     * taken to parse a BigDecimal grows faster than linearly with its length.
+     * The default value is 1000.
+     * @param newNumberLengthLimit the new number length limit to set
+     */
+    public static void setGlobalNumberLengthLimit(int newNumberLengthLimit) {
+        NUMBER_LENGTH_LIMIT = newNumberLengthLimit;
+    }
+
+    /**
+     * Get the maximum length of a number that is parsed as a BigDecimal.
+     * The default value is 1000.
+     * @return the number length limit
+     */
+    public static int getGlobalNumberLengthLimit() {
+        return NUMBER_LENGTH_LIMIT;
+    }
+
 
     /**
      * The index of the next character.
@@ -415,6 +440,9 @@ public class JSONTokener {
                 try {
                     return Long.valueOf(s);
                 } catch (Exception f) {
+                    if (useBigDecimal && s.length() > NUMBER_LENGTH_LIMIT) {
+                        throw syntaxError("Number length limit of " + NUMBER_LENGTH_LIMIT + " exceeded");
+                    }
                     try {
                         if (useBigDecimal) {
                             return new BigDecimal(s);
