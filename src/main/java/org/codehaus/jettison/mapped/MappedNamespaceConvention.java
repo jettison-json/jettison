@@ -109,12 +109,6 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
                 if ( k.startsWith( attributeKey ) ) {
                     k = k.substring( 1 );
                 }
-                if ( null == this.jsonAttributesAsElements ) {
-                    this.jsonAttributesAsElements = new ArrayList<String>();
-                }
-                if ( !this.jsonAttributesAsElements.contains( k ) ) {
-                    this.jsonAttributesAsElements.add( k );
-                }
             }
 
             if ( k.startsWith( attributeKey ) ) {
