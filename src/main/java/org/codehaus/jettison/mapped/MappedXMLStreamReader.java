@@ -73,13 +73,13 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
             event = START_ELEMENT;
         } else if (event == CHARACTERS) {
             event = END_ELEMENT;
-            node = (Node) nodes.pop();
+            node = popNode();
             currentValue = null;
         } else if (event == START_ELEMENT || event == END_ELEMENT) {
             if (event == END_ELEMENT && nodes.size() > 0) {
-                node = (Node) nodes.peek();
+                node = peekNode();
                 if (popArrayNodes > 0) {
-                	nodes.pop();
+                	popNode();
                 	if (node.getArray() != null) {
                 		popArrayNodes--;
                 		event = END_ELEMENT;
@@ -94,7 +94,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
             } else {
                 if (nodes.size() > 0) {
                     event = END_ELEMENT;
-                    node = (Node) nodes.pop();
+                    node = popNode();
                 } else {
                     event = END_DOCUMENT;
                 }
@@ -102,10 +102,10 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
         }
         // handle value in nodes with attributes
         if (nodes.size() > 0) {
-        	Node next = (Node)nodes.peek();
+        	Node next = peekNode();
         	if (event == START_ELEMENT && next.getName().getLocalPart().equals(valueKey)) {
         		event = CHARACTERS;
-        		node = (Node)nodes.pop();
+        		node = popNode();
         	}
         }
         return event;
@@ -119,25 +119,20 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
                 int index = node.getArrayIndex();
                 if (index >= node.getArray().length()) {
                 	
-            		nodes.pop();
+            		popNode();
 
-                	node = (Node) nodes.peek();
+                	node = peekNode();
 
-                	if (node == null)
-                	{
-                		event = END_DOCUMENT;
-                		return;
-                	}
                     
                     if ((node.getKeys() != null && node.getKeys().hasNext()) || node.getArray() != null) {
                         if (popArrayNodes > 0) {
-                        	node = (Node) nodes.pop();
+                        	node = popNode();
                         }
                     	processElement();
                     }
                     else {
                     	    event = END_ELEMENT;
-                            node = (Node) nodes.pop();
+                            node = popNode();
                     }
                     return;
                 }
@@ -149,6 +144,9 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
                 }
                 node.setArrayIndex(index);
             } else {
+                if (node.getKeys() == null || !node.getKeys().hasNext()) {
+                    throw unsupportedStructure();
+                }
                 nextKey = (String) node.getKeys().next();
                 newObj = node.getObject().get(nextKey);
             }
@@ -169,7 +167,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
                 }
                 return;
             } else if (newObj instanceof JSONObject) {
-                node = new Node((Node)nodes.peek(), nextKey, (JSONObject) newObj, convention);
+                node = new Node(peekNode(), nextKey, (JSONObject) newObj, convention);
                 nodes.push(node);
                 event = START_ELEMENT;
                 return;
@@ -195,6 +193,9 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
     	int depth = 0;
     	String lastKey = null;
     	int parentIndex = nodes.size();
+        if (nodes.size() == 0) {
+            throw unsupportedStructure();
+        }
     	boolean isRoot = ((Node)nodes.get(0)).getName().getLocalPart().equals(arrayKey);
     	Node parent = !isRoot ? new Node(arrayKey, convention) : node;
         
@@ -219,7 +220,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
     	}
     	if (lastKey == null) {
     		for (int i = 0; i < depth; i++) {
-    			nodes.pop();
+    			popNode();
     		}
     		return false;
     	}
@@ -232,13 +233,35 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
             node = parent;
             event = START_ELEMENT;
         } else {
-        	node = (Node)nodes.pop();
+        	node = popNode();
         	processElement();
         }
         popArrayNodes++;
         return true;
     }
     
+    private Node peekNode() throws XMLStreamException {
+        if (nodes.size() == 0) {
+            throw unsupportedStructure();
+        }
+        return (Node) nodes.peek();
+    }
+
+    private Node popNode() throws XMLStreamException {
+        if (nodes.size() == 0) {
+            throw unsupportedStructure();
+        }
+        return (Node) nodes.pop();
+    }
+
+    /**
+     * Some combinations of JSON structures, such as a "$" value key alongside
+     * child elements, aren't supported by the reader's state tracking.
+     */
+    private static XMLStreamException unsupportedStructure() {
+        return new XMLStreamException("The structure of the JSON input is not supported");
+    }
+
     public void close() throws XMLStreamException {
     }
 
