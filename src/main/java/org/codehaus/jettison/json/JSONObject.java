@@ -560,8 +560,18 @@ public class JSONObject implements Serializable {
     }
 
     private long doGetLong(String key, Object o) throws JSONException {
-        return o instanceof String ? Long.parseLong(((String)o)) : o instanceof Number ?
-                ((Number)o).longValue() : (long)getDouble(key);
+        if (o instanceof Number) {
+            return ((Number)o).longValue();
+        }
+        if (o instanceof String) {
+            // Parse integral strings directly to avoid losing precision above 2^53
+            try {
+                return Long.parseLong((String)o);
+            } catch (NumberFormatException ex) {
+                // Not an integral string, so fall back to a double conversion
+            }
+        }
+        return (long)doGetDouble(key, o);
     }
 
 
@@ -712,7 +722,7 @@ public class JSONObject implements Serializable {
         } else {
         	try {
         	    return doGetBoolean(key, o);
-        	} catch (JSONException | NumberFormatException ex) {
+        	} catch (JSONException ex) {
         		return defaultValue;
         	}
         }
@@ -764,7 +774,7 @@ public class JSONObject implements Serializable {
         } else {
         	try {
         	    return doGetDouble(key, o);
-        	} catch (JSONException | NumberFormatException ex) {
+        	} catch (JSONException ex) {
         		return defaultValue;
         	}
         }
@@ -802,7 +812,7 @@ public class JSONObject implements Serializable {
         } else {
         	try {
         	    return doGetInt(key, o);
-        	} catch (JSONException | NumberFormatException ex) {
+        	} catch (JSONException ex) {
         		return defaultValue;
         	}
         }
@@ -868,7 +878,7 @@ public class JSONObject implements Serializable {
         } else {
         	try {
         	    return doGetLong(key, o);
-        	} catch (JSONException | NumberFormatException ex) {
+        	} catch (JSONException ex) {
         		return defaultValue;
         	}
         }

@@ -591,4 +591,21 @@ public class JSONObjectTest extends TestCase {
         assertEquals(1.5, obj.optDouble("double", 9.5), 0.0);
         assertEquals(1, obj.optInt("double", 7));
     }
+
+    public void testGetLongFromString() throws JSONException {
+        JSONObject obj = new JSONObject("{\"big\": \"9007199254740993\", \"fraction\": \"1.5\", "
+            + "\"exponent\": \"1e3\", \"negative\": \"-42\", \"invalid\": \"abc\"}");
+        assertEquals(9007199254740993L, obj.getLong("big"));
+        assertEquals(1L, obj.getLong("fraction"));
+        assertEquals(1000L, obj.getLong("exponent"));
+        assertEquals(-42L, obj.getLong("negative"));
+        try {
+            obj.getLong("invalid");
+            fail("Failure expected on a non-numeric value");
+        } catch (JSONException ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().contains("is not a number"));
+        }
+        assertEquals(7L, obj.optLong("invalid", 7L));
+        assertEquals(1L, obj.optLong("fraction", 7L));
+    }
 }

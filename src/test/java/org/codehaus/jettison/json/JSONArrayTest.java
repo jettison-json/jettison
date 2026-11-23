@@ -230,4 +230,20 @@ public class JSONArrayTest extends TestCase {
         assertEquals("value", array.optString(1, "Default"));
         assertEquals("Default", array.optString(5, "Default"));
     }
+
+    public void testGetLongFromString() throws JSONException {
+        JSONArray array = new JSONArray("[\"9007199254740993\", \"1.5\", \"1e3\", \"-42\", \"abc\"]");
+        assertEquals(9007199254740993L, array.getLong(0));
+        assertEquals(1L, array.getLong(1));
+        assertEquals(1000L, array.getLong(2));
+        assertEquals(-42L, array.getLong(3));
+        try {
+            array.getLong(4);
+            fail("Failure expected on a non-numeric value");
+        } catch (JSONException ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().contains("is not a number"));
+        }
+        assertEquals(7L, array.optLong(4, 7L));
+        assertEquals(9007199254740993L, array.optLong(0, 7L));
+    }
 }
