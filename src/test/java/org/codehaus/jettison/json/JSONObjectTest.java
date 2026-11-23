@@ -564,4 +564,31 @@ public class JSONObjectTest extends TestCase {
         // a JSONObject.NULL value that was put explicitly keeps its existing behaviour
         assertEquals("null", new JSONObject().put("name", JSONObject.NULL).optString("name", "Default Name"));
     }
+
+    // https://github.com/jettison-json/jettison/issues/78
+    public void testOptReturnsDefaultForWrongType() throws JSONException {
+        JSONObject obj = new JSONObject("{\"string\": \"abc\", \"null\": null, "
+            + "\"object\": {}, \"array\": []}");
+        for (String key : new String[] {"string", "null", "object", "array", "missing"}) {
+            assertTrue(key, obj.optBoolean(key, true));
+            assertFalse(key, obj.optBoolean(key));
+            assertEquals(key, 9.5, obj.optDouble(key, 9.5), 0.0);
+            assertTrue(key, Double.isNaN(obj.optDouble(key)));
+            assertEquals(key, 7, obj.optInt(key, 7));
+            assertEquals(key, 0, obj.optInt(key));
+            assertEquals(key, 7L, obj.optLong(key, 7L));
+            assertEquals(key, 0L, obj.optLong(key));
+        }
+    }
+
+    public void testOptConvertsCompatibleValues() throws JSONException {
+        JSONObject obj = new JSONObject("{\"bool\": \"TRUE\", \"int\": 42, "
+            + "\"intString\": \"42\", \"double\": \"1.5\"}");
+        assertTrue(obj.optBoolean("bool", false));
+        assertEquals(42, obj.optInt("int", 7));
+        assertEquals(42, obj.optInt("intString", 7));
+        assertEquals(42L, obj.optLong("intString", 7L));
+        assertEquals(1.5, obj.optDouble("double", 9.5), 0.0);
+        assertEquals(1, obj.optInt("double", 7));
+    }
 }

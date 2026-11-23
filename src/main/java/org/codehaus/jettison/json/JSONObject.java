@@ -712,8 +712,8 @@ public class JSONObject implements Serializable {
         } else {
         	try {
         	    return doGetBoolean(key, o);
-        	} catch (JSONException ex) {
-        		throw new RuntimeException(ex);
+        	} catch (JSONException | NumberFormatException ex) {
+        		return defaultValue;
         	}
         }
     }
@@ -764,8 +764,8 @@ public class JSONObject implements Serializable {
         } else {
         	try {
         	    return doGetDouble(key, o);
-        	} catch (JSONException ex) {
-        		throw new RuntimeException(ex);
+        	} catch (JSONException | NumberFormatException ex) {
+        		return defaultValue;
         	}
         }
     }
@@ -802,8 +802,8 @@ public class JSONObject implements Serializable {
         } else {
         	try {
         	    return doGetInt(key, o);
-        	} catch (JSONException ex) {
-        		throw new RuntimeException(ex);
+        	} catch (JSONException | NumberFormatException ex) {
+        		return defaultValue;
         	}
         }
     }
@@ -868,8 +868,8 @@ public class JSONObject implements Serializable {
         } else {
         	try {
         	    return doGetLong(key, o);
-        	} catch (JSONException ex) {
-        		throw new RuntimeException(ex);
+        	} catch (JSONException | NumberFormatException ex) {
+        		return defaultValue;
         	}
         }
     }
