@@ -142,8 +142,35 @@ public class BadgerFishXMLStreamReader extends AbstractXMLStreamReader {
         return null;
     }
 
+    /**
+     * Read the text content of a text-only element, as specified by
+     * {@link javax.xml.stream.XMLStreamReader#getElementText()}: the reader must be
+     * positioned on a START_ELEMENT, and is left on the corresponding END_ELEMENT.
+     * For backwards compatibility, calling this method on a CHARACTERS event returns
+     * the current text without moving the reader.
+     */
     public String getElementText() throws XMLStreamException {
-        return currentText;
+        if (event == CHARACTERS) {
+            return currentText;
+        }
+        if (event != START_ELEMENT) {
+            throw new XMLStreamException("The reader must be on a START_ELEMENT to read the element text");
+        }
+        StringBuilder content = new StringBuilder();
+        int eventType = next();
+        while (eventType != END_ELEMENT) {
+            if (eventType == CHARACTERS) {
+                if (currentText != null) {
+                    content.append(currentText);
+                }
+            } else if (eventType == START_ELEMENT) {
+                throw new XMLStreamException("The element text content may not contain a START_ELEMENT");
+            } else {
+                throw new XMLStreamException("Unexpected event type " + eventType + " while reading the element text");
+            }
+            eventType = next();
+        }
+        return content.toString();
     }
 
     public NamespaceContext getNamespaceContext() {
