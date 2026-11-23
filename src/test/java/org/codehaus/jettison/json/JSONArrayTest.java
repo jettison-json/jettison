@@ -246,4 +246,19 @@ public class JSONArrayTest extends TestCase {
         assertEquals(7L, array.optLong(4, 7L));
         assertEquals(9007199254740993L, array.optLong(0, 7L));
     }
+
+    // https://github.com/jettison-json/jettison/issues/34
+    public void testJavaArrayValues() throws Exception {
+        JSONArray array = new JSONArray();
+        array.put(new String[] {"x", "y"});
+        array.put(new double[] {1.5});
+        String expected = "[[\"x\",\"y\"],[1.5]]";
+        assertEquals(expected, array.toString());
+
+        StringWriter writer = new StringWriter();
+        array.write(writer);
+        assertEquals(expected, writer.toString());
+
+        assertEquals(expected, new JSONArray(array.toString(2)).toString());
+    }
 }
