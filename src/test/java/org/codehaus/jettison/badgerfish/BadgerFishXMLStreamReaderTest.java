@@ -273,4 +273,57 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
             assertEquals("The JSON object has no root element", ex.getMessage());
         }
     }
+
+    // https://github.com/jettison-json/jettison/issues/9
+    public void testGetElementText() throws Exception {
+        XMLStreamReader reader = new BadgerFishXMLStreamReader(
+            new JSONObject("{\"root\":{\"a\":{\"$\":\"text\"},\"b\":{\"@attr\":\"x\",\"$\":\"more\"},\"c\":{}}}"));
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("root", reader.getLocalName());
+
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("a", reader.getLocalName());
+        assertEquals("text", reader.getElementText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.getEventType());
+        assertEquals("a", reader.getLocalName());
+
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("b", reader.getLocalName());
+        assertEquals("x", reader.getAttributeValue(null, "attr"));
+        assertEquals("more", reader.getElementText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.getEventType());
+        assertEquals("b", reader.getLocalName());
+
+        // an empty element has empty text content
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("c", reader.getLocalName());
+        assertEquals("", reader.getElementText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.getEventType());
+        assertEquals("c", reader.getLocalName());
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("root", reader.getLocalName());
+        assertEquals(XMLStreamReader.END_DOCUMENT, reader.next());
+    }
+
+    public void testGetElementTextOnCharacters() throws Exception {
+        // the previous behaviour of returning the text from a CHARACTERS event is kept
+        XMLStreamReader reader = new BadgerFishXMLStreamReader(new JSONObject("{\"a\":{\"$\":\"text\"}}"));
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("text", reader.getElementText());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.getEventType());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+    }
+
+    public void testGetElementTextWithChildElement() throws Exception {
+        XMLStreamReader reader = new BadgerFishXMLStreamReader(new JSONObject("{\"a\":{\"b\":{\"$\":\"text\"}}}"));
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        try {
+            reader.getElementText();
+            fail("Failure expected on an element with a child element");
+        } catch (XMLStreamException ex) {
+            // expected
+        }
+    }
 }
