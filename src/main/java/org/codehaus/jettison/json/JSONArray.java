@@ -353,8 +353,18 @@ public class JSONArray implements Serializable {
      */
     public long getLong(int index) throws JSONException {
         Object o = get(index);
-        return o instanceof Number ?
-                ((Number)o).longValue() : (long)getDouble(index);
+        if (o instanceof Number) {
+            return ((Number)o).longValue();
+        }
+        if (o instanceof String) {
+            // Parse integral strings directly to avoid losing precision above 2^53
+            try {
+                return Long.parseLong((String)o);
+            } catch (NumberFormatException ex) {
+                // Not an integral string, so fall back to a double conversion
+            }
+        }
+        return (long)getDouble(index);
     }
 
 
