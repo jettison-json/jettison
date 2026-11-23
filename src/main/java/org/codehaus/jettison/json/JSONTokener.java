@@ -83,7 +83,7 @@ public class JSONTokener {
      */
     public JSONTokener(String s) {
         this.myIndex = 0;
-        this.mySource = s.trim();
+        this.mySource = stripByteOrderMark(s).trim();
         this.threshold = OBJECT_KEY_LIMIT;
     }
 
@@ -95,8 +95,16 @@ public class JSONTokener {
      */
     public JSONTokener(String s, int threshold) {
         this.myIndex = 0;
-        this.mySource = s.trim();
+        this.mySource = stripByteOrderMark(s).trim();
         this.threshold = threshold;
+    }
+
+    /**
+     * Remove a leading Unicode byte order mark (U+FEFF), e.g. from a UTF-8 file
+     * saved on Windows, which RFC 8259 allows a JSON parser to ignore.
+     */
+    private static String stripByteOrderMark(String s) {
+        return !s.isEmpty() && s.charAt(0) == '\uFEFF' ? s.substring(1) : s;
     }
 
     public int getThreshold() {
