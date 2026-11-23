@@ -1057,7 +1057,7 @@ public class JSONArray implements Serializable {
                 if (b) {
                     writer.write(',');
                 }
-                Object v = this.myArrayList.get(i);
+                Object v = JSONObject.wrapJavaArray(this.myArrayList.get(i));
                 if (v instanceof JSONObject) {
                     ((JSONObject)v).write(writer, depth + 1);
                 } else if (v instanceof JSONArray) {

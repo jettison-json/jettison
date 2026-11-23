@@ -608,4 +608,50 @@ public class JSONObjectTest extends TestCase {
         assertEquals(7L, obj.optLong("invalid", 7L));
         assertEquals(1L, obj.optLong("fraction", 7L));
     }
+
+    // https://github.com/jettison-json/jettison/issues/34
+    public void testJavaArrayValues() throws Exception {
+        String[] strings = new String[] {"x", "y"};
+        JSONObject obj = new JSONObject();
+        obj.put("array", strings);
+        assertEquals("{\"array\":[\"x\",\"y\"]}", obj.toString());
+        // the stored value is unchanged
+        assertSame(strings, obj.get("array"));
+
+        obj = new JSONObject();
+        obj.put("ints", new int[] {1, 2});
+        obj.put("booleans", new boolean[] {true});
+        obj.put("nested", new String[][] {{"a"}, {"b", "c"}});
+        obj.put("objects", new Object[] {"s", 1, null});
+        obj.put("empty", new long[0]);
+        String expected = "{\"ints\":[1,2],\"booleans\":[true],\"nested\":[[\"a\"],[\"b\",\"c\"]],"
+            + "\"objects\":[\"s\",1,null],\"empty\":[]}";
+        assertEquals(expected, obj.toString());
+
+        StringWriter writer = new StringWriter();
+        obj.write(writer);
+        assertEquals(expected, writer.toString());
+
+        assertEquals(expected, new JSONObject(obj.toString(2)).toString());
+    }
+
+    public void testSelfReferencingJavaArray() throws Exception {
+        Object[] array = new Object[1];
+        array[0] = array;
+        JSONObject obj = new JSONObject().put("array", array);
+        // toString() swallows the depth limit exception and returns null
+        assertNull(obj.toString());
+        try {
+            obj.toString(2);
+            fail("Failure expected on a self-referencing array");
+        } catch (JSONException ex) {
+            // expected
+        }
+        try {
+            obj.write(new StringWriter());
+            fail("Failure expected on a self-referencing array");
+        } catch (JSONException ex) {
+            // expected
+        }
+    }
 }

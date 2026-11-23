@@ -18,7 +18,9 @@ package org.codehaus.jettison.json;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.Writer;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -1337,6 +1339,24 @@ public class JSONObject implements Serializable {
 
 
     /**
+     * Convert a Java array (e.g. String[] or int[]) into a JSONArray so that it is
+     * serialized as a JSON array rather than via its toString() method. Other values
+     * are returned unchanged.
+     */
+    static Object wrapJavaArray(Object value) throws JSONException {
+        if (value == null || !value.getClass().isArray()) {
+            return value;
+        }
+        int length = Array.getLength(value);
+        List<Object> list = new ArrayList<Object>(length);
+        for (int i = 0; i < length; i++) {
+            list.add(Array.get(value, i));
+        }
+        return new JSONArray(list);
+    }
+
+
+    /**
      * Make a JSON text of an Object value. If the object has an
      * value.toJSONString() method, then that method will be used to produce
      * the JSON text. The method is required to produce a strictly
@@ -1372,6 +1392,7 @@ public class JSONObject implements Serializable {
         if (value == null || value.equals(null)) {
             return "null";
         }
+        value = wrapJavaArray(value);
         if (value instanceof JSONString) {
             String o;
             try {
@@ -1437,6 +1458,7 @@ public class JSONObject implements Serializable {
         if (value == null || value.equals(null)) {
             return "null";
         }
+        value = wrapJavaArray(value);
         try {
             if (value instanceof JSONString) {
                 return ((JSONString)value).toJSONString();
@@ -1545,7 +1567,7 @@ public class JSONObject implements Serializable {
                     b = false;
                 }
                 String k = keys.next().toString();
-                Object v = this.myHashMap.get(k);
+                Object v = wrapJavaArray(this.myHashMap.get(k));
 
                 boolean mayBeDropSimpleElement = false;
                 if (!dropObjectKeyName) {
