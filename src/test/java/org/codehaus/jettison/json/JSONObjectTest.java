@@ -669,4 +669,24 @@ public class JSONObjectTest extends TestCase {
             // expected
         }
     }
+
+    // https://github.com/jettison-json/jettison/issues/6
+    public void testNoOctalOrHexNumbers() throws JSONException {
+        JSONObject obj = new JSONObject("{\"octal\": 010, \"octal2\": 0777, \"notOctal\": 09, "
+            + "\"negative\": -010, \"zero\": 0, \"fraction\": 0.5, \"hex\": 0x1F, \"hex2\": 0XAB}");
+        // leading zeros are read as decimal, not octal
+        assertEquals(Integer.valueOf(10), obj.get("octal"));
+        assertEquals(Integer.valueOf(777), obj.get("octal2"));
+        assertEquals(Integer.valueOf(9), obj.get("notOctal"));
+        assertEquals(Integer.valueOf(-10), obj.get("negative"));
+        assertEquals(Integer.valueOf(0), obj.get("zero"));
+        assertEquals(0.5, obj.getDouble("fraction"), 0.0);
+        // hex values are not converted to numbers
+        assertEquals("0x1F", obj.get("hex"));
+        assertEquals("0XAB", obj.get("hex2"));
+        assertEquals(7, obj.optInt("hex", 7));
+        // the values are serialized as standard JSON
+        assertEquals("{\"octal\":10,\"octal2\":777,\"notOctal\":9,\"negative\":-10,\"zero\":0,"
+            + "\"fraction\":0.5,\"hex\":\"0x1F\",\"hex2\":\"0XAB\"}", obj.toString());
+    }
 }

@@ -266,4 +266,12 @@ public class JSONArrayTest extends TestCase {
     public void testLeadingByteOrderMark() throws JSONException {
         assertEquals("[1,2]", new JSONArray("\uFEFF[1,2]").toString());
     }
+
+    // https://github.com/jettison-json/jettison/issues/6
+    public void testNoOctalOrHexNumbers() throws JSONException {
+        JSONArray array = new JSONArray("[010, 0x1F, 08]");
+        assertEquals(Integer.valueOf(10), array.get(0));
+        assertEquals("0x1F", array.get(1));
+        assertEquals(Integer.valueOf(8), array.get(2));
+    }
 }

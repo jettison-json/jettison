@@ -76,8 +76,9 @@ import org.codehaus.jettison.JSONSequenceTooLargeException;
  *     by <code>:</code>.</li>
  * <li>Values can be followed by <code>;</code> <small>(semicolon)</small> as
  *     well as by <code>,</code> <small>(comma)</small>.</li>
- * <li>Numbers may have the <code>0-</code> <small>(octal)</small> or
- *     <code>0x-</code> <small>(hex)</small> prefix.</li>
+ * <li>Numbers may have leading zeros, which are ignored: numbers are always
+ *     read as decimal, so <code>010</code> is 10. Hex (<code>0x</code>) values
+ *     are not converted to numbers.</li>
  * <li>Comments written in the slashshlash, slashstar, and hash conventions
  *     will be ignored.</li>
  * </ul>
