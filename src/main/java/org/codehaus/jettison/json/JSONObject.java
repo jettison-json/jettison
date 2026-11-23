@@ -890,7 +890,8 @@ public class JSONObject implements Serializable {
 
     /**
      * Get an optional string associated with a key.
-     * It returns the defaultValue if there is no such key.
+     * It returns the defaultValue if there is no such key, or if the value
+     * is an explicit JSON null.
      *
      * @param key   A key string.
      * @param defaultValue     The default.
@@ -898,7 +899,7 @@ public class JSONObject implements Serializable {
      */
     public String optString(String key, String defaultValue) {
         Object o = opt(key);
-        return o != null ? o.toString() : defaultValue;
+        return o != null && o != EXPLICIT_NULL ? o.toString() : defaultValue;
     }
 
 

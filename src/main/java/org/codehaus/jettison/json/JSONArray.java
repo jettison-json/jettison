@@ -602,7 +602,8 @@ public class JSONArray implements Serializable {
 
     /**
      * Get the optional string associated with an index.
-     * The defaultValue is returned if the key is not found.
+     * The defaultValue is returned if the key is not found, or if the value
+     * is an explicit JSON null.
      *
      * @param index The index must be between 0 and length() - 1.
      * @param defaultValue     The default value.
@@ -610,7 +611,7 @@ public class JSONArray implements Serializable {
      */
     public String optString(int index, String defaultValue) {
         Object o = opt(index);
-        return o != null ? o.toString() : defaultValue;
+        return o != null && o != JSONObject.EXPLICIT_NULL ? o.toString() : defaultValue;
     }
 
 

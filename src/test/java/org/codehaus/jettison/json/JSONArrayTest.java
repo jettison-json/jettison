@@ -221,4 +221,13 @@ public class JSONArrayTest extends TestCase {
             assertTrue(ex.getMessage(), ex.getMessage().contains("recursion depth limit"));
         }
     }
+
+    // https://github.com/jettison-json/jettison/issues/105
+    public void testOptStringExplicitNull() throws JSONException {
+        JSONArray array = new JSONArray("[null, \"value\"]");
+        assertEquals("Default", array.optString(0, "Default"));
+        assertEquals("", array.optString(0));
+        assertEquals("value", array.optString(1, "Default"));
+        assertEquals("Default", array.optString(5, "Default"));
+    }
 }

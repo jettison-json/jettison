@@ -552,4 +552,16 @@ public class JSONObjectTest extends TestCase {
         Map<String, Object> root = (Map<String, Object>) inner;
         return root;
     }
+
+    // https://github.com/jettison-json/jettison/issues/105
+    public void testOptStringExplicitNull() throws JSONException {
+        JSONObject obj = new JSONObject("{\"name\": null, \"other\": \"value\"}");
+        assertEquals("Default Name", obj.optString("name", "Default Name"));
+        assertNull(obj.optString("name", null));
+        assertEquals("", obj.optString("name"));
+        assertEquals("value", obj.optString("other", "Default Name"));
+        assertEquals("Default Name", obj.optString("missing", "Default Name"));
+        // a JSONObject.NULL value that was put explicitly keeps its existing behaviour
+        assertEquals("null", new JSONObject().put("name", JSONObject.NULL).optString("name", "Default Name"));
+    }
 }
