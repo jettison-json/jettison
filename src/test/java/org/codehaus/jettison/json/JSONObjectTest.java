@@ -654,4 +654,19 @@ public class JSONObjectTest extends TestCase {
             // expected
         }
     }
+
+    // https://github.com/jettison-json/jettison/issues/46
+    public void testLeadingByteOrderMark() throws JSONException {
+        assertEquals("{\"a\":1}", new JSONObject("\uFEFF{\"a\":1}").toString());
+        assertEquals("{\"a\":1}", new JSONObject("\uFEFF  {\"a\":1}").toString());
+        assertEquals("{\"a\":1}", new JSONObject(new JSONTokener("\uFEFF{\"a\":1}", 10)).toString());
+        // a byte order mark is only skipped at the very start of the input
+        assertEquals("\uFEFFb", new JSONObject("{\"a\":\"\uFEFFb\"}").getString("a"));
+        try {
+            new JSONObject("\uFEFF\uFEFF{\"a\":1}");
+            fail("Failure expected on a second byte order mark");
+        } catch (JSONException ex) {
+            // expected
+        }
+    }
 }

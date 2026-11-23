@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.stream.StreamSource;
 
 import junit.framework.TestCase;
@@ -89,5 +90,21 @@ public class MappedXMLInputFactoryTest extends TestCase {
             assertTrue(String.valueOf(ex.getCause()), ex.getCause() instanceof JSONSequenceTooLargeException);
         }
         assertEquals(before + 1, factory.tokenersCreated);
+    }
+
+    // https://github.com/jettison-json/jettison/issues/46
+    public void testUtf8ByteOrderMark() throws Exception {
+        byte[] json = "{\"root\":\"value\"}".getBytes("UTF-8");
+        byte[] withBom = new byte[json.length + 3];
+        withBom[0] = (byte) 0xEF;
+        withBom[1] = (byte) 0xBB;
+        withBom[2] = (byte) 0xBF;
+        System.arraycopy(json, 0, withBom, 3, json.length);
+
+        MappedXMLInputFactory factory = new MappedXMLInputFactory(new Configuration());
+        XMLStreamReader reader = factory.createXMLStreamReader(new ByteArrayInputStream(withBom));
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("root", reader.getLocalName());
+        assertEquals("value", reader.getElementText());
     }
 }

@@ -261,4 +261,9 @@ public class JSONArrayTest extends TestCase {
 
         assertEquals(expected, new JSONArray(array.toString(2)).toString());
     }
+
+    // https://github.com/jettison-json/jettison/issues/46
+    public void testLeadingByteOrderMark() throws JSONException {
+        assertEquals("[1,2]", new JSONArray("\uFEFF[1,2]").toString());
+    }
 }
