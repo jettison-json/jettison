@@ -417,31 +417,16 @@ public class JSONTokener {
         }
 
         /*
-         * If it might be a number, try converting it. We support the 0- and 0x-
-         * conventions. If a number cannot be produced, then the value will just
-         * be a string. Note that the 0-, 0x-, plus, and implied string
-         * conventions are non-standard. A JSON parser is free to accept
-         * non-JSON forms as long as it accepts all correct JSON forms.
+         * If it might be a number, try converting it as a decimal number. If a
+         * number cannot be produced, then the value will just be a string. Note
+         * that leading zeros, the plus sign and the implied string convention
+         * are non-standard. A JSON parser is free to accept non-JSON forms as
+         * long as it accepts all correct JSON forms. Numbers with a leading
+         * zero are read as decimal, not octal, and hex (0x) values are not
+         * converted, as JSON does not support either.
          */
 
         if ((b >= '0' && b <= '9') || b == '.' || b == '-' || b == '+') {
-            if (b == '0') {
-                if (s.length() > 2 &&
-                        (s.charAt(1) == 'x' || s.charAt(1) == 'X')) {
-                    try {
-                        return Integer.valueOf(Integer.parseInt(s.substring(2),
-                                16));
-                    } catch (Exception e) {
-                        /* Ignore the error */
-                    }
-                } else {
-                    try {
-                        return Integer.valueOf(Integer.parseInt(s, 8));
-                    } catch (Exception e) {
-                        /* Ignore the error */
-                    }
-                }
-            }
             try {
                 return Integer.valueOf(s);
             } catch (Exception e) {
