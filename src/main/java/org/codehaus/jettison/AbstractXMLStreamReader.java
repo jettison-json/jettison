@@ -62,7 +62,30 @@ public abstract class AbstractXMLStreamReader implements XMLStreamReader {
         return event;
     }
 
-    public void require(int arg0, String arg1, String arg2) throws XMLStreamException {
+    /**
+     * Test if the current event is of the given type and if the namespace and name
+     * match the current namespace and name of the current event, as specified by
+     * {@link javax.xml.stream.XMLStreamReader#require(int, String, String)}. A null
+     * namespaceURI or localName is not checked.
+     */
+    public void require(int type, String namespaceURI, String localName) throws XMLStreamException {
+        if (type != event) {
+            throw new XMLStreamException("Expected event type " + type + " but the current event type is " + event);
+        }
+        if (namespaceURI == null && localName == null) {
+            return;
+        }
+        if (!hasName()) {
+            throw new XMLStreamException("The current event type " + event + " does not have a name");
+        }
+        if (namespaceURI != null && !namespaceURI.equals(getNamespaceURI())) {
+            throw new XMLStreamException("Expected namespace '" + namespaceURI
+                + "' but the current namespace is '" + getNamespaceURI() + "'");
+        }
+        if (localName != null && !localName.equals(getLocalName())) {
+            throw new XMLStreamException("Expected local name '" + localName
+                + "' but the current local name is '" + getLocalName() + "'");
+        }
     }
 
     public int getAttributeCount() {
@@ -136,8 +159,7 @@ public abstract class AbstractXMLStreamReader implements XMLStreamReader {
     }
 
     public boolean hasName() {
-        // TODO Auto-generated method stub
-        return false;
+        return event == START_ELEMENT || event == END_ELEMENT;
     }
 
     public boolean hasNext() throws XMLStreamException {

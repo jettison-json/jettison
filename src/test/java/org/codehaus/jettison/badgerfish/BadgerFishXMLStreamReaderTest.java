@@ -326,4 +326,32 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
             // expected
         }
     }
+
+    public void testHasNameAndRequire() throws Exception {
+        XMLStreamReader reader = new BadgerFishXMLStreamReader(new JSONObject("{\"root\":{\"$\":\"text\"}}"));
+        assertFalse(reader.hasName());
+
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertTrue(reader.hasName());
+        reader.require(XMLStreamReader.START_ELEMENT, "", "root");
+        try {
+            reader.require(XMLStreamReader.START_ELEMENT, null, "other");
+            fail("Failure expected on a different local name");
+        } catch (XMLStreamException ex) {
+            // expected
+        }
+
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertFalse(reader.hasName());
+        try {
+            reader.require(XMLStreamReader.START_ELEMENT, null, null);
+            fail("Failure expected on a different event type");
+        } catch (XMLStreamException ex) {
+            // expected
+        }
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertTrue(reader.hasName());
+        reader.require(XMLStreamReader.END_ELEMENT, null, "root");
+    }
 }
