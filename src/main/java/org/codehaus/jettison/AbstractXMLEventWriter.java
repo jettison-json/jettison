@@ -95,12 +95,16 @@ public class AbstractXMLEventWriter implements XMLEventWriter {
 		}
 	}
 
+	/**
+	 * Add all the events from the given reader. As specified by
+	 * {@link XMLEventWriter#add(XMLEventReader)}, this does not close the writer,
+	 * so the caller can continue to use it and is responsible for closing it.
+	 */
 	public void add(XMLEventReader eventReader) throws XMLStreamException {
 		while (eventReader.hasNext()) {
 			XMLEvent event = eventReader.nextEvent();
 			add(event);
 		}
-		close();
 	}
 
 	public void close() throws XMLStreamException {
