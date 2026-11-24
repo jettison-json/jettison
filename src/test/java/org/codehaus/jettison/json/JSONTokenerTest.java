@@ -160,4 +160,21 @@ public class JSONTokenerTest extends TestCase {
         }
         return sb.append(".5").toString();
     }
+
+    public void testNextN() throws Exception {
+        JSONTokener tokener = new JSONTokener("abcd");
+        assertEquals("", tokener.next(0));
+        assertEquals("ab", tokener.next(2));
+        // reading exactly the remaining characters
+        assertEquals("cd", tokener.next(2));
+        assertFalse(tokener.more());
+
+        assertEquals("abcd", new JSONTokener("abcd").next(4));
+        try {
+            new JSONTokener("abcd").next(5);
+            fail("Failure expected when reading past the end of the input");
+        } catch (JSONException ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().contains("Substring bounds error"));
+        }
+    }
 }
