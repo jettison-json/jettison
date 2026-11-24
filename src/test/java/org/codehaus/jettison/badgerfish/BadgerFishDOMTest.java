@@ -108,6 +108,14 @@ public class BadgerFishDOMTest extends DOMTest {
         assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
     }
 
+	public void testCommentAndProcessingInstruction() throws Exception {
+		// comments and processing instructions can't be represented in JSON, so are dropped
+		String xmlStr = "<kermit><!-- a comment --><?target data?>the frog</kermit>";
+		String expStr = "{\"kermit\":{\"$\":\"the frog\"}}";
+		String resStr = toJSON(parse(xmlStr));
+		assertEquals("Unexpected result: " + resStr, expStr, resStr);
+	}
+
 	private String toJSON(Element srcDOM) throws Exception {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		new BadgerFishDOMDocumentSerializer(baos).serialize(srcDOM);
