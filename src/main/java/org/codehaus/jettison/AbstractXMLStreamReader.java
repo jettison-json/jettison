@@ -15,8 +15,12 @@
  */
 package org.codehaus.jettison;
 
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
@@ -156,6 +160,40 @@ public abstract class AbstractXMLStreamReader implements XMLStreamReader {
 
     public String getNamespaceURI(String prefix) {
         return node.getNamespaceURI(prefix);
+    }
+
+    /**
+     * Returns a NamespaceContext for the namespace declarations in scope at the
+     * current position of the reader, i.e. those of the current element and its
+     * ancestors, with inner declarations taking precedence. The context reflects
+     * the position of the reader at the time each of its methods is called.
+     */
+    public NamespaceContext getNamespaceContext() {
+        return new NamespaceContext() {
+            public String getNamespaceURI(String prefix) {
+                return node == null ? null : node.getNamespaceURI(prefix);
+            }
+
+            public String getPrefix(String namespaceURI) {
+                Iterator<String> prefixes = getPrefixes(namespaceURI);
+                return prefixes.hasNext() ? prefixes.next() : null;
+            }
+
+            public Iterator<String> getPrefixes(String namespaceURI) {
+                Set<String> prefixes = new LinkedHashSet<String>();
+                for (Node n = node; n != null; n = n.parent) {
+                    for (int i = 0; i < n.getNamespaceCount(); i++) {
+                        String prefix = n.getNamespacePrefix(i);
+                        // skip prefixes redeclared by an inner element to a different namespace URI
+                        if (n.getNamespaceURI(i).equals(namespaceURI)
+                            && namespaceURI.equals(node.getNamespaceURI(prefix))) {
+                            prefixes.add(prefix);
+                        }
+                    }
+                }
+                return Collections.unmodifiableSet(prefixes).iterator();
+            }
+        };
     }
 
     public boolean hasName() {

@@ -208,14 +208,18 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
         }
     }
 
-    public Iterator<String> getPrefixes( String arg0 ) {
+    public Iterator<String> getPrefixes( String namespaceURI ) {
 
         if ( ignoreNamespaces ) {
             return Collections.<String>emptySet().iterator();
         }
-        else {
-            return jnsToXns.keySet().iterator();
+        List<String> prefixes = new ArrayList<String>();
+        for (Map.Entry<String, Object> entry : jnsToXns.entrySet()) {
+            if (entry.getValue() != null && entry.getValue().equals(namespaceURI)) {
+                prefixes.add(entry.getKey());
+            }
         }
+        return Collections.unmodifiableList(prefixes).iterator();
     }
 
     public QName createQName( String rootName, Node node ) {

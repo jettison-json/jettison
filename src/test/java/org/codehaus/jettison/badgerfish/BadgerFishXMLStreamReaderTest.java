@@ -16,7 +16,9 @@
 package org.codehaus.jettison.badgerfish;
 
 import java.io.StringReader;
+import java.util.Iterator;
 
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
@@ -363,5 +365,35 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
         assertEquals(5, reader.getTextCharacters(0, target, 0, 16));
         assertEquals("hello", new String(target, 0, 5));
         assertEquals(0, reader.getTextCharacters(5, target, 0, 16));
+    }
+
+    public void testNamespaceContext() throws Exception {
+        XMLStreamReader reader = new BadgerFishXMLStreamReader(new JSONObject(
+            "{\"a\":{\"@xmlns\":{\"p\":\"urn:1\",\"$\":\"urn:d\"},"
+            + "\"b\":{\"@xmlns\":{\"p\":\"urn:2\"},\"$\":\"t\"}}}"));
+        // the context reflects the current position of the reader
+        NamespaceContext ctx = reader.getNamespaceContext();
+        assertNotNull(ctx);
+
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("a", reader.getLocalName());
+        assertEquals("urn:1", ctx.getNamespaceURI("p"));
+        assertEquals("urn:d", ctx.getNamespaceURI(""));
+        assertEquals("p", ctx.getPrefix("urn:1"));
+        assertEquals("", ctx.getPrefix("urn:d"));
+        assertNull(ctx.getNamespaceURI("unbound"));
+        assertNull(ctx.getPrefix("urn:unbound"));
+        assertFalse(ctx.getPrefixes("urn:unbound").hasNext());
+
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("b", reader.getLocalName());
+        // the inner declaration of p takes precedence, and the default namespace is inherited
+        assertEquals("urn:2", ctx.getNamespaceURI("p"));
+        assertEquals("urn:d", ctx.getNamespaceURI(""));
+        assertNull(ctx.getPrefix("urn:1"));
+        Iterator<?> prefixes = ctx.getPrefixes("urn:2");
+        assertEquals("p", prefixes.next());
+        assertFalse(prefixes.hasNext());
+        assertEquals("urn:2", reader.getNamespaceContext().getNamespaceURI("p"));
     }
 }

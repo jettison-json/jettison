@@ -20,10 +20,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.stream.Location;
@@ -1296,5 +1298,23 @@ public class MappedXMLStreamReaderTest extends TestCase {
         } catch (IndexOutOfBoundsException ex) {
             // expected
         }
+    }
+
+    public void testNamespaceContextGetPrefixes() throws Exception {
+        Map<String, String> namespaces = new HashMap<String, String>();
+        namespaces.put("urn:1", "p1");
+        namespaces.put("urn:2", "p2");
+        XMLStreamReader reader = new MappedXMLStreamReader(new JSONObject("{\"p1.root\":\"x\"}"),
+            new MappedNamespaceConvention(new Configuration(namespaces)));
+        NamespaceContext ctx = reader.getNamespaceContext();
+
+        Iterator<?> prefixes = ctx.getPrefixes("urn:1");
+        assertEquals("p1", prefixes.next());
+        assertFalse(prefixes.hasNext());
+        prefixes = ctx.getPrefixes("urn:2");
+        assertEquals("p2", prefixes.next());
+        assertFalse(prefixes.hasNext());
+        assertFalse(ctx.getPrefixes("urn:unknown").hasNext());
+        assertEquals("p1", ctx.getPrefix("urn:1"));
     }
 }
