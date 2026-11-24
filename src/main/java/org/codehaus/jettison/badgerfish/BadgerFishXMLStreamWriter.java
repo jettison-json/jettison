@@ -17,6 +17,7 @@ package org.codehaus.jettison.badgerfish;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Iterator;
 
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.XMLStreamException;
@@ -116,9 +117,25 @@ public class BadgerFishXMLStreamWriter extends AbstractXMLStreamWriter {
         return p + ":" + local;
     }
 
+    /**
+     * Write an attribute in the given namespace, using a prefix bound to the namespace
+     * URI in the current scope. As attributes are not in the default namespace, only a
+     * non-empty prefix is used. If no such prefix is bound, the attribute is written
+     * without a prefix, as in previous releases.
+     */
     @Override
     public void writeAttribute(String ns, String local, String value) throws XMLStreamException {
-        writeAttribute(null, ns, local, value);
+        String prefix = null;
+        if (ns != null && !ns.isEmpty()) {
+            for (Iterator prefixes = getNamespaceContext().getPrefixes(ns); prefixes.hasNext();) {
+                String candidate = (String) prefixes.next();
+                if (!candidate.isEmpty()) {
+                    prefix = candidate;
+                    break;
+                }
+            }
+        }
+        writeAttribute(prefix, ns, local, value);
     }
 
     @Override
