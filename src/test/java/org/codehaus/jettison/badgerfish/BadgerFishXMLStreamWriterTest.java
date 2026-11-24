@@ -16,6 +16,13 @@
 package org.codehaus.jettison.badgerfish;
 
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.xml.namespace.NamespaceContext;
 
 import junit.framework.TestCase;
 
@@ -296,4 +303,45 @@ public class BadgerFishXMLStreamWriterTest extends TestCase {
      * 
      * @throws Exception
      */
+
+    public void testNamespaceContextInnerDeclarationTakesPrecedence() throws Exception {
+        AbstractXMLStreamWriter writer = new BadgerFishXMLStreamWriter(new StringWriter());
+        NamespaceContext ctx = writer.getNamespaceContext();
+        writer.writeStartDocument();
+        writer.writeStartElement("a");
+        writer.writeNamespace("p", "urn:1");
+        writer.writeNamespace("q", "urn:2");
+        assertEquals("urn:1", ctx.getNamespaceURI("p"));
+        assertEquals("p", ctx.getPrefix("urn:1"));
+
+        writer.writeStartElement("b");
+        writer.writeNamespace("p", "urn:2");
+        // the inner declaration of p takes precedence
+        assertEquals("urn:2", ctx.getNamespaceURI("p"));
+        assertEquals("urn:2", ctx.getNamespaceURI("q"));
+        // p is no longer bound to urn:1 in this scope
+        assertNull(ctx.getPrefix("urn:1"));
+        assertFalse(ctx.getPrefixes("urn:1").hasNext());
+        assertEquals("p", ctx.getPrefix("urn:2"));
+        assertEquals(Arrays.asList("p", "q"), toList(ctx.getPrefixes("urn:2")));
+        assertNull(ctx.getNamespaceURI("unbound"));
+        assertNull(ctx.getPrefix("urn:unbound"));
+        assertEquals(Collections.emptyList(), toList(ctx.getPrefixes("urn:unbound")));
+
+        writer.writeEndElement();
+        // back in the scope of a
+        assertEquals("urn:1", ctx.getNamespaceURI("p"));
+        assertEquals("p", ctx.getPrefix("urn:1"));
+        assertEquals(Arrays.asList("q"), toList(ctx.getPrefixes("urn:2")));
+        writer.writeEndElement();
+        writer.writeEndDocument();
+    }
+
+    private static List<Object> toList(Iterator<?> itr) {
+        List<Object> list = new ArrayList<Object>();
+        while (itr.hasNext()) {
+            list.add(itr.next());
+        }
+        return list;
+    }
 }
