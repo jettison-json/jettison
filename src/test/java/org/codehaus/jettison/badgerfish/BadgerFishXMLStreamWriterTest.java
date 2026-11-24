@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.namespace.NamespaceContext;
+import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.TestCase;
 
@@ -343,5 +344,50 @@ public class BadgerFishXMLStreamWriterTest extends TestCase {
             list.add(itr.next());
         }
         return list;
+    }
+
+    public void testWriteAttributeWithNamespaceURI() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        AbstractXMLStreamWriter writer = new BadgerFishXMLStreamWriter(strWriter);
+        writer.writeStartDocument();
+        writer.writeStartElement("a");
+        writer.writeNamespace("p", "urn:p");
+        writer.writeAttribute("urn:p", "x", "1");
+        // an attribute with no namespace
+        writer.writeAttribute("", "y", "2");
+        writer.writeStartElement("b");
+        writer.writeNamespace("q", "urn:p");
+        // the innermost prefix bound to the namespace is used
+        writer.writeAttribute("urn:p", "z", "3");
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeEndDocument();
+        writer.close();
+
+        String json = strWriter.toString();
+        assertEquals("{\"a\":{\"@xmlns\":{\"p\":\"urn:p\"},\"@p:x\":\"1\",\"@y\":\"2\","
+            + "\"b\":{\"@xmlns\":{\"q\":\"urn:p\"},\"@q:z\":\"3\"}}}", json);
+
+        // the attribute is read back in its namespace
+        XMLStreamReader reader = new BadgerFishXMLStreamReader(new JSONObject(json));
+        reader.next();
+        assertEquals("1", reader.getAttributeValue("urn:p", "x"));
+    }
+
+    public void testWriteAttributeWithUnboundNamespaceURI() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        AbstractXMLStreamWriter writer = new BadgerFishXMLStreamWriter(strWriter);
+        writer.writeStartDocument();
+        writer.writeStartElement("a");
+        // with no prefix bound to the namespace URI, the attribute is written without a prefix
+        writer.writeAttribute("urn:unbound", "x", "1");
+        // the default namespace does not apply to attributes, so isn't used as a prefix either
+        writer.writeDefaultNamespace("urn:default");
+        writer.writeAttribute("urn:default", "y", "2");
+        writer.writeEndElement();
+        writer.writeEndDocument();
+        writer.close();
+        assertEquals("{\"a\":{\"@x\":\"1\",\"@xmlns\":{\"$\":\"urn:default\"},\"@y\":\"2\"}}",
+            strWriter.toString());
     }
 }
