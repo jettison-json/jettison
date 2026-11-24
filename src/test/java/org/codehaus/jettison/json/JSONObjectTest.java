@@ -689,4 +689,17 @@ public class JSONObjectTest extends TestCase {
         assertEquals("{\"octal\":10,\"octal2\":777,\"notOctal\":9,\"negative\":-10,\"zero\":0,"
             + "\"fraction\":0.5,\"hex\":\"0x1F\",\"hex2\":\"0XAB\"}", obj.toString());
     }
+
+    public void testPrettyPrintEscapeForwardSlash() throws JSONException {
+        JSONObject obj = new JSONObject();
+        obj.setEscapeForwardSlashAlways(false);
+        obj.put("a/b", "c/d");
+        assertEquals("{\"a/b\":\"c/d\"}", obj.toString());
+        // the pretty printed key is escaped in the same way as the compact output
+        assertEquals("{\n  \"a/b\": \"c/d\"\n}", obj.toString(2));
+
+        obj.setEscapeForwardSlashAlways(true);
+        assertEquals("{\"a\\/b\":\"c\\/d\"}", obj.toString());
+        assertEquals("{\n  \"a\\/b\": \"c\\/d\"\n}", obj.toString(2));
+    }
 }

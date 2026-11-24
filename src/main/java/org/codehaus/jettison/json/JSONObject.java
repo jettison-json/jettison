@@ -1323,7 +1323,7 @@ public class JSONObject implements Serializable {
             for (i = 0; i < newindent; i += 1) {
                 sb.append(' ');
             }
-            sb.append(quote(o.toString()));
+            sb.append(quote(o.toString(), escapeForwardSlashAlways));
             sb.append(": ");
             sb.append(valueToString(this.myHashMap.get(o), indentFactor,
                     newindent, escapeForwardSlashAlways, depth + 1));
