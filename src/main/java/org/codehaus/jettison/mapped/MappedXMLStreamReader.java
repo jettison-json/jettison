@@ -265,9 +265,48 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
     public void close() throws XMLStreamException {
     }
 
+    /**
+     * Read the text content of a text-only element, as specified by
+     * {@link javax.xml.stream.XMLStreamReader#getElementText()} if enabled: the reader
+     * must be positioned on a START_ELEMENT, and is left on the corresponding END_ELEMENT.
+     * A JSON null value is returned as null, unless readNullAsString is configured.
+     * Calling this method on a CHARACTERS event returns the current text without
+     * moving the reader.
+     * <p>
+     * This behaviour must be enabled with Configuration.setStandardGetElementText(true).
+     * By default, the text is returned and the reader is left on a CHARACTERS event,
+     * so that the following call to next() returns the END_ELEMENT.
+     */
     public String getElementText() throws XMLStreamException {
-        event = CHARACTERS;
-        return currentValue;
+        if (!convention.isStandardGetElementText()) {
+            event = CHARACTERS;
+            return currentValue;
+        }
+        if (event == CHARACTERS) {
+            return getText();
+        }
+        if (event != START_ELEMENT) {
+            throw new XMLStreamException("The reader must be on a START_ELEMENT to read the element text");
+        }
+        StringBuilder content = null;
+        int eventType = next();
+        while (eventType != END_ELEMENT) {
+            if (eventType == CHARACTERS) {
+                String text = getText();
+                if (text != null) {
+                    if (content == null) {
+                        content = new StringBuilder();
+                    }
+                    content.append(text);
+                }
+            } else if (eventType == START_ELEMENT) {
+                throw new XMLStreamException("The element text content may not contain a START_ELEMENT");
+            } else {
+                throw new XMLStreamException("Unexpected event type " + eventType + " while reading the element text");
+            }
+            eventType = next();
+        }
+        return content == null ? null : content.toString();
     }
 
     public NamespaceContext getNamespaceContext() {

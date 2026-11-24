@@ -79,6 +79,7 @@ public class Configuration {
     private Set primitiveArrayKeys = Collections.EMPTY_SET;
     private boolean writeNullAsString = true;
     private boolean readNullAsString;
+    private boolean standardGetElementText;
     private boolean ignoreEmptyArrayValues;
     private boolean escapeForwardSlashAlways;
     private String jsonNamespaceSeparator;
@@ -192,6 +193,21 @@ public class Configuration {
 
 	public void setReadNullAsString(boolean readNullString) {
 		this.readNullAsString = readNullString;
+	}
+
+	public boolean isStandardGetElementText() {
+		return standardGetElementText;
+	}
+
+	/**
+	 * Set this to true for MappedXMLStreamReader.getElementText() to behave as
+	 * specified by XMLStreamReader.getElementText(), leaving the reader positioned
+	 * on the END_ELEMENT. By default (false), the reader is left on a CHARACTERS
+	 * event, so that the following call to next() returns the END_ELEMENT, as in
+	 * previous releases.
+	 */
+	public void setStandardGetElementText(boolean standardGetElementText) {
+		this.standardGetElementText = standardGetElementText;
 	}
 
 	public boolean isIgnoreEmptyArrayValues() {

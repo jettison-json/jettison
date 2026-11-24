@@ -1100,4 +1100,102 @@ public class MappedXMLStreamReaderTest extends TestCase {
         }
         return sb.toString();
     }
+
+    // https://github.com/jettison-json/jettison/issues/9
+    public void testGetElementTextLeavesReaderOnEndElement() throws Exception {
+        JSONObject obj = new JSONObject("{\"root\":{\"a\":\"text\",\"b\":{\"@attr\":\"x\",\"$\":\"more\"},"
+            + "\"c\":[\"one\",\"two\"],\"d\":{},\"e\":\"\",\"f\":null}}");
+        XMLStreamReader reader = new MappedXMLStreamReader(obj, new MappedNamespaceConvention(standard()));
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("root", reader.getLocalName());
+
+        assertElementText(reader, "a", "text");
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("x", reader.getAttributeValue(null, "attr"));
+        assertEquals("b", reader.getLocalName());
+        assertEquals("more", reader.getElementText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.getEventType());
+        assertEquals("b", reader.getLocalName());
+        // repeated elements from a JSON array
+        assertElementText(reader, "c", "one");
+        assertElementText(reader, "c", "two");
+        // an empty element and an empty string
+        assertElementText(reader, "d", null);
+        assertElementText(reader, "e", "");
+        // a JSON null
+        assertElementText(reader, "f", null);
+
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("root", reader.getLocalName());
+        assertEquals(XMLStreamReader.END_DOCUMENT, reader.next());
+    }
+
+    private static void assertElementText(XMLStreamReader reader, String name, String text) throws Exception {
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals(name, reader.getLocalName());
+        assertEquals(text, reader.getElementText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.getEventType());
+        assertEquals(name, reader.getLocalName());
+    }
+
+    public void testGetElementTextNullString() throws Exception {
+        // the string "null" is read as null, unless readNullAsString is configured
+        XMLStreamReader reader = new MappedXMLStreamReader(new JSONObject("{\"root\":\"null\"}"),
+            new MappedNamespaceConvention(standard()));
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertNull(reader.getElementText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.getEventType());
+
+        Configuration conf = standard();
+        conf.setReadNullAsString(true);
+        reader = new MappedXMLStreamReader(new JSONObject("{\"root\":\"null\"}"),
+            new MappedNamespaceConvention(conf));
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("null", reader.getElementText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.getEventType());
+    }
+
+    public void testGetElementTextOnCharacters() throws Exception {
+        XMLStreamReader reader = new MappedXMLStreamReader(new JSONObject("{\"root\":\"test\"}"),
+            new MappedNamespaceConvention(standard()));
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("test", reader.getElementText());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.getEventType());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+    }
+
+    public void testGetElementTextWithChildElement() throws Exception {
+        XMLStreamReader reader = new MappedXMLStreamReader(new JSONObject("{\"root\":{\"child\":\"test\"}}"),
+            new MappedNamespaceConvention(standard()));
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        try {
+            reader.getElementText();
+            fail("Failure expected on an element with a child element");
+        } catch (XMLStreamException ex) {
+            // expected
+        }
+    }
+
+    public void testDefaultGetElementText() throws Exception {
+        // by default the reader is left on CHARACTERS, so next() returns the END_ELEMENT
+        XMLStreamReader[] readers = {
+            new MappedXMLStreamReader(new JSONObject("{\"root\":\"test\"}"),
+                new MappedNamespaceConvention(new Configuration())),
+            new MappedXMLStreamReader(new JSONObject("{\"root\":\"test\"}"))
+        };
+        for (XMLStreamReader reader : readers) {
+            assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+            assertEquals("test", reader.getElementText());
+            assertEquals(XMLStreamReader.CHARACTERS, reader.getEventType());
+            assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+            assertEquals(XMLStreamReader.END_DOCUMENT, reader.next());
+        }
+    }
+
+    private static Configuration standard() {
+        Configuration conf = new Configuration();
+        conf.setStandardGetElementText(true);
+        return conf;
+    }
 }

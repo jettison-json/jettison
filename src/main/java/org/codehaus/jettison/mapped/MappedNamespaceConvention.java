@@ -54,6 +54,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
     private boolean rootElementArrayWrapper = true;
     private boolean ignoreEmptyArrayValues;
     private boolean readNullAsString;
+    private boolean standardGetElementText;
     private boolean escapeForwardSlashAlways;
     private String jsonNamespaceSeparator;
     public MappedNamespaceConvention() {
@@ -89,6 +90,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
             }
         }
         this.readNullAsString = config.isReadNullAsString();
+        this.standardGetElementText = config.isStandardGetElementText();
         this.writeNullAsString = config.isWriteNullAsString();
         typeConverter = config.getTypeConverter();
         if (!writeNullAsString && typeConverter != null) {
@@ -339,6 +341,9 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
 	}
 	public boolean isReadNullAsString() {
 		return readNullAsString;
+	}
+	public boolean isStandardGetElementText() {
+		return standardGetElementText;
 	}
     
 	public boolean isIgnoreEmptyArrayValues() {
