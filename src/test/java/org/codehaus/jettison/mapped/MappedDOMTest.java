@@ -79,6 +79,14 @@ public class MappedDOMTest extends DOMTest {
         assertEquals("Unexpected result: " + resXML, xmlStr, resXML);
     }
 
+	public void testCommentAndProcessingInstruction() throws Exception {
+		// comments and processing instructions can't be represented in JSON, so are dropped
+		String xmlStr = "<kermit><!-- a comment --><?target data?>the frog</kermit>";
+		String expStr = "{\"kermit\":\"the frog\"}";
+		String resStr = toJSON(parse(xmlStr), false);
+		assertEquals("Unexpected result: " + resStr, expStr, resStr);
+	}
+
 	private String toJSON(Element srcDOM, boolean ignoreNamespaces) throws Exception {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		Configuration conf = new Configuration();

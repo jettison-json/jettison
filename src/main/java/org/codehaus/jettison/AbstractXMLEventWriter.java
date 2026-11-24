@@ -25,7 +25,11 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Characters;
+import javax.xml.stream.events.Comment;
+import javax.xml.stream.events.DTD;
+import javax.xml.stream.events.EntityReference;
 import javax.xml.stream.events.Namespace;
+import javax.xml.stream.events.ProcessingInstruction;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
@@ -61,27 +65,13 @@ public class AbstractXMLEventWriter implements XMLEventWriter {
 			// Add element namespaces
 			Iterator namespaces = element.getNamespaces();
 			while (namespaces.hasNext()) {
-				Namespace ns = (Namespace) namespaces.next();
-				String prefix = ns.getPrefix();
-				String nsURI = ns.getNamespaceURI();
-				streamWriter.writeNamespace(prefix, nsURI);
+				writeNamespace((Namespace) namespaces.next());
 			}
 
 			// Add element attributes
 			Iterator attris = element.getAttributes();
 			while (attris.hasNext()) {
-				Attribute attr = (Attribute) attris.next();
-				QName atQName = attr.getName();
-				String value = attr.getValue();
-				if (atQName.getPrefix().length() > 0
-						&& atQName.getNamespaceURI().length() > 0)
-					streamWriter.writeAttribute(atQName.getPrefix(), atQName
-							.getNamespaceURI(), atQName.getLocalPart(), value);
-				else if (atQName.getNamespaceURI().length() > 0)
-					streamWriter.writeAttribute(atQName.getNamespaceURI(),
-							atQName.getLocalPart(), value);
-				else
-					streamWriter.writeAttribute(atQName.getLocalPart(), value);
+				writeAttribute((Attribute) attris.next());
 			}
 		} else if (event.isCharacters()) {
 			Characters chars = event.asCharacters();
@@ -90,9 +80,48 @@ public class AbstractXMLEventWriter implements XMLEventWriter {
 			streamWriter.writeEndElement();
 		} else if (event.isEndDocument()) {
 			streamWriter.writeEndDocument();
+		} else if (event.isNamespace()) {
+			// Checked before isAttribute(), as a Namespace is also an Attribute
+			writeNamespace((Namespace) event);
+		} else if (event.isAttribute()) {
+			writeAttribute((Attribute) event);
+		} else if (event.isProcessingInstruction()) {
+			ProcessingInstruction pi = (ProcessingInstruction) event;
+			if (pi.getData() == null) {
+				streamWriter.writeProcessingInstruction(pi.getTarget());
+			} else {
+				streamWriter.writeProcessingInstruction(pi.getTarget(), pi.getData());
+			}
+		} else if (event.getEventType() == XMLEvent.COMMENT) {
+			streamWriter.writeComment(((Comment) event).getText());
+		} else if (event.getEventType() == XMLEvent.DTD) {
+			streamWriter.writeDTD(((DTD) event).getDocumentTypeDeclaration());
+		} else if (event.isEntityReference()) {
+			streamWriter.writeEntityRef(((EntityReference) event).getName());
+		} else if (event.getEventType() == XMLEvent.ENTITY_DECLARATION
+				|| event.getEventType() == XMLEvent.NOTATION_DECLARATION) {
+			// These are only reported as part of a DTD, which is written by the DTD event
 		} else {
 			throw new XMLStreamException("Unsupported event type: " + event);
 		}
+	}
+
+	private void writeNamespace(Namespace ns) throws XMLStreamException {
+		streamWriter.writeNamespace(ns.getPrefix(), ns.getNamespaceURI());
+	}
+
+	private void writeAttribute(Attribute attr) throws XMLStreamException {
+		QName atQName = attr.getName();
+		String value = attr.getValue();
+		if (atQName.getPrefix().length() > 0
+				&& atQName.getNamespaceURI().length() > 0)
+			streamWriter.writeAttribute(atQName.getPrefix(), atQName
+					.getNamespaceURI(), atQName.getLocalPart(), value);
+		else if (atQName.getNamespaceURI().length() > 0)
+			streamWriter.writeAttribute(atQName.getNamespaceURI(),
+					atQName.getLocalPart(), value);
+		else
+			streamWriter.writeAttribute(atQName.getLocalPart(), value);
 	}
 
 	/**
