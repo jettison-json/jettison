@@ -1198,4 +1198,54 @@ public class MappedXMLStreamReaderTest extends TestCase {
         conf.setStandardGetElementText(true);
         return conf;
     }
+
+    public void testHasNameAndRequire() throws Exception {
+        Map<String, String> namespaces = new HashMap<String, String>();
+        namespaces.put("urn:1", "p1");
+        XMLStreamReader reader = new MappedXMLStreamReader(new JSONObject("{\"p1.root\":{\"child\":\"text\"}}"),
+            new MappedNamespaceConvention(new Configuration(namespaces)));
+
+        assertFalse(reader.hasName());
+        reader.require(XMLStreamConstants.START_DOCUMENT, null, null);
+
+        assertEquals(XMLStreamConstants.START_ELEMENT, reader.next());
+        assertTrue(reader.hasName());
+        reader.require(XMLStreamConstants.START_ELEMENT, "urn:1", "root");
+        reader.require(XMLStreamConstants.START_ELEMENT, null, "root");
+        reader.require(XMLStreamConstants.START_ELEMENT, "urn:1", null);
+        assertRequireFails(reader, XMLStreamConstants.END_ELEMENT, null, null);
+        assertRequireFails(reader, XMLStreamConstants.START_ELEMENT, "urn:2", "root");
+        assertRequireFails(reader, XMLStreamConstants.START_ELEMENT, "", "root");
+        assertRequireFails(reader, XMLStreamConstants.START_ELEMENT, "urn:1", "other");
+
+        assertEquals(XMLStreamConstants.START_ELEMENT, reader.next());
+        reader.require(XMLStreamConstants.START_ELEMENT, "", "child");
+
+        assertEquals(XMLStreamConstants.CHARACTERS, reader.next());
+        assertFalse(reader.hasName());
+        reader.require(XMLStreamConstants.CHARACTERS, null, null);
+        // a name can't be checked on an event that has no name
+        assertRequireFails(reader, XMLStreamConstants.CHARACTERS, null, "child");
+
+        assertEquals(XMLStreamConstants.END_ELEMENT, reader.next());
+        assertTrue(reader.hasName());
+        reader.require(XMLStreamConstants.END_ELEMENT, "", "child");
+
+        assertEquals(XMLStreamConstants.END_ELEMENT, reader.next());
+        reader.require(XMLStreamConstants.END_ELEMENT, "urn:1", "root");
+
+        assertEquals(XMLStreamConstants.END_DOCUMENT, reader.next());
+        assertFalse(reader.hasName());
+        reader.require(XMLStreamConstants.END_DOCUMENT, null, null);
+    }
+
+    private static void assertRequireFails(XMLStreamReader reader, int type, String namespaceURI,
+                                           String localName) {
+        try {
+            reader.require(type, namespaceURI, localName);
+            fail("Failure expected on require(" + type + ", " + namespaceURI + ", " + localName + ")");
+        } catch (XMLStreamException ex) {
+            // expected
+        }
+    }
 }
