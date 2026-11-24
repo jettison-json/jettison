@@ -16,7 +16,6 @@
 package org.codehaus.jettison.badgerfish;
 
 
-import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.XMLStreamException;
 
 import org.codehaus.jettison.AbstractXMLStreamReader;
@@ -171,10 +170,6 @@ public class BadgerFishXMLStreamReader extends AbstractXMLStreamReader {
             eventType = next();
         }
         return content.toString();
-    }
-
-    public NamespaceContext getNamespaceContext() {
-        return null;
     }
 
     public String getText() {
