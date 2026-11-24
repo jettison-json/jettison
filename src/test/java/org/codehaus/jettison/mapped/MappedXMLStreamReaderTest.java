@@ -1248,4 +1248,53 @@ public class MappedXMLStreamReaderTest extends TestCase {
             // expected
         }
     }
+
+    public void testGetTextCharacters() throws Exception {
+        XMLStreamReader reader = new MappedXMLStreamReader(new JSONObject("{\"root\":\"hello\"}"));
+        assertEquals(XMLStreamConstants.START_ELEMENT, reader.next());
+        assertEquals(XMLStreamConstants.CHARACTERS, reader.next());
+
+        // a target buffer larger than the text
+        char[] target = new char[16];
+        assertEquals(5, reader.getTextCharacters(0, target, 0, 16));
+        assertEquals("hello", new String(target, 0, 5));
+
+        // copying into the middle of the target, starting part way through the text
+        target = new char[] {'x', 'x', 'x', 'x', 'x', 'x'};
+        assertEquals(3, reader.getTextCharacters(2, target, 1, 5));
+        assertEquals("xllox", new String(target, 0, 5));
+
+        // no more text
+        assertEquals(0, reader.getTextCharacters(5, target, 0, 3));
+        assertEquals(0, reader.getTextCharacters(10, target, 0, 3));
+
+        // reading the text in fixed size chunks, as in the XMLStreamReader Javadoc
+        StringBuilder sb = new StringBuilder();
+        char[] buffer = new char[2];
+        for (int sourceStart = 0;; sourceStart += buffer.length) {
+            int copied = reader.getTextCharacters(sourceStart, buffer, 0, buffer.length);
+            sb.append(buffer, 0, copied);
+            if (copied < buffer.length) {
+                break;
+            }
+        }
+        assertEquals("hello", sb.toString());
+
+        // invalid arguments
+        assertGetTextCharactersFails(reader, -1, new char[5], 0, 5);
+        assertGetTextCharactersFails(reader, 0, new char[5], -1, 5);
+        assertGetTextCharactersFails(reader, 0, new char[5], 6, 0);
+        assertGetTextCharactersFails(reader, 0, new char[5], 0, -1);
+        assertGetTextCharactersFails(reader, 0, new char[5], 2, 4);
+    }
+
+    private static void assertGetTextCharactersFails(XMLStreamReader reader, int sourceStart, char[] target,
+                                                     int targetStart, int length) throws XMLStreamException {
+        try {
+            reader.getTextCharacters(sourceStart, target, targetStart, length);
+            fail("Failure expected on invalid arguments");
+        } catch (IndexOutOfBoundsException ex) {
+            // expected
+        }
+    }
 }

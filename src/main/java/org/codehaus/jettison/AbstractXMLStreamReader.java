@@ -233,14 +233,25 @@ public abstract class AbstractXMLStreamReader implements XMLStreamReader {
         return text != null ? text.toCharArray() : new char[]{};
     }
 
+    /**
+     * Copy the text of the current event into the target array, as specified by
+     * {@link javax.xml.stream.XMLStreamReader#getTextCharacters(int, char[], int, int)}.
+     * Returns the number of characters actually copied, which is less than length
+     * (possibly 0) if there is no more text from sourceStart onwards.
+     */
     public int getTextCharacters(int sourceStart, char[] target, int targetStart, int length) throws XMLStreamException {
-    	String text = getText();
-    	if (text != null) {
-            text.getChars(sourceStart,sourceStart+length,target,targetStart);
-            return length;
-    	} else {
-    		return 0;
-    	}
+        if (sourceStart < 0 || targetStart < 0 || targetStart > target.length
+            || length < 0 || length > target.length - targetStart) {
+            throw new IndexOutOfBoundsException("Invalid arguments: sourceStart=" + sourceStart
+                + ", targetStart=" + targetStart + ", length=" + length + ", target length=" + target.length);
+        }
+        String text = getText();
+        if (text == null || sourceStart >= text.length()) {
+            return 0;
+        }
+        int count = Math.min(length, text.length() - sourceStart);
+        text.getChars(sourceStart, sourceStart + count, target, targetStart);
+        return count;
     }
 
     public int getTextLength() {
