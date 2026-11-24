@@ -15,8 +15,10 @@
  */
 package org.codehaus.jettison;
 
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import javax.xml.namespace.NamespaceContext;
 
@@ -30,11 +32,14 @@ public class XsonNamespaceContext implements NamespaceContext {
         this.nodes = nodes;
     }
 
+    /**
+     * Returns the namespace URI bound to the given prefix, searching from the innermost
+     * element outwards, so that an inner declaration of a prefix takes precedence.
+     * Returns null if the prefix is not bound.
+     */
     public String getNamespaceURI(String prefix) {
-        for (Iterator itr = nodes.iterator(); itr.hasNext();){
-            Node node = (Node) itr.next();
-            String uri = node.getNamespaceURI(prefix);
-            
+        for (int i = nodes.size() - 1; i >= 0; i--) {
+            String uri = ((Node) nodes.get(i)).getNamespaceURI(prefix);
             if (uri != null) {
                 return uri;
             }
@@ -42,19 +47,33 @@ public class XsonNamespaceContext implements NamespaceContext {
         return null;
     }
 
+    /**
+     * Returns a prefix bound to the given namespace URI in the current scope, or null
+     * if there is none. A prefix that has been redeclared by an inner element to a
+     * different namespace URI is not returned.
+     */
     public String getPrefix(String namespaceURI) {
-        for (Iterator itr = nodes.iterator(); itr.hasNext();){
-            Node node = (Node) itr.next();
-            String prefix = node.getNamespacePrefix(namespaceURI);
-            if (prefix != null) {
-                return prefix;
-            }
-        }
-        return null;
+        Iterator prefixes = getPrefixes(namespaceURI);
+        return prefixes.hasNext() ? (String) prefixes.next() : null;
     }
 
+    /**
+     * Returns all the prefixes bound to the given namespace URI in the current scope,
+     * starting with the innermost declarations.
+     */
     public Iterator getPrefixes(String namespaceURI) {
-        return null;
+        Set prefixes = new LinkedHashSet();
+        for (int i = nodes.size() - 1; i >= 0; i--) {
+            Node node = (Node) nodes.get(i);
+            for (int j = 0; j < node.getNamespaceCount(); j++) {
+                String prefix = node.getNamespacePrefix(j);
+                if (node.getNamespaceURI(j).equals(namespaceURI)
+                    && namespaceURI.equals(getNamespaceURI(prefix))) {
+                    prefixes.add(prefix);
+                }
+            }
+        }
+        return Collections.unmodifiableSet(prefixes).iterator();
     }
-     
+
 }
