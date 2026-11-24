@@ -354,4 +354,14 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
         assertTrue(reader.hasName());
         reader.require(XMLStreamReader.END_ELEMENT, null, "root");
     }
+
+    public void testGetTextCharacters() throws Exception {
+        XMLStreamReader reader = new BadgerFishXMLStreamReader(new JSONObject("{\"root\":{\"$\":\"hello\"}}"));
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        char[] target = new char[16];
+        assertEquals(5, reader.getTextCharacters(0, target, 0, 16));
+        assertEquals("hello", new String(target, 0, 5));
+        assertEquals(0, reader.getTextCharacters(5, target, 0, 16));
+    }
 }
