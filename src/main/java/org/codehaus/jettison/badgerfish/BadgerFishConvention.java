@@ -57,7 +57,7 @@ public class BadgerFishConvention implements Convention {
                         }                        
                     }
                 } else {
-                    String strValue = (String) o; 
+                    String strValue = o == null ? null : o.toString();
                     QName name = null;
                     // note that a non-prefixed attribute name implies NO namespace,
                     // i.e. as opposed to the in-scope default namespace
