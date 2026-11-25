@@ -406,4 +406,18 @@ public class BadgerFishXMLStreamWriterTest extends TestCase {
         assertEquals("{\"a\":{\"$\":\"x\"}}", target.toString());
         assertEquals("{\"a\":{\"$\":\"x\"}}", strWriter.toString());
     }
+
+    public void testWriteEmptyElementWithNamespace() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        AbstractXMLStreamWriter writer = new BadgerFishXMLStreamWriter(strWriter);
+        writer.writeStartDocument();
+        writer.writeStartElement("root");
+        writer.writeEmptyElement("", "a");
+        writer.writeEmptyElement("urn:x", "b");
+        writer.writeEndElement();
+        writer.writeEndDocument();
+        writer.close();
+        // the same as writeStartElement(namespaceURI, localName) followed by writeEndElement()
+        assertEquals("{\"root\":{\"a\":{},\"b\":{}}}", strWriter.toString());
+    }
 }
