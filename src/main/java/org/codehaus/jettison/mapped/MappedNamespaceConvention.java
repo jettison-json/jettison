@@ -109,14 +109,14 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
 
             if ( this.supressAtAttributes ) {
                 if ( k.startsWith( attributeKey ) ) {
-                    k = k.substring( 1 );
+                    k = k.substring( attributeKey.length() );
                 }
             }
 
             if ( k.startsWith( attributeKey ) ) {
                 Object o = object.opt( k );
                 //                String value = object.optString( k );
-                k = k.substring( 1 );
+                k = k.substring( attributeKey.length() );
                 if ( k.equals( "xmlns" ) ) {
                     // if its a string its a default namespace
                     if ( o instanceof JSONObject ) {
