@@ -177,4 +177,24 @@ public class JSONTokenerTest extends TestCase {
             assertTrue(ex.getMessage(), ex.getMessage().contains("Substring bounds error"));
         }
     }
+
+    public void testBlockComments() throws Exception {
+        assertEquals("[1]", new JSONArray("[1 /* x */ ]").toString());
+        // comments ending with more than one '*'
+        assertEquals("[1]", new JSONArray("[1 /* x **/ ]").toString());
+        assertEquals("[1]", new JSONArray("[1 /*** x ***/ ]").toString());
+        assertEquals("[1,2]", new JSONArray("[1, /* a * b **/ 2]").toString());
+        assertEquals("{\"a\":1}", new JSONObject("{/**/\"a\":/***/1}").toString());
+
+        // unclosed comments, including ones ending with '*', are still rejected
+        String[] unclosed = {"[1 /* x", "[1 /* x *", "[1 /* x **", "[1 /*"};
+        for (String input : unclosed) {
+            try {
+                new JSONArray(input);
+                fail("Failure expected on an unclosed comment: " + input);
+            } catch (JSONException ex) {
+                assertTrue(ex.getMessage(), ex.getMessage().startsWith("Unclosed comment"));
+            }
+        }
+    }
 }
