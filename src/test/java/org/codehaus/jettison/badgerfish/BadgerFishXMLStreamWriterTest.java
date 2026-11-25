@@ -390,4 +390,20 @@ public class BadgerFishXMLStreamWriterTest extends TestCase {
         assertEquals("{\"a\":{\"@x\":\"1\",\"@xmlns\":{\"$\":\"urn:default\"},\"@y\":\"2\"}}",
             strWriter.toString());
     }
+
+    public void testWriteToSuppliedJSONObject() throws Exception {
+        JSONObject target = new JSONObject();
+        StringWriter strWriter = new StringWriter();
+        AbstractXMLStreamWriter writer = new BadgerFishXMLStreamWriter(strWriter, target);
+        writer.writeStartDocument();
+        writer.writeStartElement("a");
+        writer.writeCharacters("x");
+        writer.writeEndElement();
+        writer.writeEndDocument();
+        writer.close();
+
+        // the content is written to the supplied JSONObject, as well as to the Writer
+        assertEquals("{\"a\":{\"$\":\"x\"}}", target.toString());
+        assertEquals("{\"a\":{\"$\":\"x\"}}", strWriter.toString());
+    }
 }
