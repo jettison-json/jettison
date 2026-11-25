@@ -146,9 +146,6 @@ public class JSONArray implements Serializable {
         x.back();
         for (;;) {
             if (x.nextClean() == ',') {
-            	if (c == '[') {
-            		throw x.syntaxError("JSONArray text has a trailing ','");
-            	}
                 x.back();
                 validateGrowthBy(1);
                 this.myArrayList.add(null);
