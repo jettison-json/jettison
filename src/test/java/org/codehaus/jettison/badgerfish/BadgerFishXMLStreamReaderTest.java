@@ -396,4 +396,17 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
         assertFalse(prefixes.hasNext());
         assertEquals("urn:2", reader.getNamespaceContext().getNamespaceURI("p"));
     }
+
+    public void testNonStringAttributeValues() throws Exception {
+        XMLStreamReader reader = new BadgerFishXMLStreamReader(new JSONObject(
+            "{\"a\":{\"@n\":5,\"@d\":1.5,\"@b\":true,\"@s\":\"x\",\"@z\":null,\"$\":\"t\"}}"));
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals(5, reader.getAttributeCount());
+        assertEquals("5", reader.getAttributeValue(null, "n"));
+        assertEquals("1.5", reader.getAttributeValue(null, "d"));
+        assertEquals("true", reader.getAttributeValue(null, "b"));
+        assertEquals("x", reader.getAttributeValue(null, "s"));
+        assertNull(reader.getAttributeValue(null, "z"));
+        assertEquals("t", reader.getElementText());
+    }
 }
