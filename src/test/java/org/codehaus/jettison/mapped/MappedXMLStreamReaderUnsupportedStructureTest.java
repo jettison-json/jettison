@@ -40,7 +40,9 @@ public class MappedXMLStreamReaderUnsupportedStructureTest extends TestCase {
     }
 
     public void testRootArrayWithPrimitiveArrayKeys() throws Exception {
-        assertUnsupported(primitiveArrayKeys(), "{\"r\":[{\"r\":1}]}");
+        // a root array listed in the primitive array keys is supported
+        assertEquals("<r><r>1</r></r>", readEvents(primitiveArrayKeys(), "{\"r\":[{\"r\":1}]}"));
+        assertEquals("<r><r>1</r><r>2</r></r>", readEvents(primitiveArrayKeys(), "{\"r\":[{\"r\":1},{\"r\":2}]}"));
     }
 
     public void testValueKeyWithEmptyArrayWithPrimitiveArrayKeys() throws Exception {

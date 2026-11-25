@@ -34,6 +34,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
     private String valueKey = "$";
     private NamespaceContext ctx;
     private int popArrayNodes;
+    private Node rootNode;
     public MappedXMLStreamReader(JSONObject obj)
             throws JSONException, XMLStreamException {
         this(obj, new MappedNamespaceConvention());
@@ -70,6 +71,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
                 currentValue = JSONObject.NULL.equals(top) ? null : top.toString();
             }
         }
+        rootNode = node;
         nodes.push(node);
         event = START_DOCUMENT;
     }
@@ -82,6 +84,10 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
             event = END_ELEMENT;
             node = popNode();
             currentValue = null;
+        } else if (event == END_ELEMENT && nodes.size() == 0 && node == rootNode
+                   && node.getArray() != null && node.getArrayIndex() >= node.getArray().length()) {
+            // the root element was read as an array (see primitiveArrayKeys), and has been closed
+            event = END_DOCUMENT;
         } else if (event == START_ELEMENT || event == END_ELEMENT) {
             if (event == END_ELEMENT && nodes.size() > 0) {
                 node = peekNode();

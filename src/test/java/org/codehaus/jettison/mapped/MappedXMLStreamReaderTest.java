@@ -362,7 +362,28 @@ public class MappedXMLStreamReaderTest extends TestCase {
         
         assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
         assertEquals("theBook", reader.getName().getLocalPart());
-    	
+
+        assertEquals(XMLStreamReader.END_DOCUMENT, reader.next());
+        assertFalse(reader.hasNext());
+    }
+
+    public void testArrayWithSameJSONObjectsSingleElement() throws Exception {
+        String str = "{\"theBook\":[{\"Name\":\"1\"}]}";
+        Configuration config = new Configuration();
+        config.setPrimitiveArrayKeys(Collections.singleton("theBook"));
+        XMLStreamReader reader = new MappedXMLInputFactory(config).createXMLStreamReader(new StringReader(str));
+
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("theBook", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("Name", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.CHARACTERS, reader.next());
+        assertEquals("1", reader.getText());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.next());
+        assertEquals("theBook", reader.getName().getLocalPart());
+        assertEquals(XMLStreamReader.END_DOCUMENT, reader.next());
+        assertFalse(reader.hasNext());
     }
     
     public void testArrayWithSameJSONObjects3() throws Exception {
