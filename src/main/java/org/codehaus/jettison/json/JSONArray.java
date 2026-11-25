@@ -152,7 +152,10 @@ public class JSONArray implements Serializable {
             } else {
                 x.back();
                 validateGrowthBy(1);
-                this.myArrayList.add(x.nextValue());
+                Object value = x.nextValue();
+                // JSON does not allow non-finite numbers, as also checked by JSONObject
+                JSONObject.testValidity(value);
+                this.myArrayList.add(value);
             }
             switch (x.nextClean()) {
             case ';':
