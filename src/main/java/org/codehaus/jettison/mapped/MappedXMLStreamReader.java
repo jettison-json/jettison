@@ -50,9 +50,12 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
         this.nodes = new FastStack();
         this.ctx = con;
         Object top = obj.get(rootName);
+        // An empty element written as an array is serialized as [""]
+        boolean emptyArray = top instanceof JSONArray
+            && ((JSONArray)top).length() == 1 && ((JSONArray)top).get(0).equals("");
         if (top instanceof JSONObject) {
             this.node = new Node(null, rootName, (JSONObject)top, convention);
-        } else if (top instanceof JSONArray && !(((JSONArray)top).length() == 1 && ((JSONArray)top).get(0).equals(""))) {
+        } else if (top instanceof JSONArray && !emptyArray) {
             if (con.isRootElementArrayWrapper()) {
                 this.node = new Node(null, rootName, obj, convention);
             } else {
@@ -61,7 +64,11 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
         } else {
             node = new Node(rootName, convention);
             convention.processAttributesAndNamespaces(node, obj);
-            currentValue = JSONObject.NULL.equals(top) ? null : top.toString();
+            if (emptyArray) {
+                currentValue = "";
+            } else {
+                currentValue = JSONObject.NULL.equals(top) ? null : top.toString();
+            }
         }
         nodes.push(node);
         event = START_DOCUMENT;

@@ -1317,4 +1317,23 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertFalse(ctx.getPrefixes("urn:unknown").hasNext());
         assertEquals("p1", ctx.getPrefix("urn:1"));
     }
+
+    public void testRootEmptyArray() throws Exception {
+        // MappedXMLStreamWriter writes an empty element that is serialized as an array as [""]
+        XMLStreamReader reader = new MappedXMLStreamReader(new JSONObject("{\"root\":[\"\"]}"));
+        assertEquals(XMLStreamConstants.START_ELEMENT, reader.next());
+        assertEquals("root", reader.getLocalName());
+        assertEquals(XMLStreamConstants.CHARACTERS, reader.next());
+        assertEquals("", reader.getText());
+        assertEquals(XMLStreamConstants.END_ELEMENT, reader.next());
+        assertEquals(XMLStreamConstants.END_DOCUMENT, reader.next());
+
+        // the same as a nested [""] value
+        reader = new MappedXMLStreamReader(new JSONObject("{\"root\":{\"child\":[\"\"]}}"));
+        assertEquals(XMLStreamConstants.START_ELEMENT, reader.next());
+        assertEquals(XMLStreamConstants.START_ELEMENT, reader.next());
+        assertEquals("child", reader.getLocalName());
+        assertEquals(XMLStreamConstants.CHARACTERS, reader.next());
+        assertEquals("", reader.getText());
+    }
 }
