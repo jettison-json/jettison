@@ -1260,5 +1260,30 @@ public class MappedXMLStreamWriterTest extends TestCase {
                 ":{\"@name\":\"type\"},\"numeric\":[{\"@name\":\"amount\"},{\"@name\":\"cost\"}]}}}}}"
                 , strWriter.toString());
     }
-    
+
+    public void testRepeatedElementAfterNullValue() throws Exception {
+        assertEquals("{\"root\":{\"a\":[null,1]}}", writeRepeated(false, "null", "1"));
+        assertEquals("{\"root\":{\"a\":[1,null]}}", writeRepeated(false, "1", "null"));
+        assertEquals("{\"root\":{\"a\":[null,null,1]}}", writeRepeated(false, "null", "null", "1"));
+        // with writeNullAsString (the default), null is written as the string "null"
+        assertEquals("{\"root\":{\"a\":[\"null\",1]}}", writeRepeated(true, "null", "1"));
+    }
+
+    private String writeRepeated(boolean writeNullAsString, String... values) throws Exception {
+        Configuration config = new Configuration();
+        config.setWriteNullAsString(writeNullAsString);
+        StringWriter strWriter = new StringWriter();
+        MappedXMLStreamWriter w = new MappedXMLStreamWriter(new MappedNamespaceConvention(config), strWriter);
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        for (String value : values) {
+            w.writeStartElement("a");
+            w.writeCharacters(value);
+            w.writeEndElement();
+        }
+        w.writeEndElement();
+        w.writeEndDocument();
+        w.close();
+        return strWriter.toString();
+    }
 }
