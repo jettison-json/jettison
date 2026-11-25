@@ -156,6 +156,31 @@ public class MappedXMLStreamWriterTest extends TestCase {
         assertEquals("{\"root\":{\"child2\":\"\"}}", strWriter.toString());
     }
     
+    public void testChildDropElementLast() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        Configuration c = new Configuration();
+        List<String> ignoredElements = new LinkedList<String>();
+        ignoredElements.add("child");
+        c.setIgnoredElements(ignoredElements);
+        MappedNamespaceConvention con = new MappedNamespaceConvention(c);
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+
+        // as testChildDropElement4, but with the dropped element last
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        w.writeStartElement("child2");
+        w.writeEndElement();
+        w.writeStartElement("child");
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndDocument();
+
+        w.close();
+        strWriter.close();
+
+        assertEquals("{\"root\":{\"child2\":\"\"}}", strWriter.toString());
+    }
+
     public void testText() throws Exception {
         StringWriter strWriter = new StringWriter();
         MappedNamespaceConvention con = new MappedNamespaceConvention();
