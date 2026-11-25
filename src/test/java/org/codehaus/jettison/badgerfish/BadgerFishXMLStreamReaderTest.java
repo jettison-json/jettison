@@ -16,11 +16,13 @@
 package org.codehaus.jettison.badgerfish;
 
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Iterator;
 
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
 
 import junit.framework.TestCase;
 
@@ -408,5 +410,41 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
         assertEquals("x", reader.getAttributeValue(null, "s"));
         assertNull(reader.getAttributeValue(null, "z"));
         assertEquals("t", reader.getElementText());
+    }
+
+    public void testPrefixedAttributeBeforeNamespaceDeclaration() throws Exception {
+        // the attribute appears before the namespace declaration it uses
+        XMLStreamReader reader = new BadgerFishXMLStreamReader(new JSONObject(
+            "{\"a\":{\"@p:x\":\"1\",\"@xmlns\":{\"p\":\"urn:p\"},\"@y\":\"2\"}}"));
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals(2, reader.getAttributeCount());
+        assertEquals("1", reader.getAttributeValue("urn:p", "x"));
+        assertEquals("p", reader.getAttributePrefix(0));
+        assertEquals("2", reader.getAttributeValue(null, "y"));
+        assertEquals(1, reader.getNamespaceCount());
+        assertEquals("urn:p", reader.getNamespaceURI("p"));
+
+        // the declaration before the attribute still works
+        reader = new BadgerFishXMLStreamReader(new JSONObject(
+            "{\"a\":{\"@xmlns\":{\"p\":\"urn:p\"},\"@p:x\":\"1\"}}"));
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("1", reader.getAttributeValue("urn:p", "x"));
+    }
+
+    public void testRoundTripAttributeWrittenBeforeNamespace() throws Exception {
+        // writing the attribute before its namespace declaration is legal in StAX
+        StringWriter strWriter = new StringWriter();
+        XMLStreamWriter writer = new BadgerFishXMLStreamWriter(strWriter);
+        writer.writeStartDocument();
+        writer.writeStartElement("a");
+        writer.writeAttribute("p", "urn:p", "x", "1");
+        writer.writeNamespace("p", "urn:p");
+        writer.writeEndElement();
+        writer.writeEndDocument();
+        writer.close();
+
+        XMLStreamReader reader = new BadgerFishXMLStreamReader(new JSONObject(strWriter.toString()));
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals("1", reader.getAttributeValue("urn:p", "x"));
     }
 }

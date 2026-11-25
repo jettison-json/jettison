@@ -34,29 +34,31 @@ public class BadgerFishConvention implements Convention {
     
     public void processAttributesAndNamespaces(Node n, JSONObject object) 
         throws JSONException, XMLStreamException {
+        // Read in the namespace declarations first, so that the prefixes of the
+        // attributes can be resolved regardless of the order of the keys
+        Object xmlns = object.opt("@xmlns");
+        if (xmlns instanceof JSONObject) {
+            JSONObject jo = (JSONObject) xmlns;
+            for (Iterator pitr = jo.keys(); pitr.hasNext(); ) {
+                String prefix = (String) pitr.next();
+                String uri = jo.getString(prefix);
+
+                if (prefix.equals("$")) {
+                    prefix = "";
+                }
+
+                n.setNamespace(prefix, uri);
+            }
+        }
+
         // Read in the attributes, and stop when there are no more
         for (Iterator itr = object.keys(); itr.hasNext();) {
             String k = (String) itr.next();
             
             if (k.startsWith("@")) {
-                Object o = object.opt(k);
                 k = k.substring(1);
-                if (k.equals("xmlns")) {
-                    // if its a string its a default namespace
-                    if (o instanceof JSONObject) {
-                        JSONObject jo = (JSONObject) o;
-                        for (Iterator pitr = jo.keys(); pitr.hasNext(); ) {
-                            String prefix = (String) pitr.next();
-                            String uri = jo.getString(prefix);
-
-                            if (prefix.equals("$")) {
-                                prefix = "";
-                            }
-                            
-                            n.setNamespace(prefix, uri);
-                        }                        
-                    }
-                } else {
+                if (!k.equals("xmlns")) {
+                    Object o = object.opt("@" + k);
                     String strValue = o == null ? null : o.toString();
                     QName name = null;
                     // note that a non-prefixed attribute name implies NO namespace,
@@ -72,7 +74,7 @@ public class BadgerFishConvention implements Convention {
             }
         }
     }
-    
+
     public QName createQName(String rootName, Node node) throws XMLStreamException {
         int idx = rootName.indexOf(':');
         if (idx != -1) {
