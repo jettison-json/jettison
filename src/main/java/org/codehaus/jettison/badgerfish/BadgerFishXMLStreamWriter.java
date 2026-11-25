@@ -43,7 +43,7 @@ public class BadgerFishXMLStreamWriter extends AbstractXMLStreamWriter {
     }
 
     public BadgerFishXMLStreamWriter(Writer writer, JSONObject currentNode) {
-        this(writer, new JSONObject(), new FastStack());
+        this(writer, currentNode, new FastStack());
     }
 
     public BadgerFishXMLStreamWriter(Writer writer,
