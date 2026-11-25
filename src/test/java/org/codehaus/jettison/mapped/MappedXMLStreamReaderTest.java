@@ -1336,4 +1336,17 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals(XMLStreamConstants.CHARACTERS, reader.next());
         assertEquals("", reader.getText());
     }
+
+    public void testMultiCharacterAttributeKey() throws Exception {
+        Configuration conf = new Configuration();
+        conf.setAttributeKey("_attr_");
+        XMLStreamReader reader = new MappedXMLStreamReader(
+            new JSONObject("{\"root\":{\"_attr_id\":7,\"child\":\"x\"}}"), new MappedNamespaceConvention(conf));
+        assertEquals(XMLStreamConstants.START_ELEMENT, reader.next());
+        assertEquals(1, reader.getAttributeCount());
+        assertEquals("id", reader.getAttributeLocalName(0));
+        assertEquals("7", reader.getAttributeValue(0));
+        assertEquals(XMLStreamConstants.START_ELEMENT, reader.next());
+        assertEquals("child", reader.getLocalName());
+    }
 }
