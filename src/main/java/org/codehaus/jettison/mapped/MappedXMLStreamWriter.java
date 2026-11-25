@@ -170,7 +170,9 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	        }
 	        Object old = object.opt(property.getKey());
 	        try {
-	            if(old != null) {
+	            // Use has() rather than checking old for null, as a null value is
+	            // stored as null when writeNullAsString is false
+	            if(object.has(property.getKey())) {
 	                JSONArray values;
 	                // Convert an existing property to an array
 	                // and append to the array
