@@ -53,7 +53,8 @@ public class BadgerFishConvention implements Convention {
 
         // Read in the attributes, and stop when there are no more
         for (Iterator itr = object.keys(); itr.hasNext();) {
-            String k = (String) itr.next();
+            String key = (String) itr.next();
+            String k = key;
             
             if (k.startsWith("@")) {
                 k = k.substring(1);
@@ -70,7 +71,8 @@ public class BadgerFishConvention implements Convention {
                     }                    
                     n.setAttribute(name, strValue);
                 }
-                itr.remove();
+                // don't modify the JSON object, which belongs to the caller
+                n.skipKey(key);
             }
         }
     }

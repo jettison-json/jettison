@@ -16,9 +16,12 @@
 package org.codehaus.jettison;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
@@ -34,6 +37,8 @@ public class Node {
     Map attributes;
     Map namespaces;
     Iterator keys;
+    // the keys of the JSON object read as attributes or namespace declarations
+    Set skippedKeys;
     QName name;
     JSONArray array;
     int arrayIndex;
@@ -55,7 +60,7 @@ public class Node {
         
         con.processAttributesAndNamespaces(this, object);
         
-        keys = object.keys();
+        keys = skippedKeys == null ? object.keys() : new SkippingIterator(object.keys(), skippedKeys);
 
         this.name = con.createQName(name, this);
     }
@@ -139,6 +144,60 @@ public class Node {
 
     public Iterator getKeys() {
         return keys;
+    }
+
+    /**
+     * Mark a key of the JSON object of this node as processed by the convention,
+     * e.g. as an attribute or a namespace declaration, so that it isn't returned
+     * by getKeys() as a child element. The JSON object itself isn't modified.
+     */
+    public void skipKey(String key) {
+        if (skippedKeys == null) {
+            skippedKeys = new HashSet();
+        }
+        skippedKeys.add(key);
+    }
+
+    private static class SkippingIterator implements Iterator {
+        private final Iterator delegate;
+        private final Set skipped;
+        private Object next;
+        private boolean hasNext;
+
+        SkippingIterator(Iterator delegate, Set skipped) {
+            this.delegate = delegate;
+            this.skipped = skipped;
+            advance();
+        }
+
+        private void advance() {
+            hasNext = false;
+            while (delegate.hasNext()) {
+                Object candidate = delegate.next();
+                if (!skipped.contains(candidate)) {
+                    next = candidate;
+                    hasNext = true;
+                    return;
+                }
+            }
+        }
+
+        public boolean hasNext() {
+            return hasNext;
+        }
+
+        public Object next() {
+            if (!hasNext) {
+                throw new NoSuchElementException();
+            }
+            Object result = next;
+            advance();
+            return result;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
     }
 
     public QName getName() {

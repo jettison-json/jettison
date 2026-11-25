@@ -447,4 +447,36 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
         assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
         assertEquals("1", reader.getAttributeValue("urn:p", "x"));
     }
+
+    public void testInputIsNotModified() throws Exception {
+        String json = "{\"a\":{\"@xmlns\":{\"p\":\"urn:p\"},\"@p:x\":\"1\",\"$\":\"t\",\"c\":{\"@y\":\"2\"}}}";
+        JSONObject obj = new JSONObject(json);
+        String first = readAll(new BadgerFishXMLStreamReader(obj));
+        // the attributes and namespace declarations are still in the caller's JSONObject
+        assertEquals(new JSONObject(json).toString(), obj.toString());
+        // so reading it again gives the same result
+        assertEquals(first, readAll(new BadgerFishXMLStreamReader(obj)));
+        assertEquals("<a p:x=1>t<c y=2></c></a>", first);
+    }
+
+    private static String readAll(XMLStreamReader reader) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        while (reader.hasNext()) {
+            int event = reader.next();
+            if (event == XMLStreamReader.START_ELEMENT) {
+                sb.append('<').append(reader.getLocalName());
+                for (int i = 0; i < reader.getAttributeCount(); i++) {
+                    String prefix = reader.getAttributePrefix(i);
+                    sb.append(' ').append(prefix == null || prefix.isEmpty() ? "" : prefix + ":")
+                        .append(reader.getAttributeLocalName(i)).append('=').append(reader.getAttributeValue(i));
+                }
+                sb.append('>');
+            } else if (event == XMLStreamReader.END_ELEMENT) {
+                sb.append("</").append(reader.getLocalName()).append('>');
+            } else if (event == XMLStreamReader.CHARACTERS) {
+                sb.append(reader.getText());
+            }
+        }
+        return sb.toString();
+    }
 }
