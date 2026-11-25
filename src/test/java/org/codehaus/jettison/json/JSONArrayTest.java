@@ -274,4 +274,27 @@ public class JSONArrayTest extends TestCase {
         assertEquals("0x1F", array.get(1));
         assertEquals(Integer.valueOf(8), array.get(2));
     }
+
+    public void testElisionAfterNestedArray() throws Exception {
+        // an elided element is read as null, whatever the type of the first element
+        assertEquals("[[1],null,2]", new JSONArray("[[1],,2]").toString());
+        assertEquals("[1,null,2]", new JSONArray("[1,,2]").toString());
+        assertEquals("[{},null,2]", new JSONArray("[{},,2]").toString());
+        assertEquals("[[1],null,null,[2]]", new JSONArray("[[1],,,[2]]").toString());
+        // a trailing comma before the closing bracket is still allowed
+        assertEquals("[[1]]", new JSONArray("[[1],]").toString());
+        // truncated input is still rejected
+        try {
+            new JSONArray("[[1],");
+            fail("Failure expected on truncated input");
+        } catch (JSONException ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().startsWith("JSONArray text has a trailing ','"));
+        }
+        try {
+            new JSONArray("[[1],,");
+            fail("Failure expected on truncated input");
+        } catch (JSONException ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().startsWith("JSONArray text has a trailing ','"));
+        }
+    }
 }
