@@ -297,4 +297,22 @@ public class JSONArrayTest extends TestCase {
             assertTrue(ex.getMessage(), ex.getMessage().startsWith("JSONArray text has a trailing ','"));
         }
     }
+
+    public void testNonFiniteNumbersAreRejected() throws Exception {
+        String[] inputs = {"[1e999]", "[-1e999]", "[-Infinity]", "[-NaN]", "[1, 1e999]", "{\"a\":[1e999]}"};
+        for (String input : inputs) {
+            try {
+                if (input.startsWith("{")) {
+                    new JSONObject(input);
+                } else {
+                    new JSONArray(input);
+                }
+                fail("Failure expected on a non-finite number: " + input);
+            } catch (JSONException ex) {
+                assertTrue(ex.getMessage(), ex.getMessage().startsWith("JSON does not allow non-finite numbers"));
+            }
+        }
+        // finite numbers are still accepted
+        assertEquals("[1.5,-2,1.0E300]", new JSONArray("[1.5, -2, 1e300]").toString());
+    }
 }
