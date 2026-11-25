@@ -7,6 +7,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -720,5 +721,28 @@ public class JSONObjectTest extends TestCase {
         writer = new StringWriter();
         obj.write(writer);
         assertEquals("{\"a\":1}", writer.toString());
+    }
+
+    public void testMapWithNonStringKeys() throws Exception {
+        Map<Object, Object> nested = new LinkedHashMap<Object, Object>();
+        nested.put(2L, "y");
+        Map<Object, Object> map = new LinkedHashMap<Object, Object>();
+        map.put(1, "x");
+        map.put(Boolean.TRUE, nested);
+        map.put("s", Arrays.asList(1, 2));
+        JSONObject obj = new JSONObject(map);
+
+        // the keys are converted to strings, so they can be looked up
+        assertTrue(obj.has("1"));
+        assertEquals("x", obj.getString("1"));
+        assertEquals("y", obj.getJSONObject("true").getString("2"));
+        assertEquals(2, obj.getJSONArray("s").length());
+
+        // write() and toString() give the same output
+        String expected = "{\"1\":\"x\",\"true\":{\"2\":\"y\"},\"s\":[1,2]}";
+        assertEquals(expected, obj.toString());
+        StringWriter writer = new StringWriter();
+        obj.write(writer);
+        assertEquals(expected, writer.toString());
     }
 }

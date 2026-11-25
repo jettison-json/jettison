@@ -290,18 +290,21 @@ public class JSONObject implements Serializable {
         if (recursionDepth > RECURSION_DEPTH_LIMIT) {
             throw new JSONException("JSONObject has reached recursion depth limit of " + RECURSION_DEPTH_LIMIT);
         }
-        this.myHashMap = (map == null) ?
-                new LinkedHashMap<Object,Object>() :
-                new LinkedHashMap<Object,Object>(map);
-        // ensure a pure hierarchy of JSONObjects and JSONArrays
-        for (Entry entry : myHashMap.entrySet()) {
+        this.myHashMap = new LinkedHashMap<Object,Object>();
+        if (map == null) {
+            return;
+        }
+        for (Object o : map.entrySet()) {
+            Entry entry = (Entry) o;
             Object v = entry.getValue();
+            // ensure a pure hierarchy of JSONObjects and JSONArrays
             if (v instanceof Collection) {
-                myHashMap.put(entry.getKey(), new JSONArray((Collection) v, recursionDepth + 1));
+                v = new JSONArray((Collection) v, recursionDepth + 1);
+            } else if (v instanceof Map && v != map) {
+                v = new JSONObject((Map) v, recursionDepth + 1);
             }
-            if (v instanceof Map && v != map) {
-                myHashMap.put(entry.getKey(), new JSONObject((Map) v, recursionDepth + 1));
-            }
+            // JSON keys are strings, and the keys are looked up as strings
+            this.myHashMap.put(String.valueOf(entry.getKey()), v);
         }
     }
 
