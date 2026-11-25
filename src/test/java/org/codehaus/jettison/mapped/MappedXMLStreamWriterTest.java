@@ -1286,4 +1286,21 @@ public class MappedXMLStreamWriterTest extends TestCase {
         w.close();
         return strWriter.toString();
     }
+
+    public void testWriteEmptyElementWithNamespace() throws Exception {
+        Map<String, String> namespaces = new HashMap<String, String>();
+        namespaces.put("http://a", "ns1");
+        MappedNamespaceConvention con = new MappedNamespaceConvention(new Configuration(namespaces));
+
+        StringWriter strWriter = new StringWriter();
+        MappedXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        w.writeEmptyElement("", "a");
+        w.writeEmptyElement("http://a", "b");
+        w.writeEndElement();
+        w.writeEndDocument();
+        w.close();
+        assertEquals("{\"root\":{\"a\":\"\",\"ns1.b\":\"\"}}", strWriter.toString());
+    }
 }

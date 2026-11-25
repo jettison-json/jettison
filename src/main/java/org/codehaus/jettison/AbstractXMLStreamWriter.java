@@ -39,7 +39,7 @@ public abstract class AbstractXMLStreamWriter implements XMLStreamWriter {
     }
 
     public void writeEmptyElement(String ns, String local) throws XMLStreamException {
-        writeStartElement(local, ns);
+        writeStartElement(ns, local);
         writeEndElement();
     }
 
