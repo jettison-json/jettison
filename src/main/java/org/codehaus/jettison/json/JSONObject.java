@@ -1563,10 +1563,6 @@ public class JSONObject implements Serializable {
 
             Iterator keys = keys();
             while (keys.hasNext()) {
-                if (b) {
-                    writer.write(',');
-                    b = false;
-                }
                 String k = keys.next().toString();
                 Object v = wrapJavaArray(this.myHashMap.get(k));
 
@@ -1574,10 +1570,16 @@ public class JSONObject implements Serializable {
                 if (!dropObjectKeyName) {
                 	mayBeDropSimpleElement = hashMapSize > 1
                 		&& ignoredElements != null && ignoredElements.contains(k);
-                	if (!mayBeDropSimpleElement) {
-                        writer.write(quote(k, escapeForwardSlashAlways));
-                        writer.write(':');
-                	}
+                }
+                // Only write a separator before an entry that is (at least partly)
+                // written, so that dropping the last entry doesn't leave a trailing ','
+                if (b && (!mayBeDropSimpleElement || v instanceof JSONObject || v instanceof JSONArray)) {
+                    writer.write(',');
+                    b = false;
+                }
+                if (!dropObjectKeyName && !mayBeDropSimpleElement) {
+                    writer.write(quote(k, escapeForwardSlashAlways));
+                    writer.write(':');
                 }
 
                 if (v instanceof JSONObject) {

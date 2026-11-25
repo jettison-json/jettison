@@ -5,6 +5,7 @@ import org.codehaus.jettison.JSONSequenceTooLargeException;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -701,5 +702,23 @@ public class JSONObjectTest extends TestCase {
         obj.setEscapeForwardSlashAlways(true);
         assertEquals("{\"a\\/b\":\"c\\/d\"}", obj.toString());
         assertEquals("{\n  \"a\\/b\": \"c\\/d\"\n}", obj.toString(2));
+    }
+
+    public void testWriteWithIgnoredLastKey() throws Exception {
+        JSONObject obj = new JSONObject(Arrays.asList("x"));
+        obj.put("a", 1);
+        obj.put("b", 2);
+        obj.put("x", 3);
+        StringWriter writer = new StringWriter();
+        obj.write(writer);
+        // no trailing ',' after the last entry that is written
+        assertEquals("{\"a\":1,\"b\":2}", writer.toString());
+
+        obj = new JSONObject(Arrays.asList("x"));
+        obj.put("x", 3);
+        obj.put("a", 1);
+        writer = new StringWriter();
+        obj.write(writer);
+        assertEquals("{\"a\":1}", writer.toString());
     }
 }
