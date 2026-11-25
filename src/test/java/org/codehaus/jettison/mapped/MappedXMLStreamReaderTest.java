@@ -1404,4 +1404,25 @@ public class MappedXMLStreamReaderTest extends TestCase {
         }
         return sb.toString();
     }
+
+    public void testInputIsNotModified() throws Exception {
+        String json = "{\"a\":{\"@x\":\"1\",\"c\":{\"@y\":\"2\",\"$\":\"v\"},\"d\":\"w\"}}";
+        JSONObject obj = new JSONObject(json);
+        String first = readEvents(json, new Configuration());
+        assertEquals("<a><c>v</c><d>w</d></a>", first);
+
+        XMLStreamReader reader = new MappedXMLStreamReader(obj);
+        assertEquals(XMLStreamConstants.START_ELEMENT, reader.next());
+        assertEquals("1", reader.getAttributeValue(null, "x"));
+        while (reader.hasNext()) {
+            reader.next();
+        }
+        // the attributes are still in the caller's JSONObject
+        assertEquals(new JSONObject(json).toString(), obj.toString());
+        // so reading it again gives the same attributes
+        reader = new MappedXMLStreamReader(obj);
+        assertEquals(XMLStreamConstants.START_ELEMENT, reader.next());
+        assertEquals(1, reader.getAttributeCount());
+        assertEquals("1", reader.getAttributeValue(null, "x"));
+    }
 }

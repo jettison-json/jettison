@@ -105,7 +105,8 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
 
         // Read in the attributes, and stop when there are no more
         for (Iterator<?> itr = object.keys(); itr.hasNext();) {
-            String k = (String) itr.next();
+            String key = (String) itr.next();
+            String k = key;
 
             if ( this.supressAtAttributes ) {
                 if ( k.startsWith( attributeKey ) ) {
@@ -166,7 +167,8 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
                     }
                     n.setAttribute( name, strValue );
                 }
-                itr.remove();
+                // don't modify the JSON object, which belongs to the caller
+                n.skipKey(key);
             }
             else {
                 // set namespace if one is specified on this attribute.
