@@ -214,21 +214,22 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
         
     	for (int i = arrayLength - 1; i >= 0; i--) {
     		Object object = array.get(i);
-    		if (object instanceof JSONObject) {
-    			JSONObject jsonObject = (JSONObject)object;
-    			// lets limit to single key JSONObjects for now
-    			if (jsonObject.length() == 1) { 
-    				String theKey = jsonObject.keys().next().toString();
-    				if (lastKey == null || lastKey.equals(theKey)) {
-    					lastKey = theKey;
-    					depth++;
-    					Node theNode = new Node(parent, theKey, jsonObject, convention);
-    	                nodes.push(theNode);
-    	            } else {
-    					lastKey = null;
-    					break;
-    				}
-    			}
+    		// lets limit to single key JSONObjects for now, and fall back to the
+    		// standard array processing for any other values so that none are lost
+    		if (!(object instanceof JSONObject) || ((JSONObject)object).length() != 1) {
+    			lastKey = null;
+    			break;
+    		}
+    		JSONObject jsonObject = (JSONObject)object;
+    		String theKey = jsonObject.keys().next().toString();
+    		if (lastKey == null || lastKey.equals(theKey)) {
+    			lastKey = theKey;
+    			depth++;
+    			Node theNode = new Node(parent, theKey, jsonObject, convention);
+    			nodes.push(theNode);
+    		} else {
+    			lastKey = null;
+    			break;
     		}
     	}
     	if (lastKey == null) {

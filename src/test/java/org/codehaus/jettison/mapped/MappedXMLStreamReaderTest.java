@@ -1370,4 +1370,38 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals(XMLStreamConstants.START_ELEMENT, reader.next());
         assertEquals("child", reader.getLocalName());
     }
+
+    public void testPrimitiveArrayKeysWithMixedItems() throws Exception {
+        Configuration config = new Configuration();
+        config.setPrimitiveArrayKeys(Collections.singleton("Names"));
+        String[] inputs = {
+            // the item that isn't a single key object last, first and in the middle
+            "{\"root\":{\"Names\":[{\"Name\":\"1\"},{\"Name\":\"2\"},\"s\"]}}",
+            "{\"root\":{\"Names\":[\"s\",{\"Name\":\"1\"},{\"Name\":\"2\"}]}}",
+            "{\"root\":{\"Names\":[{\"Name\":\"1\"},5,{\"Name\":\"2\"}]}}",
+            "{\"root\":{\"Names\":[{\"Name\":\"1\"},{\"a\":1,\"b\":2}]}}"
+        };
+        for (String input : inputs) {
+            // no item is lost: the array is read in the same way as without primitiveArrayKeys
+            assertEquals(input, readEvents(input, new Configuration()), readEvents(input, config));
+        }
+        assertEquals("<root><Names><Name>1</Name></Names><Names><Name>2</Name></Names><Names>s</Names></root>",
+            readEvents(inputs[0], config));
+    }
+
+    private static String readEvents(String json, Configuration config) throws Exception {
+        XMLStreamReader reader = new MappedXMLStreamReader(new JSONObject(json), new MappedNamespaceConvention(config));
+        StringBuilder sb = new StringBuilder();
+        while (reader.hasNext()) {
+            int event = reader.next();
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                sb.append('<').append(reader.getLocalName()).append('>');
+            } else if (event == XMLStreamConstants.END_ELEMENT) {
+                sb.append("</").append(reader.getLocalName()).append('>');
+            } else if (event == XMLStreamConstants.CHARACTERS) {
+                sb.append(reader.getText());
+            }
+        }
+        return sb.toString();
+    }
 }
