@@ -229,8 +229,14 @@ public class JSONTokener {
                             throw syntaxError("Unclosed comment.");
                         }
                         if (c == '*') {
-                            if (next() == '/') {
+                            char n = next();
+                            if (n == '/') {
                                 break;
+                            }
+                            // n may be another '*' that ends the comment, e.g. "**/",
+                            // so read it again (next() doesn't advance at the end)
+                            if (n != 0) {
+                                back();
                             }
                         }
                     }
