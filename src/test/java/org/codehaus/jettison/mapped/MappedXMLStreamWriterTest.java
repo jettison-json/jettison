@@ -1328,4 +1328,34 @@ public class MappedXMLStreamWriterTest extends TestCase {
         w.close();
         assertEquals("{\"root\":{\"a\":\"\",\"ns1.b\":\"\"}}", strWriter.toString());
     }
+
+    public void testNullValueKeyWithTextBeforeChildElement() throws Exception {
+        // with a null value key, text in an element with child elements is dropped,
+        // wherever it appears
+        assertEquals("{\"a\":{\"b\":1}}", writeWithNullValueKey("\n  ", null));
+        assertEquals("{\"a\":{\"b\":1}}", writeWithNullValueKey("text", null));
+        assertEquals("{\"a\":{\"b\":1}}", writeWithNullValueKey(null, "\n"));
+        assertEquals("{\"a\":{\"b\":1}}", writeWithNullValueKey("text", "more"));
+    }
+
+    private String writeWithNullValueKey(String before, String after) throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedXMLStreamWriter w = new MappedXMLStreamWriter(new MappedNamespaceConvention(new Configuration()), strWriter);
+        w.setValueKey(null);
+        w.writeStartDocument();
+        w.writeStartElement("a");
+        if (before != null) {
+            w.writeCharacters(before);
+        }
+        w.writeStartElement("b");
+        w.writeCharacters("1");
+        w.writeEndElement();
+        if (after != null) {
+            w.writeCharacters(after);
+        }
+        w.writeEndElement();
+        w.writeEndDocument();
+        w.close();
+        return strWriter.toString();
+    }
 }

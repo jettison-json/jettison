@@ -98,12 +98,13 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 					                       convention.isWriteNullAsString(),
 					                       convention.isEscapeForwardSlashAlways());
 			try {
-				// only add the text property if it's non-empty
+				// only add the text property if it's non-empty, and if text
+				// is to be written at all (it isn't if the value key is null)
 				String strValue = getValue().toString();
 				if (MIXED_CONTENT_VALUE_KEY == valueKey) {
 					strValue = strValue.trim();
 				}
-				if (strValue.length() > 0) {
+				if (valueKey != null && strValue.length() > 0) {
 					jo.put(valueKey, strValue);
 				}
 				
