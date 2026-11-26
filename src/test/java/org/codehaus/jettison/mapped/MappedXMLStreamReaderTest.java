@@ -1477,4 +1477,16 @@ public class MappedXMLStreamReaderTest extends TestCase {
             readEvents("{\"r\":{\"a\":[{\"c\":{\"n\":[{\"m\":1},{\"m\":2}]}},{\"c\":{\"n\":[{\"m\":3}]}}],"
                 + "\"b\":\"z\"}}", config));
     }
+
+    public void testPrimitiveArrayKeyWithTheRootName() throws Exception {
+        Configuration config = new Configuration();
+        config.setPrimitiveArrayKeys(Collections.singleton("r"));
+        // a nested array whose key is the same as the root element's name isn't the root array
+        assertEquals("<r><x><r><c>1</c><c>2</c></r></x><y>1</y></r>",
+            readEvents("{\"r\":{\"x\":{\"r\":[{\"c\":1},{\"c\":2}]},\"y\":1}}", config));
+        assertEquals("<r><r><c>1</c><c>2</c></r><y>1</y></r>",
+            readEvents("{\"r\":{\"r\":[{\"c\":1},{\"c\":2}],\"y\":1}}", config));
+        // the root array itself
+        assertEquals("<r><c>1</c><c>2</c></r>", readEvents("{\"r\":[{\"c\":1},{\"c\":2}]}", config));
+    }
 }

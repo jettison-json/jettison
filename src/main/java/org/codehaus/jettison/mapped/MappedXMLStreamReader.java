@@ -38,6 +38,8 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
     // the root node, if the root element is read as an array with primitiveArrayKeys
     private Node uniformArrayRoot;
     private Node rootNode;
+    // true if the root element is read from an array, wrapped by the root node
+    private boolean rootArrayWrapper;
     public MappedXMLStreamReader(JSONObject obj)
             throws JSONException, XMLStreamException {
         this(obj, new MappedNamespaceConvention());
@@ -62,6 +64,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
         } else if (top instanceof JSONArray && !emptyArray) {
             if (con.isRootElementArrayWrapper()) {
                 this.node = new Node(null, rootName, obj, convention);
+                rootArrayWrapper = true;
             } else {
                 this.node = new Node(null, rootName, ((JSONArray)top).getJSONObject(0), convention);
             }
@@ -214,7 +217,10 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
         if (nodes.size() == 0) {
             throw unsupportedStructure();
         }
-    	boolean isRoot = ((Node)nodes.get(0)).getName().getLocalPart().equals(arrayKey);
+    	// the array is the root element only if it's the array read by the root node,
+    	// not an array nested in the document whose key is the same as the root's name
+    	boolean isRoot = rootArrayWrapper && node == rootNode
+    		&& rootNode.getName().getLocalPart().equals(arrayKey);
     	Node parent = !isRoot ? new UniformArrayNode(arrayKey, convention) : node;
         
     	for (int i = arrayLength - 1; i >= 0; i--) {
