@@ -305,7 +305,7 @@ public class JSONArray implements Serializable {
     public int getInt(int index) throws JSONException {
         Object o = get(index);
         return o instanceof Number ?
-                ((Number)o).intValue() : (int)getDouble(index);
+                JSONObject.toClippedInt((Number)o) : (int)getDouble(index);
     }
 
 
@@ -354,7 +354,7 @@ public class JSONArray implements Serializable {
     public long getLong(int index) throws JSONException {
         Object o = get(index);
         if (o instanceof Number) {
-            return ((Number)o).longValue();
+            return JSONObject.toClippedLong((Number)o);
         }
         if (o instanceof String) {
             // Parse integral strings directly to avoid losing precision above 2^53
