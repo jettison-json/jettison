@@ -15,13 +15,13 @@
  */
 package org.codehaus.jettison;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
@@ -38,7 +38,7 @@ public class Node {
     Map namespaces;
     Iterator keys;
     // the keys of the JSON object read as attributes or namespace declarations
-    Set skippedKeys;
+    Collection skippedKeys;
     QName name;
     JSONArray array;
     int arrayIndex;
@@ -153,18 +153,19 @@ public class Node {
      */
     public void skipKey(String key) {
         if (skippedKeys == null) {
-            skippedKeys = new HashSet();
+            // only a few keys are skipped per object, so a list is cheaper than a set
+            skippedKeys = new ArrayList(4);
         }
         skippedKeys.add(key);
     }
 
     private static class SkippingIterator implements Iterator {
         private final Iterator delegate;
-        private final Set skipped;
+        private final Collection skipped;
         private Object next;
         private boolean hasNext;
 
-        SkippingIterator(Iterator delegate, Set skipped) {
+        SkippingIterator(Iterator delegate, Collection skipped) {
             this.delegate = delegate;
             this.skipped = skipped;
             advance();

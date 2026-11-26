@@ -59,7 +59,7 @@ public class BadgerFishConvention implements Convention {
             if (k.startsWith("@")) {
                 k = k.substring(1);
                 if (!k.equals("xmlns")) {
-                    Object o = object.opt("@" + k);
+                    Object o = object.opt(key);
                     String strValue = o == null ? null : o.toString();
                     QName name = null;
                     // note that a non-prefixed attribute name implies NO namespace,

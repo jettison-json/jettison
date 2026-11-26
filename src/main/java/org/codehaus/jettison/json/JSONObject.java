@@ -306,10 +306,12 @@ public class JSONObject implements Serializable {
         if (recursionDepth > RECURSION_DEPTH_LIMIT) {
             throw new JSONException("JSONObject has reached recursion depth limit of " + RECURSION_DEPTH_LIMIT);
         }
-        this.myHashMap = new LinkedHashMap<Object,Object>();
         if (map == null) {
+            this.myHashMap = new LinkedHashMap<Object,Object>();
             return;
         }
+        // sized as for a copy of the map, so that it isn't resized while it's filled
+        this.myHashMap = new LinkedHashMap<Object,Object>(Math.max((int) (map.size() / .75f) + 1, 16));
         for (Object o : map.entrySet()) {
             Entry entry = (Entry) o;
             Object v = entry.getValue();
