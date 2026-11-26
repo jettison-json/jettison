@@ -30,13 +30,14 @@ import junit.framework.TestCase;
 public class MappedXMLStreamReaderUnsupportedStructureTest extends TestCase {
 
     public void testValueKeyWithChildObject() throws Exception {
-        assertUnsupported(new Configuration(), "{\"r\":{\"$\":\"t\",\"r\":{}}}");
+        // text before a child element is supported
+        assertEquals("<r>t<r></r></r>", readEvents(new Configuration(), "{\"r\":{\"$\":\"t\",\"r\":{}}}"));
     }
 
     public void testValueKeyWithChildObjectWithoutRootArrayWrapper() throws Exception {
         Configuration config = new Configuration();
         config.setRootElementArrayWrapper(false);
-        assertUnsupported(config, "{\"r\":{\"$\":\"t\",\"r\":{}}}");
+        assertEquals("<r>t<r></r></r>", readEvents(config, "{\"r\":{\"$\":\"t\",\"r\":{}}}"));
     }
 
     public void testRootArrayWithPrimitiveArrayKeys() throws Exception {
@@ -46,7 +47,7 @@ public class MappedXMLStreamReaderUnsupportedStructureTest extends TestCase {
     }
 
     public void testValueKeyWithEmptyArrayWithPrimitiveArrayKeys() throws Exception {
-        assertUnsupported(primitiveArrayKeys(), "{\"r\":{\"$\":\"t\",\"r\":[]}}");
+        assertEquals("<r>t</r>", readEvents(primitiveArrayKeys(), "{\"r\":{\"$\":\"t\",\"r\":[]}}"));
     }
 
     public void testRootArrayOfAttributesWithPrimitiveArrayKeys() throws Exception {

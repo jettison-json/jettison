@@ -1558,4 +1558,64 @@ public class MappedXMLStreamReaderTest extends TestCase {
         }
         return sb.toString();
     }
+
+    public void testValueKeyTextBeforeOtherKeys() throws Exception {
+        Configuration config = new Configuration();
+        assertEquals("<root>t<b>x</b></root>", readEvents("{\"root\":{\"$\":\"t\",\"b\":\"x\"}}", config));
+        assertEquals("<root><b>x</b>t<c>y</c></root>",
+            readEvents("{\"root\":{\"b\":\"x\",\"$\":\"t\",\"c\":\"y\"}}", config));
+        assertEquals("<root>t<b><c>y</c></b></root>",
+            readEvents("{\"root\":{\"@a\":\"v\",\"$\":\"t\",\"b\":{\"c\":\"y\"}}}", config));
+        assertEquals("<root>t<b>x</b><b>y</b></root>", readEvents("{\"root\":{\"$\":\"t\",\"b\":[\"x\",\"y\"]}}", config));
+        assertEquals("<root>t1t2<b>x</b></root>", readEvents("{\"root\":{\"$\":[\"t1\",\"t2\"],\"b\":\"x\"}}", config));
+        // the items of an array of elements
+        assertEquals("<root><b>x<c>y</c></b><b>z</b></root>",
+            readEvents("{\"root\":{\"b\":[{\"$\":\"x\",\"c\":\"y\"},{\"$\":\"z\"}]}}", config));
+        // the full event sequence, with the end of each element
+        assertEquals("1root 4t 1b 4x 2b 2root 8 ", events("{\"root\":{\"$\":\"t\",\"b\":\"x\"}}"));
+
+        Configuration primitive = new Configuration();
+        primitive.setPrimitiveArrayKeys(new HashSet<String>(Arrays.asList("list")));
+        assertEquals("<root><list><item>t<c>y</c></item><item>u</item></list><d>z</d></root>",
+            readEvents("{\"root\":{\"list\":[{\"item\":{\"$\":\"t\",\"c\":\"y\"}},{\"item\":{\"$\":\"u\"}}],\"d\":\"z\"}}",
+                       primitive));
+    }
+
+    public void testValueKeyTextLastIsUnchanged() throws Exception {
+        Configuration config = new Configuration();
+        assertEquals("<root>t</root>", readEvents("{\"root\":{\"$\":\"t\"}}", config));
+        assertEquals("<root><b>x</b>t</root>", readEvents("{\"root\":{\"b\":\"x\",\"$\":\"t\"}}", config));
+        assertEquals("<root><c>t</c><d>y</d></root>", readEvents("{\"root\":{\"c\":{\"$\":\"t\"},\"d\":\"y\"}}", config));
+    }
+
+    public void testRoundTripOfTextBeforeAChildElement() throws Exception {
+        java.io.StringWriter out = new java.io.StringWriter();
+        javax.xml.stream.XMLStreamWriter writer = new MappedXMLOutputFactory(new Configuration()).createXMLStreamWriter(out);
+        writer.writeStartDocument();
+        writer.writeStartElement("r");
+        writer.writeAttribute("a", "v");
+        writer.writeCharacters("text");
+        writer.writeStartElement("b");
+        writer.writeCharacters("x");
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeEndDocument();
+        writer.close();
+        assertEquals("{\"r\":{\"@a\":\"v\",\"$\":\"text\",\"b\":\"x\"}}", out.toString());
+
+        XMLStreamReader reader = new MappedXMLInputFactory(new Configuration())
+            .createXMLStreamReader(new StringReader(out.toString()));
+        assertEquals(XMLStreamConstants.START_ELEMENT, reader.next());
+        assertEquals("v", reader.getAttributeValue(null, "a"));
+        assertEquals(XMLStreamConstants.CHARACTERS, reader.next());
+        assertEquals("text", reader.getText());
+        assertEquals(XMLStreamConstants.START_ELEMENT, reader.next());
+        assertEquals("b", reader.getLocalName());
+        assertEquals(XMLStreamConstants.CHARACTERS, reader.next());
+        assertEquals(XMLStreamConstants.END_ELEMENT, reader.next());
+        assertEquals("b", reader.getLocalName());
+        assertEquals(XMLStreamConstants.END_ELEMENT, reader.next());
+        assertEquals("r", reader.getLocalName());
+        assertEquals(XMLStreamConstants.END_DOCUMENT, reader.next());
+    }
 }

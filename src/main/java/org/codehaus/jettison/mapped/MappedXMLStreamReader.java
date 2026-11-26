@@ -35,6 +35,9 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
     private String valueKey = "$";
     private NamespaceContext ctx;
     private int popArrayNodes;
+    // whether the current CHARACTERS event is the text of a value key ("$"),
+    // whose node has already been removed from the stack
+    private boolean valueKeyText;
     // the root node, if the root element is read as an array with primitiveArrayKeys
     private Node uniformArrayRoot;
     private Node rootNode;
@@ -84,6 +87,14 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
 
 
     public int next() throws XMLStreamException {
+        if (event == CHARACTERS && valueKeyText) {
+            // the text of the value key is part of the content of the element on
+            // the top of the stack, which may have further keys: carry on with it
+            // as after the end of a child element
+            valueKeyText = false;
+            currentValue = null;
+            event = END_ELEMENT;
+        }
         if (event == START_DOCUMENT) {
             event = START_ELEMENT;
         } else if (event == CHARACTERS) {
@@ -127,6 +138,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
         	if (event == START_ELEMENT && next.getName().getLocalPart().equals(valueKey)) {
         		event = CHARACTERS;
         		node = popNode();
+        		valueKeyText = true;
         	}
         }
         return event;
