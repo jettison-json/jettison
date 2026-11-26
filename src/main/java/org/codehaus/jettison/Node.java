@@ -18,6 +18,7 @@ package org.codehaus.jettison;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -44,6 +45,13 @@ public class Node {
     int arrayIndex;
     String currentKey;
     Node parent;
+    // The attribute names and namespace prefixes in map order, so that the
+    // indexed accessors used by StAX consumers don't walk the maps on every
+    // call, which made reading all the attributes of an element quadratic
+    private Object[] attributeNames;
+    private Map indexedAttributes;
+    private Object[] namespacePrefixes;
+    private Map indexedNamespaces;
     
     public Node(Node parent, String name, JSONObject object, Convention con) 
         throws JSONException, XMLStreamException {
@@ -93,11 +101,7 @@ public class Node {
         if (index < 0 || index >= getNamespaceCount()) {
             throw new IllegalArgumentException("Illegal index: element has "+getNamespaceCount()+" namespace declarations");
         }
-        Iterator itr = namespaces.values().iterator();
-        while (--index >= 0) {
-            itr.next();
-        }
-        Object ns = itr.next();
+        Object ns = namespaces.get(namespacePrefixes()[index]);
         return ns == null ? "" : ns.toString();
     }
 
@@ -119,19 +123,17 @@ public class Node {
         if (index < 0 || index >= getNamespaceCount()) {
             throw new IllegalArgumentException("Illegal index: element has "+getNamespaceCount()+" namespace declarations");
         }
-        Iterator itr = namespaces.keySet().iterator();
-        while (--index >= 0) {
-            itr.next();
-        }
-        return itr.next().toString();
+        return namespacePrefixes()[index].toString();
     }
 
     public void setNamespaces(Map namespaces) {
         this.namespaces = namespaces;
+        namespacePrefixes = null;
     }
 
     public void setNamespace(String prefix, String uri) {
         namespaces.put(prefix, uri);
+        namespacePrefixes = null;
     }
 
     public Map getAttributes() {
@@ -140,6 +142,53 @@ public class Node {
 
     public void setAttribute(QName name, String value) {
         attributes.put(name, value);
+        attributeNames = null;
+    }
+
+    /**
+     * Get the name of the attribute at the given index, in the iteration order
+     * of the attribute map. A negative index gives null, and an index past the
+     * last attribute throws a NoSuchElementException.
+     */
+    QName getAttributeName(int index) {
+        if (index < 0) {
+            return null;
+        }
+        Object[] names = attributeNames();
+        if (index >= names.length) {
+            throw new NoSuchElementException();
+        }
+        return (QName) names[index];
+    }
+
+    /**
+     * Get the value of the attribute at the given index, in the iteration order
+     * of the attribute map. A negative index gives null, and an index past the
+     * last attribute throws a NoSuchElementException.
+     */
+    String getAttributeValue(int index) {
+        QName name = getAttributeName(index);
+        return name == null ? null : (String) attributes.get(name);
+    }
+
+    // The maps are normally filled in before the node is read, but they're
+    // exposed, so rebuild the arrays if a map has been replaced or resized
+    private Object[] attributeNames() {
+        if (attributeNames == null || indexedAttributes != attributes
+            || attributeNames.length != attributes.size()) {
+            attributeNames = attributes.keySet().toArray();
+            indexedAttributes = attributes;
+        }
+        return attributeNames;
+    }
+
+    private Object[] namespacePrefixes() {
+        if (namespacePrefixes == null || indexedNamespaces != namespaces
+            || namespacePrefixes.length != namespaces.size()) {
+            namespacePrefixes = namespaces.keySet().toArray();
+            indexedNamespaces = namespaces;
+        }
+        return namespacePrefixes;
     }
 
     public Iterator getKeys() {
@@ -153,11 +202,17 @@ public class Node {
      */
     public void skipKey(String key) {
         if (skippedKeys == null) {
-            // only a few keys are skipped per object, so a list is cheaper than a set
+            // usually only a few keys are skipped per object, so a list is cheaper than a set
             skippedKeys = new ArrayList(4);
+        } else if (skippedKeys.size() == SKIPPED_KEYS_LIST_LIMIT && skippedKeys instanceof ArrayList) {
+            // but contains() on a list is linear, so an object with many attributes
+            // would make reading it quadratic
+            skippedKeys = new HashSet(skippedKeys);
         }
         skippedKeys.add(key);
     }
+
+    private static final int SKIPPED_KEYS_LIST_LIMIT = 8;
 
     private static class SkippingIterator implements Iterator {
         private final Iterator delegate;
