@@ -145,10 +145,6 @@ public class BadgerFishXMLStreamReader extends AbstractXMLStreamReader {
     public void close() throws XMLStreamException {
     }
 
-    public String getAttributeType(int arg0) {
-        return null;
-    }
-
     public String getCharacterEncodingScheme() {
         return null;
     }
