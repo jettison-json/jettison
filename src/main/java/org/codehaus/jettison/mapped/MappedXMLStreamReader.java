@@ -159,6 +159,15 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
 
                         node = peekNode();
 
+                        if (popArrayNodes > 0 && isUniformArrayNode(node) && node.getArray() != null) {
+                            // the end of the last item of an array read with primitiveArrayKeys,
+                            // when the item's value is an array: end the element holding the
+                            // array, as next() does at the end of the item's element
+                            popNode();
+                            popArrayNodes--;
+                            event = END_ELEMENT;
+                            return;
+                        }
 
                         if ((node.getKeys() != null && node.getKeys().hasNext()) || node.getArray() != null) {
                             if (popArrayNodes > 0 && isUniformArrayNode(node)) {
@@ -291,16 +300,17 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
         if (isRoot) {
             uniformArrayRoot = parent;
         }
+        // the array is read from here, so count it before processing its first item
+        popArrayNodes++;
         if (!isRoot) {
             nodes.add(parentIndex, parent);
             nodes.push(parent);
             node = parent;
             event = START_ELEMENT;
         } else {
-        	node = popNode();
-        	processElement();
+            node = popNode();
+            processElement();
         }
-        popArrayNodes++;
         return true;
     }
     
