@@ -57,13 +57,13 @@ public class BadgerFishXMLStreamReader extends AbstractXMLStreamReader {
                 
                 try {
                     Object o = arrayNode.getArray().get(idx);
-                    processKey(node.getCurrentKey(), o);
+                    // move on before processing the item, so it can't be read again
+                    arrayNode.setArrayIndex(idx + 1);
+                    checkNotNestedArray(arrayNode.getCurrentKey(), o);
+                    processKey(arrayNode.getCurrentKey(), o);
                 } catch (JSONException e) {
                     throw new XMLStreamException(e);
                 }
-                
-                idx++;
-                arrayNode.setArrayIndex(idx);
             } else if (node.getKeys() != null && node.getKeys().hasNext()) {
                 processElement();
             } else {
@@ -118,6 +118,8 @@ public class BadgerFishXMLStreamReader extends AbstractXMLStreamReader {
                 return;
             }
             
+            checkNotNestedArray(nextKey, arr.get(0));
+
             // save some state information...
             node.setArray(arr);
             node.setArrayIndex(1);
@@ -128,6 +130,16 @@ public class BadgerFishXMLStreamReader extends AbstractXMLStreamReader {
         else {
             throw new JSONException("Element [" + nextKey + "] did not contain object, array or text content.");
         }        
+    }
+
+    /**
+     * An array of an array has no XML representation in the BadgerFish convention,
+     * where an array holds the repeated occurrences of an element.
+     */
+    private static void checkNotNestedArray(String key, Object item) throws XMLStreamException {
+        if (item instanceof JSONArray) {
+            throw new XMLStreamException("The element [" + key + "] contains a nested array, which is not supported");
+        }
     }
 
     public void close() throws XMLStreamException {

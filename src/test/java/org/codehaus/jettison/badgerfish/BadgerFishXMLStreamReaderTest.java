@@ -492,4 +492,49 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
         }
         assertEquals(XMLStreamReader.END_DOCUMENT, reader.getEventType());
     }
+
+    public void testNestedArraysAreRejected() throws Exception {
+        StringBuilder deep = new StringBuilder("{\"r\":{\"a\":");
+        StringBuilder wide = new StringBuilder("{\"r\":{\"a\":[{}");
+        // the depth is within the JSON parser's recursion limit
+        for (int i = 0; i < 100; i++) {
+            deep.append('[');
+            deep.append("{},");
+        }
+        deep.append("{}");
+        for (int i = 0; i < 100; i++) {
+            deep.append(']');
+        }
+        for (int i = 0; i < 10000; i++) {
+            wide.append(",[]");
+        }
+        deep.append("}}");
+        wide.append("]}}");
+        String[] inputs = {
+            "{\"r\":{\"a\":[{},[],{}]}}",
+            "{\"r\":{\"a\":[[{}],{\"$\":\"2\"}]}}",
+            "{\"r\":{\"a\":[{\"$\":\"1\"},[{\"$\":\"2\"}]]}}",
+            "{\"r\":{\"a\":[[]]}}",
+            deep.toString(),
+            wide.toString()
+        };
+        for (String input : inputs) {
+            XMLStreamReader reader = new BadgerFishXMLStreamReader(new JSONObject(input));
+            try {
+                while (reader.hasNext()) {
+                    reader.next();
+                }
+                fail("Failure expected on a nested array: " + input.substring(0, Math.min(input.length(), 40)));
+            } catch (XMLStreamException ex) {
+                assertTrue(ex.getMessage(), ex.getMessage().contains("nested array"));
+            }
+        }
+    }
+
+    public void testArrays() throws Exception {
+        // repeated elements, an empty array and a text array are still read
+        XMLStreamReader reader = new BadgerFishXMLStreamReader(new JSONObject(
+            "{\"r\":{\"a\":[{\"$\":\"1\"},{\"$\":\"2\"}],\"e\":[],\"t\":{\"$\":[\"x\",\"y\"]}}}"));
+        assertEquals("<r><a>1</a><a>2</a><t>xy</t></r>", readAll(reader));
+    }
 }
