@@ -1618,4 +1618,31 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals("r", reader.getLocalName());
         assertEquals(XMLStreamConstants.END_DOCUMENT, reader.next());
     }
+
+    public void testPrimitiveArrayKeysWithAttributeOnlyItems() throws Exception {
+        Configuration primitive = new Configuration();
+        primitive.setPrimitiveArrayKeys(new HashSet<String>(Arrays.asList("c", "r")));
+        MappedXMLInputFactory factory = new MappedXMLInputFactory(primitive);
+        MappedXMLInputFactory standard = new MappedXMLInputFactory(new Configuration());
+
+        // an item whose only key is an attribute or a namespace declaration isn't a
+        // child element, so the array is read as a standard array
+        String[] docs = {
+            "{\"r\":{\"c\":[{\"@x\":\"v\"}]}}",
+            "{\"r\":{\"c\":[{\"@x\":\"v\"},{\"@x\":\"w\"}],\"d\":\"y\"}}",
+            "{\"r\":[{\"@a\":\"v\"},{\"@a\":\"w\"}]}",
+            "{\"r\":{\"c\":[{\"@xmlns\":{\"p\":\"urn:p\"}}]}}",
+            "{\"r\":{\"c\":[{\"item\":\"x\"},{\"@x\":\"v\"}]}}",
+        };
+        for (String json : docs) {
+            assertEquals(json, readEvents(standard, json), readEvents(factory, json));
+        }
+        assertEquals("<r><c x=\"v\"></c><c x=\"w\"></c><d>y</d></r>", readEvents(factory, docs[1]));
+
+        // arrays of child elements are still read without the array elements
+        assertEquals("<r><c><item>x</item><item>y</item></c><d>z</d></r>",
+            readEvents(factory, "{\"r\":{\"c\":[{\"item\":\"x\"},{\"item\":\"y\"}],\"d\":\"z\"}}"));
+        assertEquals("<r><c><item x=\"v\"><d>y</d></item></c></r>",
+            readEvents(factory, "{\"r\":{\"c\":[{\"item\":{\"@x\":\"v\",\"d\":\"y\"}}]}}"));
+    }
 }
