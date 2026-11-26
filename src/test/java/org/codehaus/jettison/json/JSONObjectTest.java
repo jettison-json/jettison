@@ -817,4 +817,14 @@ public class JSONObjectTest extends TestCase {
         assertEquals(4294967301L, obj.getLong("big"));
         assertEquals(3L, obj.getLong("fraction"));
     }
+
+    public void testUnquotedNullKey() throws Exception {
+        assertEquals("{\"null\":1}", new JSONObject("{null:1}").toString());
+        assertEquals("{\"null\":1}", new JSONObject("{NULL:1}").toString());
+        assertEquals(1, new JSONObject("{null:1,\"a\":2}").getInt("null"));
+        // consistent with other unquoted keys that are read as values
+        assertEquals("{\"true\":1}", new JSONObject("{true:1}").toString());
+        // a null value is still read as a null value
+        assertTrue(new JSONObject("{\"a\":null}").isNull("a"));
+    }
 }
