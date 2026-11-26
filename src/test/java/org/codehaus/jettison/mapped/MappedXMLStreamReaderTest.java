@@ -1082,14 +1082,11 @@ public class MappedXMLStreamReaderTest extends TestCase {
 
         // Keys read from the input used to be added to a list on the shared
         // convention, which grew without bound and made reading quadratic in
-        // the number of distinct keys. The list isn't exposed, so check it
-        // via reflection.
+        // the number of distinct keys. The collections of the convention
+        // aren't exposed, so check them via reflection.
         MappedNamespaceConvention convention = ((MappedXMLStreamReader) factory.createXMLStreamReader(
             new StringReader("{\"root\":{\"a\":1}}"))).getConvention();
-        java.lang.reflect.Field field =
-            MappedNamespaceConvention.class.getDeclaredField("jsonAttributesAsElements");
-        field.setAccessible(true);
-        int sizeBefore = ((List<?>) field.get(convention)).size();
+        List<Integer> sizesBefore = collectionSizes(convention);
 
         StringBuilder json = new StringBuilder("{\"root\":{");
         for (int i = 0; i < 1000; i++) {
@@ -1101,7 +1098,21 @@ public class MappedXMLStreamReaderTest extends TestCase {
         json.append("}}");
         readEvents(factory, json.toString());
 
-        assertEquals(sizeBefore, ((List<?>) field.get(convention)).size());
+        assertEquals(sizesBefore, collectionSizes(convention));
+    }
+
+    private static List<Integer> collectionSizes(Object object) throws Exception {
+        List<Integer> sizes = new java.util.ArrayList<Integer>();
+        for (java.lang.reflect.Field field : object.getClass().getDeclaredFields()) {
+            field.setAccessible(true);
+            Object value = field.get(object);
+            if (value instanceof java.util.Collection) {
+                sizes.add(((java.util.Collection<?>) value).size());
+            } else if (value instanceof java.util.Map) {
+                sizes.add(((java.util.Map<?, ?>) value).size());
+            }
+        }
+        return sizes;
     }
 
     private static String readEvents(MappedXMLInputFactory factory, String json) throws Exception {
