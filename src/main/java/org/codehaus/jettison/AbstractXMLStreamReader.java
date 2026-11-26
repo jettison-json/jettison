@@ -57,6 +57,10 @@ public abstract class AbstractXMLStreamReader implements XMLStreamReader {
     public int nextTag() throws XMLStreamException {
         int event = next();
         while (event != START_ELEMENT && event != END_ELEMENT) {
+            if (event == END_DOCUMENT) {
+                // next() keeps returning END_DOCUMENT, so stop rather than loop forever
+                throw new XMLStreamException("Expected a START_ELEMENT or END_ELEMENT but reached the end of the document");
+            }
             event = next();
         }
         return event;

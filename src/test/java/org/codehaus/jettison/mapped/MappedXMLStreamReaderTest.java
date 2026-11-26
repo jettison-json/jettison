@@ -1425,4 +1425,34 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals(1, reader.getAttributeCount());
         assertEquals("1", reader.getAttributeValue(null, "x"));
     }
+
+    public void testNextTag() throws Exception {
+        XMLStreamReader reader = new MappedXMLStreamReader(new JSONObject("{\"root\":{\"a\":\"x\",\"b\":\"y\"}}"));
+        assertEquals(XMLStreamConstants.START_ELEMENT, reader.nextTag());
+        assertEquals("root", reader.getLocalName());
+        assertEquals(XMLStreamConstants.START_ELEMENT, reader.nextTag());
+        assertEquals("a", reader.getLocalName());
+        // the text is skipped
+        assertEquals(XMLStreamConstants.END_ELEMENT, reader.nextTag());
+        assertEquals("a", reader.getLocalName());
+        assertEquals(XMLStreamConstants.START_ELEMENT, reader.nextTag());
+        assertEquals("b", reader.getLocalName());
+        assertEquals(XMLStreamConstants.END_ELEMENT, reader.nextTag());
+        assertEquals(XMLStreamConstants.END_ELEMENT, reader.nextTag());
+        assertEquals("root", reader.getLocalName());
+
+        // there are no more tags: fail rather than loop forever
+        assertNextTagFails(reader);
+        assertEquals(XMLStreamConstants.END_DOCUMENT, reader.getEventType());
+        assertNextTagFails(reader);
+    }
+
+    private static void assertNextTagFails(XMLStreamReader reader) {
+        try {
+            reader.nextTag();
+            fail("Failure expected at the end of the document");
+        } catch (XMLStreamException ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().contains("end of the document"));
+        }
+    }
 }
