@@ -46,52 +46,62 @@ public class BadgerFishXMLStreamReader extends AbstractXMLStreamReader {
         if (event == START_DOCUMENT) {
             event = START_ELEMENT;
         } else {
-            if (event == END_ELEMENT && nodes.size() != 0) {
-                node = (Node) nodes.peek();
-            }
-            
-            if (node.getArray() != null 
-                && node.getArray().length() > node.getArrayIndex()) {
-                Node arrayNode = node;
-                int idx = arrayNode.getArrayIndex();
-                
-                try {
-                    Object o = arrayNode.getArray().get(idx);
-                    // move on before processing the item, so it can't be read again
-                    arrayNode.setArrayIndex(idx + 1);
-                    checkNotNestedArray(arrayNode.getCurrentKey(), o);
-                    processKey(arrayNode.getCurrentKey(), o);
-                } catch (JSONException e) {
-                    throw new XMLStreamException(e);
+            // Loop rather than recurse when an empty array produces no event, so
+            // that the stack depth doesn't depend on the input
+            boolean producedEvent = false;
+            while (!producedEvent) {
+                if (event == END_ELEMENT && nodes.size() != 0) {
+                    node = (Node) nodes.peek();
                 }
-            } else if (node.getKeys() != null && node.getKeys().hasNext()) {
-                processElement();
-            } else {
-                if (nodes.size() != 0) {
-                    event = END_ELEMENT;
-                    node = (Node)nodes.pop();
+
+                if (node.getArray() != null
+                    && node.getArray().length() > node.getArrayIndex()) {
+                    Node arrayNode = node;
+                    int idx = arrayNode.getArrayIndex();
+
+                    try {
+                        Object o = arrayNode.getArray().get(idx);
+                        // move on before processing the item, so it can't be read again
+                        arrayNode.setArrayIndex(idx + 1);
+                        checkNotNestedArray(arrayNode.getCurrentKey(), o);
+                        producedEvent = processKey(arrayNode.getCurrentKey(), o);
+                    } catch (JSONException e) {
+                        throw new XMLStreamException(e);
+                    }
+                } else if (node.getKeys() != null && node.getKeys().hasNext()) {
+                    producedEvent = processElement();
                 } else {
-                    event = END_DOCUMENT;
+                    if (nodes.size() != 0) {
+                        event = END_ELEMENT;
+                        node = (Node)nodes.pop();
+                    } else {
+                        event = END_DOCUMENT;
+                    }
+                    producedEvent = true;
                 }
             }
         }
-         
+
         return event;
     }
-    
-    private void processElement() throws XMLStreamException {
+
+    private boolean processElement() throws XMLStreamException {
         try {
             String nextKey = (String) node.getKeys().next();
             
             Object newObj = node.getObject().get(nextKey);
             
-            processKey(nextKey, newObj);
+            return processKey(nextKey, newObj);
         } catch (JSONException e) {
             throw new XMLStreamException(e);
         }
     }
 
-    private void processKey(String nextKey, Object newObj) throws JSONException, XMLStreamException {
+    /**
+     * Process the value of a key, setting the next event.
+     * @return false if the value is an empty array, which produces no event
+     */
+    private boolean processKey(String nextKey, Object newObj) throws JSONException, XMLStreamException {
         if (nextKey.equals("$")) {
             event = CHARACTERS;
             if (newObj instanceof JSONArray) {
@@ -104,18 +114,17 @@ public class BadgerFishXMLStreamReader extends AbstractXMLStreamReader {
             } else {
                 currentText = newObj == null ? null : newObj.toString();
             }
-            return;
+            return true;
         } else if (newObj instanceof JSONObject) {
             node = new Node((Node)nodes.peek(), nextKey, (JSONObject) newObj, CONVENTION);
             nodes.push(node);
             event = START_ELEMENT;
-            return;
+            return true;
         } else if (newObj instanceof JSONArray) {
             JSONArray arr = (JSONArray) newObj;
 
             if (arr.length() == 0) {
-                next();
-                return;
+                return false;
             }
             
             checkNotNestedArray(nextKey, arr.get(0));
@@ -125,7 +134,7 @@ public class BadgerFishXMLStreamReader extends AbstractXMLStreamReader {
             node.setArrayIndex(1);
             node.setCurrentKey(nextKey);
             
-            processKey(nextKey, arr.get(0));
+            return processKey(nextKey, arr.get(0));
         }
         else {
             throw new JSONException("Element [" + nextKey + "] did not contain object, array or text content.");
