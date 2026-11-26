@@ -1489,4 +1489,73 @@ public class MappedXMLStreamReaderTest extends TestCase {
         // the root array itself
         assertEquals("<r><c>1</c><c>2</c></r>", readEvents("{\"r\":[{\"c\":1},{\"c\":2}]}", config));
     }
+
+    public void testValueKeyArrayIsReadAsJoinedText() throws Exception {
+        Configuration config = new Configuration();
+        assertEquals("<root>t1t2</root>", readEvents("{\"root\":{\"$\":[\"t1\",\"t2\"]}}", config));
+        assertEquals("<root>t1</root>", readEvents("{\"root\":{\"$\":[\"t1\"]}}", config));
+        assertEquals("<root>t1t2</root>", readEvents("{\"root\":{\"@a\":\"v\",\"$\":[\"t1\",\"t2\"]}}", config));
+        assertEquals("<root><c>t1t2</c><d>y</d></root>",
+            readEvents("{\"root\":{\"c\":{\"$\":[\"t1\",\"t2\"]},\"d\":\"y\"}}", config));
+        assertEquals("<root><b>xy</b><b>z</b></root>",
+            readEvents("{\"root\":{\"b\":[{\"$\":[\"x\",\"y\"]},{\"$\":[\"z\"]}]}}", config));
+        // numbers and booleans are text too, and null parts are skipped
+        assertEquals("<root>1truex</root>", readEvents("{\"root\":{\"$\":[1,true,\"x\"]}}", config));
+        assertEquals("<root>t1t2</root>", readEvents("{\"root\":{\"$\":[\"t1\",null,\"t2\"]}}", config));
+        // no text
+        assertEquals("<root></root>", readEvents("{\"root\":{\"$\":[]}}", config));
+        assertEquals("<root></root>", readEvents("{\"root\":{\"$\":[null]}}", config));
+    }
+
+    public void testValueKeyArrayReadsLikeAString() throws Exception {
+        String[][] pairs = {
+            {"{\"root\":{\"$\":[\"t1\",\"t2\"]}}", "{\"root\":{\"$\":\"t1t2\"}}"},
+            {"{\"root\":{\"b\":\"x\",\"$\":[\"t1\",\"t2\"]}}", "{\"root\":{\"b\":\"x\",\"$\":\"t1t2\"}}"},
+            {"{\"root\":{\"@a\":\"v\",\"$\":[\"t\",1]}}", "{\"root\":{\"@a\":\"v\",\"$\":\"t1\"}}"},
+        };
+        for (String[] pair : pairs) {
+            assertEquals(pair[1], events(pair[1]), events(pair[0]));
+        }
+
+        Configuration primitive = new Configuration();
+        primitive.setPrimitiveArrayKeys(new HashSet<String>(Arrays.asList("$")));
+        assertEquals("<root>t1t2</root>", readEvents("{\"root\":{\"$\":[\"t1\",\"t2\"]}}", primitive));
+
+        XMLStreamReader reader = new MappedXMLStreamReader(new JSONObject("{\"root\":{\"$\":[\"t1\",\"t2\"]}}"),
+            new MappedNamespaceConvention(standard()));
+        assertEquals(XMLStreamConstants.START_ELEMENT, reader.next());
+        assertEquals("t1t2", reader.getElementText());
+        assertEquals(XMLStreamConstants.END_ELEMENT, reader.getEventType());
+    }
+
+    public void testValueKeyArrayWithObjectOrArrayIsRejected() throws Exception {
+        for (String json : new String[] {"{\"root\":{\"$\":[{\"a\":\"1\"}]}}", "{\"root\":{\"$\":[[\"x\"]]}}",
+                                         "{\"root\":{\"$\":[\"t\",{\"a\":\"1\"}]}}"}) {
+            try {
+                readEvents(json, new Configuration());
+                fail("Failure expected for " + json);
+            } catch (XMLStreamException ex) {
+                assertEquals("The structure of the JSON input is not supported", ex.getMessage());
+            }
+        }
+    }
+
+    /**
+     * The full event sequence, including the names of end elements.
+     */
+    private static String events(String json) throws Exception {
+        XMLStreamReader reader = new MappedXMLStreamReader(new JSONObject(json));
+        StringBuilder sb = new StringBuilder();
+        while (reader.hasNext()) {
+            int event = reader.next();
+            sb.append(event);
+            if (event == XMLStreamConstants.START_ELEMENT || event == XMLStreamConstants.END_ELEMENT) {
+                sb.append(reader.getLocalName());
+            } else if (event == XMLStreamConstants.CHARACTERS) {
+                sb.append(reader.getText());
+            }
+            sb.append(' ');
+        }
+        return sb.toString();
+    }
 }

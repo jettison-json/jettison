@@ -182,6 +182,20 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
                     return;
                 } else if (newObj instanceof JSONArray) {
                     JSONArray array = (JSONArray) newObj;
+                    if (nextKey.equals(valueKey)) {
+                        // the text of the element, in parts: read it as if the
+                        // parts were joined into a single string
+                        String text = joinText(array);
+                        if (text != null) {
+                            node = new Node(nextKey, convention);
+                            nodes.push(node);
+                            currentValue = text;
+                            event = START_ELEMENT;
+                            return;
+                        }
+                        // no text, so read it as an empty array
+                        array = new JSONArray();
+                    }
                     if (!processUniformArrayIfPossible(nextKey, array)) {
                         node = new Node(nextKey, convention);
                         node.setArray(array);
@@ -303,6 +317,30 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
             throw unsupportedStructure();
         }
         return (Node) nodes.pop();
+    }
+
+    /**
+     * Join the items of an array of text parts, given for the value key, skipping
+     * null items. Returns null if there's no text, i.e. the array is empty or
+     * all its items are null.
+     */
+    private static String joinText(JSONArray parts) throws JSONException, XMLStreamException {
+        StringBuilder text = null;
+        for (int i = 0; i < parts.length(); i++) {
+            Object part = parts.opt(i);
+            if (JSONObject.isNullValue(part)) {
+                continue;
+            }
+            if (part instanceof JSONObject || part instanceof JSONArray) {
+                // there's no text representation of an object or array
+                throw unsupportedStructure();
+            }
+            if (text == null) {
+                text = new StringBuilder();
+            }
+            text.append(part.toString());
+        }
+        return text == null ? null : text.toString();
     }
 
     /**
