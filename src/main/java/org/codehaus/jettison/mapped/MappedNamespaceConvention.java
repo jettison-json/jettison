@@ -43,7 +43,6 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
     private Map<String, Object> jnsToXns = new HashMap<String, Object>();
     private List<?> attributesAsElements;
     private List<?> ignoredElements;
-    private List<String> jsonAttributesAsElements;
     private boolean supressAtAttributes;
     private boolean ignoreNamespaces;
     private String attributeKey = "@";
@@ -79,16 +78,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
             Map.Entry<?, ?> entry = itr.next();
             jnsToXns.put((String)entry.getValue(), entry.getKey());
         }
-        
-        jsonAttributesAsElements = new ArrayList<String>();
-        if (attributesAsElements != null) {
-            for (Iterator<?> itr = attributesAsElements.iterator(); itr.hasNext();) {
-                QName q = (QName) itr.next();
-                jsonAttributesAsElements.add(createAttributeKey(q.getPrefix(), 
-                                                                q.getNamespaceURI(), 
-                                                                q.getLocalPart()));
-            }
-        }
+
         this.readNullAsString = config.isReadNullAsString();
         this.standardGetElementText = config.isStandardGetElementText();
         this.writeNullAsString = config.isWriteNullAsString();
