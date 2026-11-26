@@ -186,6 +186,11 @@ public class BadgerFishXMLStreamWriter extends AbstractXMLStreamWriter {
 
     @Override
     public void writeNamespace(String prefix, String ns) throws XMLStreamException {
+        // as specified by XMLStreamWriter, a null, empty or "xmlns" prefix
+        // declares the default namespace
+        if (prefix == null || "xmlns".equals(prefix)) {
+            prefix = "";
+        }
         ((Node) getNodes().peek()).setNamespace(prefix, ns);
         try {
             JSONObject nsObj = getCurrentNode().optJSONObject("@xmlns");

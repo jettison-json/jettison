@@ -420,4 +420,25 @@ public class BadgerFishXMLStreamWriterTest extends TestCase {
         // the same as writeStartElement(namespaceURI, localName) followed by writeEndElement()
         assertEquals("{\"root\":{\"a\":{},\"b\":{}}}", strWriter.toString());
     }
+
+    public void testWriteNamespaceWithDefaultNamespacePrefix() throws Exception {
+        // a null, empty or "xmlns" prefix declares the default namespace
+        for (String prefix : new String[] {null, "", "xmlns"}) {
+            StringWriter strWriter = new StringWriter();
+            AbstractXMLStreamWriter writer = new BadgerFishXMLStreamWriter(strWriter);
+            writer.writeStartDocument();
+            writer.writeStartElement("r");
+            writer.writeNamespace(prefix, "urn:d");
+            assertEquals("urn:d", writer.getNamespaceContext().getNamespaceURI(""));
+            writer.writeEndElement();
+            writer.writeEndDocument();
+            writer.close();
+            assertEquals("prefix " + prefix, "{\"r\":{\"@xmlns\":{\"$\":\"urn:d\"}}}", strWriter.toString());
+
+            // the element is read back in the default namespace
+            XMLStreamReader reader = new BadgerFishXMLStreamReader(new JSONObject(strWriter.toString()));
+            reader.next();
+            assertEquals("urn:d", reader.getNamespaceURI());
+        }
+    }
 }
