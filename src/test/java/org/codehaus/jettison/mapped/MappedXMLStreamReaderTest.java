@@ -17,6 +17,7 @@ package org.codehaus.jettison.mapped;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1454,5 +1455,26 @@ public class MappedXMLStreamReaderTest extends TestCase {
         } catch (XMLStreamException ex) {
             assertTrue(ex.getMessage(), ex.getMessage().contains("end of the document"));
         }
+    }
+
+    public void testPrimitiveArrayKeysWithNestedItems() throws Exception {
+        Configuration config = new Configuration();
+        config.setPrimitiveArrayKeys(new HashSet<String>(Arrays.asList("a", "n")));
+        // items with elements nested more than one level deep
+        assertEquals("<r><a><c><d>1</d></c><c><d>2</d></c></a><b>z</b></r>",
+            readEvents("{\"r\":{\"a\":[{\"c\":{\"d\":1}},{\"c\":{\"d\":2}}],\"b\":\"z\"}}", config));
+        assertEquals("<r><a><c><d>1</d></c><c><d>2</d></c><c><d>3</d></c></a><b>z</b></r>",
+            readEvents("{\"r\":{\"a\":[{\"c\":{\"d\":1}},{\"c\":{\"d\":2}},{\"c\":{\"d\":3}}],\"b\":\"z\"}}",
+                config));
+        assertEquals("<r><a><c><d><e>1</e></d></c><c><d><e>2</e></d></c></a></r>",
+            readEvents("{\"r\":{\"a\":[{\"c\":{\"d\":{\"e\":1}}},{\"c\":{\"d\":{\"e\":2}}}]}}", config));
+        // an item containing a standard array
+        assertEquals("<r><a><c><e>1</e><e>2</e><f>x</f></c><c><e>3</e><f>y</f></c></a><b>z</b></r>",
+            readEvents("{\"r\":{\"a\":[{\"c\":{\"e\":[1,2],\"f\":\"x\"}},{\"c\":{\"e\":[3],\"f\":\"y\"}}],"
+                + "\"b\":\"z\"}}", config));
+        // an item containing another array listed in the primitive array keys
+        assertEquals("<r><a><c><n><m>1</m><m>2</m></n></c><c><n><m>3</m></n></c></a><b>z</b></r>",
+            readEvents("{\"r\":{\"a\":[{\"c\":{\"n\":[{\"m\":1},{\"m\":2}]}},{\"c\":{\"n\":[{\"m\":3}]}}],"
+                + "\"b\":\"z\"}}", config));
     }
 }

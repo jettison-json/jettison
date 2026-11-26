@@ -21,6 +21,7 @@ import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.XMLStreamException;
 
 import org.codehaus.jettison.AbstractXMLStreamReader;
+import org.codehaus.jettison.Convention;
 import org.codehaus.jettison.Node;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -34,6 +35,8 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
     private String valueKey = "$";
     private NamespaceContext ctx;
     private int popArrayNodes;
+    // the root node, if the root element is read as an array with primitiveArrayKeys
+    private Node uniformArrayRoot;
     private Node rootNode;
     public MappedXMLStreamReader(JSONObject obj)
             throws JSONException, XMLStreamException {
@@ -91,7 +94,9 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
         } else if (event == START_ELEMENT || event == END_ELEMENT) {
             if (event == END_ELEMENT && nodes.size() > 0) {
                 node = peekNode();
-                if (popArrayNodes > 0) {
+                // only when the element that has ended is an item of such an array,
+                // not an element nested inside an item
+                if (popArrayNodes > 0 && isUniformArrayNode(node)) {
                 	popNode();
                 	if (node.getArray() != null) {
                 		popArrayNodes--;
@@ -138,7 +143,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
 
                     
                     if ((node.getKeys() != null && node.getKeys().hasNext()) || node.getArray() != null) {
-                        if (popArrayNodes > 0) {
+                        if (popArrayNodes > 0 && isUniformArrayNode(node)) {
                         	node = popNode();
                         }
                     	processElement();
@@ -210,7 +215,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
             throw unsupportedStructure();
         }
     	boolean isRoot = ((Node)nodes.get(0)).getName().getLocalPart().equals(arrayKey);
-    	Node parent = !isRoot ? new Node(arrayKey, convention) : node;
+    	Node parent = !isRoot ? new UniformArrayNode(arrayKey, convention) : node;
         
     	for (int i = arrayLength - 1; i >= 0; i--) {
     		Object object = array.get(i);
@@ -225,7 +230,7 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
     		if (lastKey == null || lastKey.equals(theKey)) {
     			lastKey = theKey;
     			depth++;
-    			Node theNode = new Node(parent, theKey, jsonObject, convention);
+    			Node theNode = new UniformArrayNode(parent, theKey, jsonObject, convention);
     			nodes.push(theNode);
     		} else {
     			lastKey = null;
@@ -241,6 +246,9 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
     	
     	parent.setArray(array);
         parent.setArrayIndex(arrayLength);
+        if (isRoot) {
+            uniformArrayRoot = parent;
+        }
         if (!isRoot) {
             nodes.add(parentIndex, parent);
             nodes.push(parent);
@@ -254,6 +262,25 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
         return true;
     }
     
+    private boolean isUniformArrayNode(Node node) {
+        return node instanceof UniformArrayNode || (node != null && node == uniformArrayRoot);
+    }
+
+    /**
+     * A node created for an array read with primitiveArrayKeys: the parent of the
+     * array, or the holder of one of its items.
+     */
+    private static final class UniformArrayNode extends Node {
+        UniformArrayNode(String name, Convention con) throws XMLStreamException {
+            super(name, con);
+        }
+
+        UniformArrayNode(Node parent, String name, JSONObject object, Convention con)
+            throws JSONException, XMLStreamException {
+            super(parent, name, object, con);
+        }
+    }
+
     private Node peekNode() throws XMLStreamException {
         if (nodes.size() == 0) {
             throw unsupportedStructure();
