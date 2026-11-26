@@ -99,7 +99,9 @@ public class JSONObject implements Serializable {
      * whilst Java's null is equivalent to the value that JavaScript calls
      * undefined.
      */
-     private static final class Null {
+     private static final class Null implements Serializable {
+
+         private static final long serialVersionUID = 1L;
 
     	 boolean explicitNull;
 
@@ -142,6 +144,14 @@ public class JSONObject implements Serializable {
 
         public boolean isExplicitNull() {
             return explicitNull;
+        }
+
+        /**
+         * Resolve a deserialized instance to the NULL or EXPLICIT_NULL singleton,
+         * as these are compared by identity.
+         */
+        private Object readResolve() {
+            return explicitNull ? EXPLICIT_NULL : NULL;
         }
     }
 

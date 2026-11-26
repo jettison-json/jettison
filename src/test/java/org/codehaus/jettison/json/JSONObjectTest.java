@@ -3,6 +3,10 @@ package org.codehaus.jettison.json;
 import junit.framework.TestCase;
 import org.codehaus.jettison.JSONSequenceTooLargeException;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -744,5 +748,39 @@ public class JSONObjectTest extends TestCase {
         StringWriter writer = new StringWriter();
         obj.write(writer);
         assertEquals(expected, writer.toString());
+    }
+
+    public void testSerializationWithNullValues() throws Exception {
+        JSONObject obj = new JSONObject("{\"a\":null,\"b\":[1,null],\"c\":{\"d\":null}}");
+        obj.put("e", JSONObject.NULL);
+
+        JSONObject copy = (JSONObject) serializeAndDeserialize(obj);
+        assertEquals(obj.toString(), copy.toString());
+
+        // the null values are resolved to the JSONObject.NULL and EXPLICIT_NULL singletons
+        assertSame(JSONObject.EXPLICIT_NULL, copy.get("a"));
+        assertSame(JSONObject.NULL, copy.get("e"));
+        assertSame(JSONObject.EXPLICIT_NULL, copy.getJSONArray("b").get(1));
+        assertTrue(copy.isNull("a"));
+        assertEquals("default", copy.optString("a", "default"));
+        assertEquals("default", copy.getJSONObject("c").optString("d", "default"));
+
+        JSONArray array = new JSONArray().put(JSONObject.NULL).put(1);
+        JSONArray arrayCopy = (JSONArray) serializeAndDeserialize(array);
+        assertEquals(array.toString(), arrayCopy.toString());
+        assertSame(JSONObject.NULL, arrayCopy.get(0));
+    }
+
+    private static Object serializeAndDeserialize(Object object) throws Exception {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        ObjectOutputStream out = new ObjectOutputStream(bytes);
+        out.writeObject(object);
+        out.close();
+        ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bytes.toByteArray()));
+        try {
+            return in.readObject();
+        } finally {
+            in.close();
+        }
     }
 }
