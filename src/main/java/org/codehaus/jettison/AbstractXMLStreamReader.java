@@ -15,10 +15,8 @@
  */
 package org.codehaus.jettison;
 
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.NoSuchElementException;
 
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
@@ -169,23 +167,35 @@ public abstract class AbstractXMLStreamReader implements XMLStreamReader {
             }
 
             public String getPrefix(String namespaceURI) {
-                Iterator<String> prefixes = getPrefixes(namespaceURI);
-                return prefixes.hasNext() ? prefixes.next() : null;
+                return node == null ? null : node.getPrefixesInScope(namespaceURI).get(0);
             }
 
             public Iterator<String> getPrefixes(String namespaceURI) {
-                Set<String> prefixes = new LinkedHashSet<String>();
-                for (Node n = node; n != null; n = n.parent) {
-                    for (int i = 0; i < n.getNamespaceCount(); i++) {
-                        String prefix = n.getNamespacePrefix(i);
-                        // skip prefixes redeclared by an inner element to a different namespace URI
-                        if (n.getNamespaceURI(i).equals(namespaceURI)
-                            && namespaceURI.equals(node.getNamespaceURI(prefix))) {
-                            prefixes.add(prefix);
-                        }
+                // the prefixes declared on the current element and its ancestors,
+                // skipping those redeclared by an inner element to a different
+                // namespace URI, found as the iterator is used
+                final Node.PrefixSequence prefixes = node == null
+                    ? Node.PrefixSequence.EMPTY : node.getPrefixesInScope(namespaceURI);
+                return new Iterator<String>() {
+                    private int index;
+
+                    public boolean hasNext() {
+                        return prefixes.get(index) != null;
                     }
-                }
-                return Collections.unmodifiableSet(prefixes).iterator();
+
+                    public String next() {
+                        String prefix = prefixes.get(index);
+                        if (prefix == null) {
+                            throw new NoSuchElementException();
+                        }
+                        index++;
+                        return prefix;
+                    }
+
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
             }
         };
     }

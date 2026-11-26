@@ -52,6 +52,15 @@ public class Node {
     private Map indexedAttributes;
     private Object[] namespacePrefixes;
     private Map indexedNamespaces;
+    // The prefixes declared on this node for each namespace URI, and the
+    // sequences of prefixes in scope at this node for the URIs looked up, so
+    // that NamespaceContext lookups don't scan every declaration in scope
+    private Map prefixesByUri;
+    private Map indexedPrefixesByUri;
+    private int indexedPrefixesByUriSize;
+    private Map prefixesInScope;
+    private Map indexedPrefixesInScope;
+    private int indexedPrefixesInScopeSize;
     
     public Node(Node parent, String name, JSONObject object, Convention con) 
         throws JSONException, XMLStreamException {
@@ -128,12 +137,18 @@ public class Node {
 
     public void setNamespaces(Map namespaces) {
         this.namespaces = namespaces;
-        namespacePrefixes = null;
+        namespacesChanged();
     }
 
     public void setNamespace(String prefix, String uri) {
         namespaces.put(prefix, uri);
+        namespacesChanged();
+    }
+
+    private void namespacesChanged() {
         namespacePrefixes = null;
+        prefixesByUri = null;
+        prefixesInScope = null;
     }
 
     public Map getAttributes() {
@@ -180,6 +195,142 @@ public class Node {
             indexedAttributes = attributes;
         }
         return attributeNames;
+    }
+
+    /**
+     * Get the prefixes in scope at this node that are bound to the given
+     * namespace URI: those declared on this node, in declaration order,
+     * followed by those in scope at the parent that aren't redeclared here.
+     * The sequence is built lazily, so finding the first prefix doesn't
+     * require finding them all.
+     */
+    PrefixSequence getPrefixesInScope(String uri) {
+        if (namespaces.isEmpty()) {
+            // nothing is declared or redeclared here
+            return parent == null ? PrefixSequence.EMPTY : parent.getPrefixesInScope(uri);
+        }
+        if (prefixesInScope == null || indexedPrefixesInScope != namespaces
+            || indexedPrefixesInScopeSize != namespaces.size()) {
+            prefixesInScope = new HashMap(4);
+            indexedPrefixesInScope = namespaces;
+            indexedPrefixesInScopeSize = namespaces.size();
+        }
+        PrefixSequence sequence = (PrefixSequence) prefixesInScope.get(uri);
+        if (sequence == null) {
+            sequence = new PrefixSequence(this, uri);
+            prefixesInScope.put(uri, sequence);
+        }
+        return sequence;
+    }
+
+    // The prefixes declared on this node for the URI, as getNamespaceURI(int)
+    // reports their URIs
+    private Iterator declaredPrefixes(String uri) {
+        if (namespaces.size() <= SMALL_NAMESPACE_COUNT) {
+            // cheaper to scan a few declarations than to index them
+            ArrayList prefixes = null;
+            for (Iterator itr = namespaces.entrySet().iterator(); itr.hasNext();) {
+                Map.Entry e = (Map.Entry) itr.next();
+                String value = e.getValue() == null ? "" : e.getValue().toString();
+                if (value.equals(uri)) {
+                    if (prefixes == null) {
+                        prefixes = new ArrayList(1);
+                    }
+                    prefixes.add(e.getKey().toString());
+                }
+            }
+            return prefixes == null ? EMPTY_ITERATOR : prefixes.iterator();
+        }
+        if (prefixesByUri == null || indexedPrefixesByUri != namespaces
+            || indexedPrefixesByUriSize != namespaces.size()) {
+            prefixesByUri = new HashMap();
+            indexedPrefixesByUri = namespaces;
+            indexedPrefixesByUriSize = namespaces.size();
+            for (Iterator itr = namespaces.entrySet().iterator(); itr.hasNext();) {
+                Map.Entry e = (Map.Entry) itr.next();
+                String value = e.getValue() == null ? "" : e.getValue().toString();
+                ArrayList prefixes = (ArrayList) prefixesByUri.get(value);
+                if (prefixes == null) {
+                    prefixes = new ArrayList(1);
+                    prefixesByUri.put(value, prefixes);
+                }
+                prefixes.add(e.getKey().toString());
+            }
+        }
+        ArrayList prefixes = (ArrayList) prefixesByUri.get(uri);
+        return prefixes == null ? EMPTY_ITERATOR : prefixes.iterator();
+    }
+
+    private static final Iterator EMPTY_ITERATOR = new ArrayList(0).iterator();
+
+    private static final int SMALL_NAMESPACE_COUNT = 8;
+
+    /**
+     * The prefixes in scope at a node for a namespace URI, found as they're
+     * needed and kept for later lookups at the node and its descendants.
+     */
+    static final class PrefixSequence {
+        static final PrefixSequence EMPTY = new PrefixSequence(null, null);
+
+        private final Node node;
+        private final String uri;
+        private final ArrayList prefixes = new ArrayList(2);
+        private Iterator declared;
+        private PrefixSequence inherited;
+        private int inheritedIndex;
+        private boolean complete;
+
+        PrefixSequence(Node node, String uri) {
+            this.node = node;
+            this.uri = uri;
+            this.complete = node == null;
+        }
+
+        /**
+         * Get the prefix at the given position, or null if there are no more.
+         */
+        String get(int index) {
+            while (prefixes.size() <= index && !complete) {
+                findNext();
+            }
+            return index < prefixes.size() ? (String) prefixes.get(index) : null;
+        }
+
+        private void findNext() {
+            if (declared == null) {
+                declared = node.declaredPrefixes(uri);
+            }
+            // a prefix declared on the node is in scope for the URI if looking
+            // it up from the node gives the URI
+            while (declared.hasNext()) {
+                String prefix = (String) declared.next();
+                // the declared prefixes are distinct
+                if (uri.equals(node.getNamespaceURI(prefix))) {
+                    prefixes.add(prefix);
+                    return;
+                }
+            }
+            // a prefix in scope at the parent is in scope here unless it's bound
+            // here, as looking it up from here then gives the same URI
+            if (inherited == null) {
+                inherited = node.parent == null ? EMPTY : node.parent.getPrefixesInScope(uri);
+            }
+            while (true) {
+                String prefix = inherited.get(inheritedIndex);
+                if (prefix == null) {
+                    complete = true;
+                    return;
+                }
+                inheritedIndex++;
+                if (node.namespaces.get(prefix) == null
+                    // a prefix declared here with no URI is looked up from the parent,
+                    // so it may have been found among the declared prefixes already
+                    && !(node.namespaces.containsKey(prefix) && prefixes.contains(prefix))) {
+                    prefixes.add(prefix);
+                    return;
+                }
+            }
+        }
     }
 
     private Object[] namespacePrefixes() {
