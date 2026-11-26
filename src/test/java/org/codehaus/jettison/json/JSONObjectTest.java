@@ -8,6 +8,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.StringWriter;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -782,5 +784,37 @@ public class JSONObjectTest extends TestCase {
         } finally {
             in.close();
         }
+    }
+
+    public void testGetIntAndGetLongClipOutOfRangeValues() throws Exception {
+        JSONObject obj = new JSONObject("{\"big\":4294967301,\"small\":-4294967301,\"int\":-42,"
+            + "\"string\":\"4294967301\"}");
+        obj.put("bigDecimal", new BigDecimal("12345678901234567890.5"));
+        obj.put("negBigDecimal", new BigDecimal("-1e100"));
+        obj.put("fraction", new BigDecimal("3.7"));
+        obj.put("nearMax", new BigDecimal("9223372036854775806"));
+        obj.put("bigInteger", new BigInteger("123456789012345678901234567890"));
+        obj.put("negBigInteger", new BigInteger("-123456789012345678901234567890"));
+
+        // values outside the int range are clipped, as for strings and doubles, not wrapped
+        assertEquals(Integer.MAX_VALUE, obj.getInt("big"));
+        assertEquals(Integer.MIN_VALUE, obj.getInt("small"));
+        assertEquals(Integer.MAX_VALUE, obj.getInt("string"));
+        assertEquals(Integer.MAX_VALUE, obj.getInt("bigDecimal"));
+        assertEquals(Integer.MIN_VALUE, obj.getInt("negBigDecimal"));
+        assertEquals(Integer.MAX_VALUE, obj.getInt("bigInteger"));
+        assertEquals(Integer.MAX_VALUE, obj.optInt("big", 7));
+        assertEquals(-42, obj.getInt("int"));
+        assertEquals(3, obj.getInt("fraction"));
+
+        // values outside the long range are clipped, values inside it are exact
+        assertEquals(Long.MAX_VALUE, obj.getLong("bigDecimal"));
+        assertEquals(Long.MIN_VALUE, obj.getLong("negBigDecimal"));
+        assertEquals(Long.MAX_VALUE, obj.getLong("bigInteger"));
+        assertEquals(Long.MIN_VALUE, obj.getLong("negBigInteger"));
+        assertEquals(Long.MAX_VALUE, obj.optLong("bigInteger", 7L));
+        assertEquals(9223372036854775806L, obj.getLong("nearMax"));
+        assertEquals(4294967301L, obj.getLong("big"));
+        assertEquals(3L, obj.getLong("fraction"));
     }
 }

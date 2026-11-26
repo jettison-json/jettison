@@ -3,6 +3,8 @@ package org.codehaus.jettison.json;
 import junit.framework.TestCase;
 
 import java.io.StringWriter;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -314,5 +316,19 @@ public class JSONArrayTest extends TestCase {
         }
         // finite numbers are still accepted
         assertEquals("[1.5,-2,1.0E300]", new JSONArray("[1.5, -2, 1e300]").toString());
+    }
+
+    public void testGetIntAndGetLongClipOutOfRangeValues() throws Exception {
+        JSONArray array = new JSONArray("[4294967301,-4294967301,-42]");
+        array.put(new BigDecimal("1e100"));
+        array.put(new BigInteger("-123456789012345678901234567890"));
+        assertEquals(Integer.MAX_VALUE, array.getInt(0));
+        assertEquals(Integer.MIN_VALUE, array.getInt(1));
+        assertEquals(-42, array.getInt(2));
+        assertEquals(Integer.MAX_VALUE, array.optInt(0, 7));
+        assertEquals(4294967301L, array.getLong(0));
+        assertEquals(Long.MAX_VALUE, array.getLong(3));
+        assertEquals(Long.MIN_VALUE, array.getLong(4));
+        assertEquals(Integer.MIN_VALUE, array.getInt(4));
     }
 }

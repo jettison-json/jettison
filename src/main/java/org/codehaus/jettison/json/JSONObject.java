@@ -20,6 +20,8 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.codehaus.jettison.JSONSequenceTooLargeException;
 
@@ -522,8 +525,51 @@ public class JSONObject implements Serializable {
 
     }
     private int doGetInt(String key, Object o) throws JSONException {
-        return o instanceof Number ? ((Number)o).intValue() : (int)getDouble(key);
+        return o instanceof Number ? toClippedInt((Number)o) : (int)getDouble(key);
     }
+
+    /**
+     * Convert a number to an int, clipping a value outside the int range to
+     * Integer.MIN_VALUE or Integer.MAX_VALUE (as for a double value), rather than
+     * wrapping around.
+     */
+    static int toClippedInt(Number n) {
+        if (n instanceof Long || n instanceof BigInteger || n instanceof BigDecimal
+            || n instanceof AtomicLong) {
+            // the cast from double clips, and every int is exactly representable as a double
+            return (int) n.doubleValue();
+        }
+        return n.intValue();
+    }
+
+    /**
+     * Convert a number to a long, clipping a value outside the long range to
+     * Long.MIN_VALUE or Long.MAX_VALUE (as for a double value), rather than
+     * wrapping around.
+     */
+    static long toClippedLong(Number n) {
+        if (n instanceof BigInteger) {
+            BigInteger value = (BigInteger) n;
+            if (value.bitLength() < 64) {
+                return value.longValue();
+            }
+            return value.signum() > 0 ? Long.MAX_VALUE : Long.MIN_VALUE;
+        }
+        if (n instanceof BigDecimal) {
+            BigDecimal value = (BigDecimal) n;
+            if (value.compareTo(LONG_MAX_VALUE) > 0) {
+                return Long.MAX_VALUE;
+            }
+            if (value.compareTo(LONG_MIN_VALUE) < 0) {
+                return Long.MIN_VALUE;
+            }
+            return value.longValue();
+        }
+        return n.longValue();
+    }
+
+    private static final BigDecimal LONG_MAX_VALUE = BigDecimal.valueOf(Long.MAX_VALUE);
+    private static final BigDecimal LONG_MIN_VALUE = BigDecimal.valueOf(Long.MIN_VALUE);
 
 
     /**
@@ -577,7 +623,7 @@ public class JSONObject implements Serializable {
 
     private long doGetLong(String key, Object o) throws JSONException {
         if (o instanceof Number) {
-            return ((Number)o).longValue();
+            return toClippedLong((Number)o);
         }
         if (o instanceof String) {
             // Parse integral strings directly to avoid losing precision above 2^53
