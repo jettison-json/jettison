@@ -105,12 +105,7 @@ public abstract class AbstractXMLStreamReader implements XMLStreamReader {
     }
 
     public QName getAttributeName(int n) {
-        Iterator itr = node.getAttributes().keySet().iterator();
-        QName name = null;
-        for (int i = 0; i <= n; i++) {
-            name = (QName) itr.next();
-        }
-        return name;
+        return node.getAttributeName(n);
     }
 
     public String getAttributeNamespace(int n) {
@@ -122,12 +117,7 @@ public abstract class AbstractXMLStreamReader implements XMLStreamReader {
     }
 
     public String getAttributeValue(int n) {
-        Iterator itr = node.getAttributes().values().iterator();
-        String name = null;
-        for (int i = 0; i <= n; i++) {
-            name = (String) itr.next();
-        }
-        return name;
+        return node.getAttributeValue(n);
     }
 
     public String getAttributeValue(String ns, String local) {
