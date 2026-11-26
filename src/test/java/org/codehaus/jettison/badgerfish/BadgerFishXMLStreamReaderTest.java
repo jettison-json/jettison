@@ -537,4 +537,13 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
             "{\"r\":{\"a\":[{\"$\":\"1\"},{\"$\":\"2\"}],\"e\":[],\"t\":{\"$\":[\"x\",\"y\"]}}}"));
         assertEquals("<r><a>1</a><a>2</a><t>xy</t></r>", readAll(reader));
     }
+
+    public void testGetAttributeType() throws Exception {
+        XMLStreamReader reader = new BadgerFishXMLStreamReader(new JSONObject("{\"r\":{\"@a\":\"1\",\"@b\":2}}"));
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.next());
+        assertEquals(2, reader.getAttributeCount());
+        // attributes read from JSON have no declared type, so are CDATA
+        assertEquals("CDATA", reader.getAttributeType(0));
+        assertEquals("CDATA", reader.getAttributeType(1));
+    }
 }
