@@ -479,4 +479,17 @@ public class BadgerFishXMLStreamReaderTest extends TestCase {
         }
         return sb.toString();
     }
+
+    public void testNextTagAtEndOfDocument() throws Exception {
+        XMLStreamReader reader = new BadgerFishXMLStreamReader(new JSONObject("{\"a\":{\"$\":\"x\"}}"));
+        assertEquals(XMLStreamReader.START_ELEMENT, reader.nextTag());
+        assertEquals(XMLStreamReader.END_ELEMENT, reader.nextTag());
+        try {
+            reader.nextTag();
+            fail("Failure expected at the end of the document");
+        } catch (XMLStreamException ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().contains("end of the document"));
+        }
+        assertEquals(XMLStreamReader.END_DOCUMENT, reader.getEventType());
+    }
 }
