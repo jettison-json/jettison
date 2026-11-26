@@ -264,9 +264,15 @@ public class MappedXMLStreamReader extends AbstractXMLStreamReader {
     		JSONObject jsonObject = (JSONObject)object;
     		String theKey = jsonObject.keys().next().toString();
     		if (lastKey == null || lastKey.equals(theKey)) {
+    			Node theNode = new UniformArrayNode(parent, theKey, jsonObject, convention);
+    			if (!theNode.getKeys().hasNext()) {
+    				// the only key is read as an attribute or a namespace declaration
+    				// of the item, so the item isn't a child element
+    				lastKey = null;
+    				break;
+    			}
     			lastKey = theKey;
     			depth++;
-    			Node theNode = new UniformArrayNode(parent, theKey, jsonObject, convention);
     			nodes.push(theNode);
     		} else {
     			lastKey = null;

@@ -51,7 +51,8 @@ public class MappedXMLStreamReaderUnsupportedStructureTest extends TestCase {
     }
 
     public void testRootArrayOfAttributesWithPrimitiveArrayKeys() throws Exception {
-        assertUnsupported(primitiveArrayKeys(), "{\"r\":[{\"@a\":\"v\"}]}");
+        // an item whose only key is an attribute is read as in a standard array
+        assertEquals("<r><r a=\"v\"></r></r>", readEvents(primitiveArrayKeys(), "{\"r\":[{\"@a\":\"v\"}]}"));
     }
 
     public void testSupportedStructureStillReads() throws Exception {
