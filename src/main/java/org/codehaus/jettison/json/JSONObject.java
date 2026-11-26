@@ -241,7 +241,10 @@ public class JSONObject implements Serializable {
                 throw x.syntaxError("Expected a key");                
             default:
                 x.back();
-                key = x.nextValue().toString();
+                Object keyValue = x.nextValue();
+                // an unquoted null key is read as the explicit null value, whose
+                // toString() is null, so use the "null" text as the key
+                key = keyValue == EXPLICIT_NULL ? "null" : keyValue.toString();
             }
 
             /*
