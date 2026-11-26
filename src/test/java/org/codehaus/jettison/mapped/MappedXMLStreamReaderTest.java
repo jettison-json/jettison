@@ -1645,4 +1645,33 @@ public class MappedXMLStreamReaderTest extends TestCase {
         assertEquals("<r><c><item x=\"v\"><d>y</d></item></c></r>",
             readEvents(factory, "{\"r\":{\"c\":[{\"item\":{\"@x\":\"v\",\"d\":\"y\"}}]}}"));
     }
+
+    public void testPrimitiveArrayKeysWithArrayValues() throws Exception {
+        Configuration primitive = new Configuration();
+        primitive.setPrimitiveArrayKeys(new HashSet<String>(Arrays.asList("c", "r")));
+
+        // an item's value that is an array gives an element for each of its items
+        assertEquals("<x><c><d>a0</d><d>a1</d><d>b0</d></c><y>z</y></x>",
+            readEvents("{\"x\":{\"c\":[{\"d\":[\"a0\",\"a1\"]},{\"d\":[\"b0\"]}],\"y\":\"z\"}}", primitive));
+        assertEquals("<x><c><d>a0</d></c></x>", readEvents("{\"x\":{\"c\":[{\"d\":[]},{\"d\":[\"a0\"]}]}}", primitive));
+        assertEquals("<x><c></c><y>z</y></x>", readEvents("{\"x\":{\"c\":[{\"d\":[]}],\"y\":\"z\"}}", primitive));
+        assertEquals("<x><c><d>a0</d><d>b0</d></c><y>z</y></x>",
+            readEvents("{\"x\":{\"c\":[{\"d\":[\"a0\"]},{\"d\":\"b0\"},{\"d\":[]}],\"y\":\"z\"}}", primitive));
+        assertEquals("<x><c><d><e>x</e></d></c></x>", readEvents("{\"x\":{\"c\":[{\"d\":[{\"e\":\"x\"}]}]}}", primitive));
+
+        // the root array
+        assertEquals("<r><d>a0</d></r>", readEvents("{\"r\":[{\"d\":[\"a0\"]}]}", primitive));
+        assertEquals("<r><d>a0</d><d>a1</d><d>b0</d></r>",
+            readEvents("{\"r\":[{\"d\":[\"a0\",\"a1\"]},{\"d\":[\"b0\"]}]}", primitive));
+        assertEquals("<r><d>a0</d></r>", readEvents("{\"r\":[{\"d\":[]},{\"d\":[\"a0\"]}]}", primitive));
+        assertEquals("<r></r>", readEvents("{\"r\":[{\"d\":[]}]}", primitive));
+
+        // nested arrays read with primitiveArrayKeys
+        assertEquals("<x><c><d>a0</d></c><c2><c><d>b0</d></c></c2></x>",
+            readEvents("{\"x\":{\"c\":[{\"d\":[\"a0\"]}],\"c2\":{\"c\":[{\"d\":[\"b0\"]}]}}}", primitive));
+
+        // items with other values are unchanged
+        assertEquals("<r><d>a0</d><d>b0</d></r>", readEvents("{\"r\":[{\"d\":\"a0\"},{\"d\":\"b0\"}]}", primitive));
+        assertEquals("<r><d><e>a0</e><e>a1</e></d></r>", readEvents("{\"r\":[{\"d\":{\"e\":[\"a0\",\"a1\"]}}]}", primitive));
+    }
 }
