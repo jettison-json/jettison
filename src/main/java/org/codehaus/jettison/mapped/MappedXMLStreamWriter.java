@@ -49,20 +49,59 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	 */
 	private abstract class JSONProperty {
 		private String key;
-		private String parentKey;
-		public JSONProperty(String key, String parentKey) {
+		// The property of the parent element, to build the tree key from
+		private JSONProperty parent;
+		// The tree key, kept only when slash-separated array keys are configured,
+		// as keeping it for each open element takes memory quadratic in the depth
+		String treeKey;
+		public JSONProperty(String key, JSONProperty parent) {
 			this.key = key;
-			this.parentKey = parentKey;
+			this.parent = parent;
 		}
 		/** Get the key of the property. */
 		public String getKey() {
 			return key;
 		}
-		public String getParentKey() {
-			return parentKey;
+		public JSONProperty getParent() {
+			return parent;
 		}
+		/**
+		 * Get the keys of the property and its ancestors, separated by '/',
+		 * e.g. "root/child", omitting the null key of the document property.
+		 */
 		public String getTreeKey() {
-			return parentKey == null ? key : parentKey + "/" + key;
+			return treeKey != null ? treeKey : parent == null ? key : buildTreeKey();
+		}
+		// kept out of getTreeKey(), which is called for every element
+		private String buildTreeKey() {
+			// the keys from this property up to the document property, which
+			// has a null key and no parent
+			int length = -1;
+			for (JSONProperty p = this; p != null && !p.isDocument(); p = p.parent) {
+				length += String.valueOf(p.key).length() + 1;
+			}
+			if (length < 0) {
+				return null;
+			}
+			char[] treeKey = new char[length];
+			int end = length;
+			for (JSONProperty p = this; p != null && !p.isDocument(); p = p.parent) {
+				String k = String.valueOf(p.key);
+				end -= k.length();
+				k.getChars(0, k.length(), treeKey, end);
+				if (end > 0) {
+					treeKey[--end] = '/';
+				}
+			}
+			return new String(treeKey);
+		}
+		/** Keep the tree key, for the tree keys of child elements. */
+		void keepTreeKey() {
+			String parentTreeKey = parent == null ? null : parent.getTreeKey();
+			treeKey = parentTreeKey == null ? key : parentTreeKey + "/" + key;
+		}
+		private boolean isDocument() {
+			return key == null && parent == null;
 		}
 		/** Get the value of the property */
 		public abstract Object getValue();
@@ -80,8 +119,8 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	 */
 	private final class JSONPropertyString extends JSONProperty {
 		private StringBuilder object = new StringBuilder();
-		public JSONPropertyString(String key, String parentKey) {
-			super(key, parentKey);
+		public JSONPropertyString(String key, JSONProperty parent) {
+			super(key, parent);
 		}
 		public Object getValue() {
 			return object.toString();
@@ -127,7 +166,9 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 				// Impossible by construction
 				throw new AssertionError(e);				
 			}
-			return new JSONPropertyObject(getKey(), getParentKey(), jo);
+			JSONPropertyObject result = new JSONPropertyObject(getKey(), getParent(), jo);
+			result.treeKey = treeKey;
+			return result;
 		}
 	}
 
@@ -146,8 +187,8 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	    private String textPut;
 	    private boolean textPending;
 	    private boolean textAppended;
-	    public JSONPropertyObject(String key, String parentKey, JSONObject object) {
-	        super(key, parentKey);
+	    public JSONPropertyObject(String key, JSONProperty parent, JSONObject object) {
+	        super(key, parent);
 	        this.object = object;
 	    }
 	    public Object getValue() {
@@ -298,10 +339,12 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 			this.writeStartDocument();
 		}
 
-		String parentKey = current.getTreeKey();
 		stack.push(current);
 		String key = convention.createKey(prefix, ns, local);
-		current = new JSONPropertyString(key, parentKey);
+		current = new JSONPropertyString(key, current);
+		if (isArrayKeysWithSlashAvailable()) {
+			current.keepTreeKey();
+		}
 	}
 	
 	public void writeAttribute(String prefix, String ns, String local, String value) throws XMLStreamException {
