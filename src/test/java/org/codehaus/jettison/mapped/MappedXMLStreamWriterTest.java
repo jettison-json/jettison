@@ -714,6 +714,100 @@ public class MappedXMLStreamWriterTest extends TestCase {
             strWriter.toString());
     }
 
+    public void testArrayKeysWithSlash() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(new MappedNamespaceConvention(), strWriter);
+        // only the item elements of the a elements are arrays
+        w.serializeAsArray("root/a/item");
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        w.writeAttribute("id", "1");
+        w.writeStartElement("a");
+        w.writeCharacters("text");
+        w.writeStartElement("item");
+        w.writeCharacters("1");
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeStartElement("b");
+        w.writeStartElement("item");
+        w.writeCharacters("2");
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeStartElement("a");
+        w.writeStartElement("item");
+        w.writeCharacters("3");
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndDocument();
+        w.close();
+
+        assertEquals("{\"root\":{\"@id\":1,\"a\":[{\"$\":\"text\",\"item\":[1]},{\"item\":[3]}],"
+            + "\"b\":{\"item\":2}}}", strWriter.toString());
+    }
+
+    public void testArrayKeysWithSlashConfiguredWhileWriting() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(new MappedNamespaceConvention(), strWriter);
+        w.writeStartDocument();
+        w.writeStartElement("root");
+        w.writeStartElement("a");
+        w.serializeAsArray("root/a/item");
+        w.writeStartElement("item");
+        w.writeCharacters("1");
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndElement();
+        w.writeEndDocument();
+        w.close();
+
+        assertEquals("{\"root\":{\"a\":{\"item\":[1]}}}", strWriter.toString());
+    }
+
+    public void testOpenElementsDontKeepTheirAncestorKeys() throws Exception {
+        // Each open element used to keep the keys of all its ancestors, which
+        // took memory quadratic in the depth: 400MB for these names
+        int depth = 450;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 2000; i++) {
+            sb.append('n');
+        }
+        String name = sb.toString();
+        StringWriter strWriter = new StringWriter();
+        AbstractXMLStreamWriter w = new MappedXMLStreamWriter(new MappedNamespaceConvention(), strWriter);
+        w.writeStartDocument();
+        for (int i = 0; i < depth; i++) {
+            w.writeStartElement(name);
+        }
+        java.lang.reflect.Field currentField = MappedXMLStreamWriter.class.getDeclaredField("current");
+        currentField.setAccessible(true);
+        Object current = currentField.get(w);
+        for (Class<?> c = current.getClass(); c != null; c = c.getSuperclass()) {
+            for (java.lang.reflect.Field field : c.getDeclaredFields()) {
+                if (field.getType() == String.class) {
+                    field.setAccessible(true);
+                    String value = (String) field.get(current);
+                    assertTrue(field.getName(), value == null || value.length() <= name.length());
+                }
+            }
+        }
+        w.writeCharacters("x");
+        for (int i = 0; i < depth; i++) {
+            w.writeEndElement();
+        }
+        w.writeEndDocument();
+        w.close();
+        StringBuilder expected = new StringBuilder();
+        for (int i = 0; i < depth; i++) {
+            expected.append("{\"").append(name).append("\":");
+        }
+        expected.append("\"x\"");
+        for (int i = 0; i < depth; i++) {
+            expected.append('}');
+        }
+        assertEquals(expected.toString(), strWriter.toString());
+    }
+
     public void testMixedArrayAndJSONObject() throws Exception {
         StringWriter strWriter = new StringWriter();
         MappedNamespaceConvention con = new MappedNamespaceConvention();
