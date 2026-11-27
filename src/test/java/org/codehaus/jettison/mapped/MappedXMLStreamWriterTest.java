@@ -642,6 +642,78 @@ public class MappedXMLStreamWriterTest extends TestCase {
         assertEquals("{\"root\":{\"child\":[\"first\",\"second\",\"third\"]},\"other\":\"test\"}", strWriter.toString());
     }
     
+    public void testTextInManyPieces() throws Exception {
+        // Each piece of text of an element with attributes or child elements
+        // used to be appended by copying all the text before it, which took
+        // time quadratic in the number of pieces
+        int count = 100000;
+        StringWriter strWriter = new StringWriter();
+        MappedXMLStreamWriter w = new MappedXMLStreamWriter(new MappedNamespaceConvention(), strWriter);
+        w.writeStartDocument();
+        w.writeStartElement("t");
+        w.writeAttribute("id", "1");
+        StringBuilder expected = new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            w.writeCharacters("chunk" + i);
+            expected.append("chunk").append(i);
+        }
+        w.writeEndElement();
+        w.writeEndDocument();
+        w.close();
+        assertEquals("{\"t\":{\"@id\":1,\"$\":\"" + expected + "\"}}", strWriter.toString());
+    }
+
+    public void testTextAroundChildElements() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedXMLStreamWriter w = new MappedXMLStreamWriter(new MappedNamespaceConvention(), strWriter);
+        w.writeStartDocument();
+        w.writeStartElement("p");
+        w.writeAttribute("id", "1");
+        w.writeCharacters("one ");
+        w.writeCharacters(" two");
+        w.writeStartElement("b");
+        w.writeCharacters("x");
+        w.writeEndElement();
+        w.writeCharacters("three");
+        w.writeCharacters(" ");
+        w.writeCharacters("four");
+        w.writeEndElement();
+        w.writeEndDocument();
+        w.close();
+        // mixed text is trimmed
+        assertEquals("{\"p\":{\"@id\":1,\"$\":\"onetwothreefour\",\"b\":\"x\"}}", strWriter.toString());
+    }
+
+    public void testTextWithChildElementNamedAsTheValueKey() throws Exception {
+        StringWriter strWriter = new StringWriter();
+        MappedXMLStreamWriter w = new MappedXMLStreamWriter(new MappedNamespaceConvention(), strWriter);
+        w.setValueKey("t");
+        w.writeStartDocument();
+        w.writeStartElement("p");
+        w.writeAttribute("id", "1");
+        w.writeCharacters("a");
+        w.writeCharacters(" b");
+        w.writeCharacters(" c");
+        // the text and the child element make an array, and later text is
+        // appended to it as a string
+        w.writeStartElement("t");
+        w.writeCharacters("child");
+        w.writeEndElement();
+        w.writeCharacters("d");
+        w.writeCharacters("e");
+        w.writeCharacters("f");
+        // and text after the value key changes goes to the new key
+        w.setValueKey("u");
+        w.writeCharacters("g");
+        w.writeCharacters("h");
+        w.writeCharacters("i");
+        w.writeEndElement();
+        w.writeEndDocument();
+        w.close();
+        assertEquals("{\"p\":{\"@id\":1,\"t\":\"[\\\"a b c\\\",\\\"child\\\"]def\",\"u\":\"ghi\"}}",
+            strWriter.toString());
+    }
+
     public void testMixedArrayAndJSONObject() throws Exception {
         StringWriter strWriter = new StringWriter();
         MappedNamespaceConvention con = new MappedNamespaceConvention();
