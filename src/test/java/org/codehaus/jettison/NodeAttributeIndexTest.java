@@ -181,6 +181,41 @@ public class NodeAttributeIndexTest extends TestCase {
         }
     }
 
+    public void testPlainQNameLookupsWithCollidingHashCodes() throws Exception {
+        // Code using the attribute map of a node with plain QNames also gets
+        // the protection against colliding hash codes
+        int count = 1 << 15;
+        StringBuilder json = new StringBuilder("{");
+        String[] names = new String[count];
+        for (int i = 0; i < count; i++) {
+            StringBuilder name = new StringBuilder("a");
+            for (int b = 0; b < 15; b++) {
+                name.append(((i >> b) & 1) == 0 ? "Aa" : "BB");
+            }
+            names[i] = name.toString();
+            json.append("\"@").append(names[i]).append("\":\"v").append(i).append("\",");
+        }
+        json.append("\"child\":\"x\"}");
+        Node node = new Node(null, "root", new JSONObject(json.toString()),
+            new org.codehaus.jettison.mapped.MappedNamespaceConvention());
+        Map attributes = node.getAttributes();
+        for (int i = 0; i < count; i++) {
+            QName name = new QName(names[i]);
+            assertTrue(attributes.containsKey(name));
+            assertEquals("v" + i, attributes.get(name));
+            assertEquals("v" + i, attributes.getOrDefault(name, null));
+        }
+        // and names put with a plain QName are kept in order and found
+        for (int i = 0; i < count; i++) {
+            attributes.put(new QName("urn:x", names[i]), "w" + i);
+        }
+        assertEquals(2 * count, attributes.size());
+        assertEquals(new QName("urn:x", names[0]), node.getAttributeName(count));
+        assertEquals("w1", attributes.get(new QName("urn:x", names[1])));
+        assertEquals("w1", attributes.remove(new QName("urn:x", names[1])));
+        assertNull(attributes.get(new QName("urn:x", names[1])));
+    }
+
     public void testAttributeNamesEqualQNames() throws Exception {
         XMLStreamReader reader = readerAtRoot("{\"root\":{\"@a\":\"1\",\"child\":\"x\"}}");
         QName name = reader.getAttributeName(0);

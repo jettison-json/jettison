@@ -73,7 +73,7 @@ public class Node {
          * that will fail right now, need to investigate that bit more
          */
         this.namespaces = new LinkedHashMap();
-        this.attributes = new LinkedHashMap();
+        this.attributes = new AttributeMap();
         
         con.processAttributesAndNamespaces(this, object);
         
@@ -174,7 +174,11 @@ public class Node {
     }
 
     public void setAttribute(QName name, String value) {
-        attributes.put(AttributeName.of(name), value);
+        if (attributes instanceof AttributeMap) {
+            ((AttributeMap) attributes).putName(AttributeName.of(name), value);
+        } else {
+            attributes.put(AttributeName.of(name), value);
+        }
         attributeNames = null;
     }
 
@@ -433,6 +437,64 @@ public class Node {
             // the same fields as equals()
             int result = getNamespaceURI().compareTo(other.getNamespaceURI());
             return result != 0 ? result : getLocalPart().compareTo(other.getLocalPart());
+        }
+    }
+
+    /**
+     * The attribute map of a node read from JSON input, which is exposed by
+     * getAttributes(). It keeps the names as AttributeNames, and looks names
+     * up as AttributeNames, so that callers using a plain QName also get the
+     * protection against colliding hash codes. As the names equal the QNames
+     * they're made from, the map behaves as a LinkedHashMap of QNames.
+     */
+    static final class AttributeMap extends LinkedHashMap {
+        private static final long serialVersionUID = 1L;
+
+        private static Object key(Object key) {
+            return key instanceof QName ? AttributeName.of((QName) key) : key;
+        }
+
+        @Override
+        public Object get(Object key) {
+            return super.get(key(key));
+        }
+
+        @Override
+        public Object getOrDefault(Object key, Object defaultValue) {
+            return super.getOrDefault(key(key), defaultValue);
+        }
+
+        @Override
+        public boolean containsKey(Object key) {
+            return super.containsKey(key(key));
+        }
+
+        @Override
+        public Object put(Object key, Object value) {
+            return super.put(key(key), value);
+        }
+
+        // put a name that's already an AttributeName
+        void putName(QName name, Object value) {
+            super.put(name, value);
+        }
+
+        @Override
+        public Object putIfAbsent(Object key, Object value) {
+            return super.putIfAbsent(key(key), value);
+        }
+
+        @Override
+        public void putAll(Map map) {
+            for (Iterator itr = map.entrySet().iterator(); itr.hasNext();) {
+                Map.Entry e = (Map.Entry) itr.next();
+                put(e.getKey(), e.getValue());
+            }
+        }
+
+        @Override
+        public Object remove(Object key) {
+            return super.remove(key(key));
         }
     }
 
