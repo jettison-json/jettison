@@ -58,6 +58,12 @@ public class StringIndenter {
   /** current end tag */
   private int endTagIndex;
   
+  /**
+   * The maximum number of indents, the default recursion depth limit of
+   * JSONObject; more deeply nested JSON is indented as much as at this depth
+   */
+  private static final int MAX_INDENTS = 500;
+
   /** current number of indents (times to is the indent */
   private int currentNumberOfIndents;
   
@@ -136,7 +142,10 @@ public class StringIndenter {
       if (instantUnindent(this.json, this.startTagIndex)) {
         this.currentNumberOfIndents--;
         if (onNewline()) {
-          this.unindent();
+          // the indentation is one level too deep, unless it's capped
+          if (this.currentNumberOfIndents < MAX_INDENTS) {
+            this.unindent();
+          }
         } else {
           this.newlineIndent();
         }
@@ -268,25 +277,15 @@ public class StringIndenter {
    * put a newline and indent
    */
   private void newlineIndent() {
-    this.result.append("\n").append(repeat("  ", this.currentNumberOfIndents));
-  }
-
-  /**
-   * repeat a string a certain number of times.
-   * @param theString
-   * @param times
-   * @return the string
-   */
-  private static String repeat(String theString, int times) {
-    StringBuilder result = new StringBuilder();
-    //loop through, keep appending
-    for (int i = 0; i < times; i++) {
-      result.append(theString);
+    this.result.append('\n');
+    // Indent no more deeply than MAX_INDENTS, so that the output of deeply
+    // nested input is proportional to its size, not to its square
+    int indents = Math.min(this.currentNumberOfIndents, MAX_INDENTS);
+    for (int i = 0; i < indents; i++) {
+      this.result.append("  ");
     }
-    return result.toString();
-
   }
-  
+
   /**
    * unindent a previous indent if it is there
    */
