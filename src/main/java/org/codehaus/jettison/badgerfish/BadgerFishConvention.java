@@ -67,7 +67,7 @@ public class BadgerFishConvention implements Convention {
                     if (k.contains(":")) {
                         name = createQName(k, n);
                     } else {
-                        name = new QName(XMLConstants.DEFAULT_NS_PREFIX, k);
+                        name = Node.createAttributeName(XMLConstants.NULL_NS_URI, k);
                     }                    
                     n.setAttribute(name, strValue);
                 }

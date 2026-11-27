@@ -140,7 +140,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
                     // refactoring exercise.
                     if (o instanceof String) {
                         String uri = o.toString();
-                        QName name = new QName( XMLConstants.DEFAULT_NS_PREFIX, k);
+                        QName name = Node.createAttributeName( XMLConstants.NULL_NS_URI, k );
                         n.setAttribute(name, uri);
                     }
                 }
@@ -153,7 +153,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
                         name = createQName( k, n );
                     }
                     else {
-                        name = new QName( XMLConstants.DEFAULT_NS_PREFIX, k );
+                        name = Node.createAttributeName( XMLConstants.NULL_NS_URI, k );
                     }
                     n.setAttribute( name, strValue );
                 }
@@ -230,7 +230,7 @@ public class MappedNamespaceConvention implements Convention, NamespaceContext {
     private void readAttribute( Node n, String name, String value ) throws JSONException {
 
         QName qname = createQName( name );
-        n.getAttributes().put( qname, value );
+        n.setAttribute( qname, value );
     }
 
     private QName createQName( String name ) {

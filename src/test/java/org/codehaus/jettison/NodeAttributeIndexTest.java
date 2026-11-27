@@ -157,6 +157,43 @@ public class NodeAttributeIndexTest extends TestCase {
         }
     }
 
+    public void testManyAttributesWithCollidingHashCodes() throws Exception {
+        // Attribute names made of "Aa" and "BB" blocks all have the same hash
+        // code. QName isn't Comparable, so a HashMap can't keep colliding names
+        // in a tree, and reading them took time quadratic in their number
+        int count = 1 << 15;
+        StringBuilder json = new StringBuilder("{\"root\":{");
+        String[] names = new String[count];
+        for (int i = 0; i < count; i++) {
+            StringBuilder name = new StringBuilder("a");
+            for (int b = 0; b < 15; b++) {
+                name.append(((i >> b) & 1) == 0 ? "Aa" : "BB");
+            }
+            names[i] = name.toString();
+            json.append("\"@").append(names[i]).append("\":\"v").append(i).append("\",");
+        }
+        json.append("\"child\":\"x\"}}");
+        XMLStreamReader reader = readerAtRoot(json.toString());
+        assertEquals(count, reader.getAttributeCount());
+        for (int i = 0; i < count; i++) {
+            assertEquals(names[i], reader.getAttributeLocalName(i));
+            assertEquals("v" + i, reader.getAttributeValue("", names[i]));
+        }
+    }
+
+    public void testAttributeNamesEqualQNames() throws Exception {
+        XMLStreamReader reader = readerAtRoot("{\"root\":{\"@a\":\"1\",\"child\":\"x\"}}");
+        QName name = reader.getAttributeName(0);
+        assertEquals(new QName("a"), name);
+        assertEquals(new QName("a").hashCode(), name.hashCode());
+        assertEquals("1", reader.getAttributeValue(null, "a"));
+        // the attribute map is found by a plain QName too
+        Node node = new Node(new JSONObject());
+        node.setAttribute(new QName("urn:x", "b", "p"), "2");
+        assertEquals("2", node.getAttributes().get(new QName("urn:x", "b")));
+        assertEquals("p", node.getAttributeName(0).getPrefix());
+    }
+
     private static XMLStreamReader readerAtRoot(String json) throws Exception {
         XMLStreamReader reader = new MappedXMLInputFactory(new Configuration())
             .createXMLStreamReader(new StringReader(json));

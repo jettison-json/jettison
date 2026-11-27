@@ -164,8 +164,17 @@ public class Node {
         return attributes;
     }
 
+    /**
+     * Create the name of an attribute, to set with setAttribute(). It equals
+     * new QName(namespaceURI, localPart), and is kept in the attribute map as
+     * it is, whereas another QName is copied.
+     */
+    public static QName createAttributeName(String namespaceURI, String localPart) {
+        return new AttributeName(namespaceURI, localPart);
+    }
+
     public void setAttribute(QName name, String value) {
-        attributes.put(name, value);
+        attributes.put(AttributeName.of(name), value);
         attributeNames = null;
     }
 
@@ -393,6 +402,37 @@ public class Node {
                 }
             }
             return null;
+        }
+    }
+
+    /**
+     * The name of an attribute, as a key of the attribute map. Attribute names
+     * come from the input, and can be chosen so that their hash codes collide.
+     * A HashMap keeps colliding keys in a tree if they're Comparable, which
+     * QName isn't, so that otherwise each lookup scans the colliding keys and
+     * reading an element is quadratic in its number of attributes. As equals()
+     * and hashCode() of QName are final, the name equals the QName it's made
+     * from, so the map is used as before.
+     */
+    static final class AttributeName extends QName implements Comparable<AttributeName> {
+        private static final long serialVersionUID = 1L;
+
+        private AttributeName(QName name) {
+            super(name.getNamespaceURI(), name.getLocalPart(), name.getPrefix());
+        }
+
+        private AttributeName(String namespaceURI, String localPart) {
+            super(namespaceURI, localPart);
+        }
+
+        static QName of(QName name) {
+            return name == null || name instanceof AttributeName ? name : new AttributeName(name);
+        }
+
+        public int compareTo(AttributeName other) {
+            // the same fields as equals()
+            int result = getNamespaceURI().compareTo(other.getNamespaceURI());
+            return result != 0 ? result : getLocalPart().compareTo(other.getLocalPart());
         }
     }
 
