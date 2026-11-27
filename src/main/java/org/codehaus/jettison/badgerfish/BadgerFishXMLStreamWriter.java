@@ -254,7 +254,7 @@ public class BadgerFishXMLStreamWriter extends AbstractXMLStreamWriter {
                 getCurrentNode().put(currentKey, array);
 
                 currentNode = newCurrent;
-                Node node = new Node(currentNode);
+                Node node = new Node(parentNode(), currentNode);
                 getNodes().push(node);
             } else {
                 JSONObject newCurrent = new JSONObject();
@@ -266,12 +266,17 @@ public class BadgerFishXMLStreamWriter extends AbstractXMLStreamWriter {
                 }
 
                 currentNode = newCurrent;
-                Node node = new Node(currentNode);
+                Node node = new Node(parentNode(), currentNode);
                 getNodes().push(node);
             }
         } catch (JSONException e) {
             throw new XMLStreamException("Could not write start element!", e);
         }
+    }
+
+    // the node of the enclosing element, if any
+    private Node parentNode() {
+        return getNodes().isEmpty() ? null : (Node) getNodes().peek();
     }
 
     protected JSONObject getCurrentNode() {

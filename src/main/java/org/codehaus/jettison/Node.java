@@ -94,6 +94,15 @@ public class Node {
         this.attributes = new HashMap();
     }
 
+    /**
+     * Create a node for an element nested in the element of the given parent
+     * node, so that the namespace declarations of the parent are in scope.
+     */
+    public Node(Node parent, JSONObject object) {
+        this(object);
+        this.parent = parent;
+    }
+
     public int getNamespaceCount() {
         return namespaces.size();
     }
