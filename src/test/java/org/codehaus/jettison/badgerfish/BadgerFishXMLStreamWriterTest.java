@@ -442,6 +442,50 @@ public class BadgerFishXMLStreamWriterTest extends TestCase {
         assertEquals(Arrays.asList("p"), toList(ctx.getPrefixes("urn:1")));
     }
 
+    public void testManyNamespacedAttributesInDeeplyNestedElement() throws Exception {
+        // Deeper than 500 elements, lookups used to scan every declaration in
+        // scope again, as finding the prefixes in scope recursed through the
+        // ancestors
+        int count = 5000;
+        int depth = 2000;
+        StringWriter strWriter = new StringWriter();
+        AbstractXMLStreamWriter writer = new BadgerFishXMLStreamWriter(strWriter);
+        writer.writeStartElement("a");
+        for (int i = 0; i < count; i++) {
+            writer.writeNamespace("p" + i, "urn:p");
+        }
+        for (int i = 0; i < depth; i++) {
+            writer.writeStartElement("b");
+            // a declaration on every element, so none is skipped
+            writer.writeNamespace("q", "urn:q" + i);
+        }
+        for (int i = 0; i < count; i++) {
+            writer.writeAttribute("urn:p", "x" + i, "v");
+        }
+        assertEquals("q", writer.getPrefix("urn:q" + (depth - 1)));
+        assertNull(writer.getPrefix("urn:q0"));
+        assertEquals(count, toList(writer.getNamespaceContext().getPrefixes("urn:p")).size());
+    }
+
+    public void testNamespaceContextOfDeeplyNestedDeclarations() throws Exception {
+        // finding the prefixes in scope doesn't recurse through the ancestors,
+        // which would overflow the stack
+        AbstractXMLStreamWriter writer = new BadgerFishXMLStreamWriter(new StringWriter());
+        NamespaceContext ctx = writer.getNamespaceContext();
+        writer.writeStartElement("a");
+        writer.writeNamespace("p", "urn:1");
+        int depth = 100000;
+        for (int i = 0; i < depth; i++) {
+            writer.writeStartElement("b");
+            writer.writeNamespace("q" + (i % 2), "urn:" + (i % 3));
+        }
+        // the innermost elements bind q1 to urn:0 and q0 to urn:2
+        assertEquals(Arrays.asList("p"), toList(ctx.getPrefixes("urn:1")));
+        assertEquals(Arrays.asList("q1"), toList(ctx.getPrefixes("urn:0")));
+        assertEquals(Arrays.asList("q0"), toList(ctx.getPrefixes("urn:2")));
+        assertEquals("urn:1", ctx.getNamespaceURI("p"));
+    }
+
     public void testWriteAttributeWithUnboundNamespaceURI() throws Exception {
         StringWriter strWriter = new StringWriter();
         AbstractXMLStreamWriter writer = new BadgerFishXMLStreamWriter(strWriter);
