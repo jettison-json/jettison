@@ -28,7 +28,9 @@ import javax.xml.stream.XMLStreamReader;
 import junit.framework.TestCase;
 
 import org.codehaus.jettison.AbstractXMLStreamWriter;
+import org.codehaus.jettison.Node;
 import org.codehaus.jettison.json.JSONObject;
+import org.codehaus.jettison.util.FastStack;
 
 public class BadgerFishXMLStreamWriterTest extends TestCase {
     public void testRootWithText() throws Exception {
@@ -372,6 +374,72 @@ public class BadgerFishXMLStreamWriterTest extends TestCase {
         XMLStreamReader reader = new BadgerFishXMLStreamReader(new JSONObject(json));
         reader.next();
         assertEquals("1", reader.getAttributeValue("urn:p", "x"));
+    }
+
+    public void testManyNamespacedAttributes() throws Exception {
+        // Each lookup of a prefix used to scan every namespace declaration in
+        // scope, so writing an element with many declarations and many
+        // namespaced attributes was quadratic: 400 million steps here
+        int count = 20000;
+        StringWriter strWriter = new StringWriter();
+        AbstractXMLStreamWriter writer = new BadgerFishXMLStreamWriter(strWriter);
+        writer.writeStartDocument();
+        writer.writeStartElement("a");
+        for (int i = 0; i < count; i++) {
+            writer.writeNamespace("p" + i, "urn:p");
+        }
+        writer.writeStartElement("b");
+        writer.writeNamespace("q", "urn:q");
+        for (int i = 0; i < count; i++) {
+            writer.writeAttribute("urn:p", "x" + i, "v");
+            assertEquals("q", writer.getPrefix("urn:q"));
+        }
+        assertEquals(count, toList(writer.getNamespaceContext().getPrefixes("urn:p")).size());
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeEndDocument();
+        writer.close();
+
+        JSONObject b = new JSONObject(strWriter.toString()).getJSONObject("a").getJSONObject("b");
+        // each attribute has one of the prefixes bound to its namespace
+        assertEquals(count + 1, b.length());
+    }
+
+    public void testNamespaceContextOfSuppliedStack() throws Exception {
+        // a node the writer didn't create, e.g. for an enclosing element
+        FastStack nodes = new FastStack();
+        Node enclosing = new Node(new JSONObject());
+        enclosing.setNamespace("p", "urn:1");
+        nodes.push(enclosing);
+        AbstractXMLStreamWriter writer = new BadgerFishXMLStreamWriter(new StringWriter(), new JSONObject(), nodes);
+        NamespaceContext ctx = writer.getNamespaceContext();
+        writer.writeStartElement("a");
+        writer.writeNamespace("q", "urn:1");
+        assertEquals("urn:1", ctx.getNamespaceURI("p"));
+        assertEquals("q", ctx.getPrefix("urn:1"));
+        assertEquals(Arrays.asList("q", "p"), toList(ctx.getPrefixes("urn:1")));
+        writer.writeStartElement("b");
+        writer.writeNamespace("p", "urn:2");
+        assertEquals(Arrays.asList("q"), toList(ctx.getPrefixes("urn:1")));
+        assertEquals("urn:2", ctx.getNamespaceURI("p"));
+    }
+
+    public void testNamespaceContextOfDeeplyNestedElements() throws Exception {
+        AbstractXMLStreamWriter writer = new BadgerFishXMLStreamWriter(new StringWriter());
+        NamespaceContext ctx = writer.getNamespaceContext();
+        writer.writeStartElement("a");
+        writer.writeNamespace("p", "urn:1");
+        int depth = 20000;
+        for (int i = 0; i < depth; i++) {
+            writer.writeStartElement("b");
+        }
+        writer.writeNamespace("q", "urn:1");
+        assertEquals("urn:1", ctx.getNamespaceURI("p"));
+        assertEquals(Arrays.asList("q", "p"), toList(ctx.getPrefixes("urn:1")));
+        for (int i = 0; i < depth; i++) {
+            writer.writeEndElement();
+        }
+        assertEquals(Arrays.asList("p"), toList(ctx.getPrefixes("urn:1")));
     }
 
     public void testWriteAttributeWithUnboundNamespaceURI() throws Exception {
