@@ -214,10 +214,20 @@ public class Node {
      * require finding them all.
      */
     PrefixSequence getPrefixesInScope(String uri) {
-        if (namespaces.isEmpty()) {
-            // nothing is declared or redeclared here
-            return parent == null ? PrefixSequence.EMPTY : parent.getPrefixesInScope(uri);
+        // the prefixes in scope are those of the nearest node that declares any,
+        // as nothing is declared or redeclared in between; this and the sequences
+        // don't recurse through the ancestors, as the nesting isn't limited
+        Node node = this;
+        while (node.namespaces.isEmpty()) {
+            node = node.parent;
+            if (node == null) {
+                return PrefixSequence.EMPTY;
+            }
         }
+        return node.declaringPrefixesInScope(uri);
+    }
+
+    private PrefixSequence declaringPrefixesInScope(String uri) {
         if (prefixesInScope == null || indexedPrefixesInScope != namespaces
             || indexedPrefixesInScopeSize != namespaces.size()) {
             prefixesInScope = new HashMap(4);
@@ -299,46 +309,90 @@ public class Node {
          * Get the prefix at the given position, or null if there are no more.
          */
         String get(int index) {
-            while (prefixes.size() <= index && !complete) {
-                findNext();
+            if (prefixes.size() <= index && !complete) {
+                find(index);
             }
             return index < prefixes.size() ? (String) prefixes.get(index) : null;
         }
 
-        private void findNext() {
+        // Find prefixes until there's one at the index, or there are no more. A
+        // sequence that needs the next prefix of the parent's sequence waits on
+        // a stack while that sequence finds it, rather than calling it.
+        private void find(int index) {
+            ArrayList waiting = null;
+            PrefixSequence sequence = this;
+            while (prefixes.size() <= index && !complete) {
+                if (sequence.needsInherited()) {
+                    if (waiting == null) {
+                        waiting = new ArrayList();
+                    }
+                    waiting.add(sequence);
+                    sequence = sequence.inherited;
+                } else {
+                    sequence.step();
+                    if (waiting != null && !waiting.isEmpty()
+                        && !((PrefixSequence) waiting.get(waiting.size() - 1)).needsInherited()) {
+                        sequence = (PrefixSequence) waiting.remove(waiting.size() - 1);
+                    }
+                }
+            }
+        }
+
+        // Whether the next prefix depends on a prefix of the parent's sequence
+        // that hasn't been found yet
+        private boolean needsInherited() {
+            if (complete) {
+                return false;
+            }
             if (declared == null) {
                 declared = node.declaredPrefixes(uri);
             }
-            // a prefix declared on the node is in scope for the URI if looking
-            // it up from the node gives the URI
-            while (declared.hasNext()) {
-                String prefix = (String) declared.next();
-                // the declared prefixes are distinct
-                if (uri.equals(node.getNamespaceURI(prefix))) {
-                    prefixes.add(prefix);
-                    return;
-                }
+            if (declared.hasNext()) {
+                return false;
             }
-            // a prefix in scope at the parent is in scope here unless it's bound
-            // here, as looking it up from here then gives the same URI
             if (inherited == null) {
                 inherited = node.parent == null ? EMPTY : node.parent.getPrefixesInScope(uri);
             }
-            while (true) {
-                String prefix = inherited.get(inheritedIndex);
-                if (prefix == null) {
-                    complete = true;
-                    return;
-                }
-                inheritedIndex++;
-                if (node.namespaces.get(prefix) == null
-                    // a prefix declared here with no URI is looked up from the parent,
-                    // so it may have been found among the declared prefixes already
-                    && !(node.namespaces.containsKey(prefix) && prefixes.contains(prefix))) {
+            return inheritedIndex >= inherited.prefixes.size() && !inherited.complete;
+        }
+
+        // Consider one declared or inherited prefix, or complete the sequence if
+        // there are no more; needsInherited() must be false
+        private void step() {
+            // a prefix declared on the node is in scope for the URI if looking
+            // it up from the node gives the URI
+            if (declared.hasNext()) {
+                String prefix = (String) declared.next();
+                // the declared prefixes are distinct
+                if (uri.equals(lookUp(node, prefix))) {
                     prefixes.add(prefix);
-                    return;
+                }
+                return;
+            }
+            // a prefix in scope at the parent is in scope here unless it's bound
+            // here, as looking it up from here then gives the same URI
+            if (inheritedIndex >= inherited.prefixes.size()) {
+                complete = true;
+                return;
+            }
+            String prefix = (String) inherited.prefixes.get(inheritedIndex++);
+            if (node.namespaces.get(prefix) == null
+                // a prefix declared here with no URI is looked up from the parent,
+                // so it may have been found among the declared prefixes already
+                && !(node.namespaces.containsKey(prefix) && prefixes.contains(prefix))) {
+                prefixes.add(prefix);
+            }
+        }
+
+        // getNamespaceURI(prefix) of the node, without recursing
+        private static String lookUp(Node node, String prefix) {
+            for (Node n = node; n != null; n = n.parent) {
+                String uri = (String) n.namespaces.get(prefix);
+                if (uri != null) {
+                    return uri;
                 }
             }
+            return null;
         }
     }
 

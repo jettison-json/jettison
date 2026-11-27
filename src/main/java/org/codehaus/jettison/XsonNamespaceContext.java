@@ -100,13 +100,9 @@ public class XsonNamespaceContext implements NamespaceContext {
      * every namespace declaration on the stack for each lookup, which made
      * writing an element with many namespaced attributes quadratic in the
      * number of declarations. Otherwise, e.g. for a stack built by a
-     * subclass or a very deep one, return null.
+     * subclass, return null.
      */
     private Node linkedTop() {
-        if (nodes.size() > MAX_LINKED_DEPTH) {
-            // finding the prefixes in scope recurses through the ancestors
-            return null;
-        }
         Node below = null;
         for (int i = 0; i < nodes.size(); i++) {
             Object node = nodes.get(i);
@@ -117,8 +113,6 @@ public class XsonNamespaceContext implements NamespaceContext {
         }
         return below;
     }
-
-    private static final int MAX_LINKED_DEPTH = 500;
 
     private static final class PrefixIterator implements Iterator {
         private final Node.PrefixSequence prefixes;
