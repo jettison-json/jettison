@@ -413,17 +413,29 @@ public class JSONArray implements Serializable {
      *  nested too deeply.
      */
     String join(String separator, int depth) throws JSONException {
+        StringBuilder sb = new StringBuilder();
+        appendJoined(sb, separator, depth);
+        return sb.toString();
+    }
+
+
+    /**
+     * Append the contents of this JSONArray, which is nested at the given
+     * depth, separated by the separator. Nested objects and arrays are
+     * appended to the same builder, rather than each making a string that is
+     * copied into the enclosing one, which made the cost proportional to the
+     * depth.
+     */
+    private void appendJoined(StringBuilder sb, String separator, int depth) throws JSONException {
         JSONObject.checkSerializationDepth(depth);
         int len = length();
-        StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < len; i += 1) {
             if (i > 0) {
                 sb.append(separator);
             }
-            sb.append(JSONObject.valueToString(this.myArrayList.get(i), escapeForwardSlashAlways, depth + 1));
+            JSONObject.appendValueString(sb, this.myArrayList.get(i), escapeForwardSlashAlways, depth + 1);
         }
-        return sb.toString();
     }
 
 
@@ -927,7 +939,20 @@ public class JSONArray implements Serializable {
      *  nested too deeply.
      */
     String toCompactString(int depth) throws JSONException {
-        return '[' + join(",", depth) + ']';
+        StringBuilder sb = new StringBuilder();
+        appendCompactString(sb, depth);
+        return sb.toString();
+    }
+
+
+    /**
+     * Append a compact JSON text of this JSONArray, which is nested at the
+     * given depth.
+     */
+    void appendCompactString(StringBuilder sb, int depth) throws JSONException {
+        sb.append('[');
+        appendJoined(sb, ",", depth);
+        sb.append(']');
     }
 
 
@@ -975,16 +1000,29 @@ public class JSONArray implements Serializable {
      *  nested too deeply.
      */
     String toString(int indentFactor, int indent, int depth) throws JSONException {
+        StringBuilder sb = new StringBuilder();
+        appendString(sb, indentFactor, indent, depth);
+        return sb.toString();
+    }
+
+
+    /**
+     * Append a prettyprinted JSON text of this JSONArray, which is nested at
+     * the given depth. Nested objects and arrays are appended to the same
+     * builder.
+     */
+    void appendString(StringBuilder sb, int indentFactor, int indent, int depth) throws JSONException {
         JSONObject.checkSerializationDepth(depth);
         int len = length();
         if (len == 0) {
-            return "[]";
+            sb.append("[]");
+            return;
         }
         int i;
-        StringBuilder sb = new StringBuilder("[");
+        sb.append('[');
         if (len == 1) {
-            sb.append(JSONObject.valueToString(this.myArrayList.get(0),
-                    indentFactor, indent, escapeForwardSlashAlways, depth + 1));
+            JSONObject.appendValueString(sb, this.myArrayList.get(0),
+                    indentFactor, indent, escapeForwardSlashAlways, depth + 1);
         } else {
             int newindent = indent + indentFactor;
             sb.append('\n');
@@ -995,8 +1033,8 @@ public class JSONArray implements Serializable {
                 for (int j = 0; j < newindent; j += 1) {
                     sb.append(' ');
                 }
-                sb.append(JSONObject.valueToString(this.myArrayList.get(i),
-                        indentFactor, newindent, escapeForwardSlashAlways, depth + 1));
+                JSONObject.appendValueString(sb, this.myArrayList.get(i),
+                        indentFactor, newindent, escapeForwardSlashAlways, depth + 1);
             }
             sb.append('\n');
             for (i = 0; i < indent; i += 1) {
@@ -1004,7 +1042,6 @@ public class JSONArray implements Serializable {
             }
         }
         sb.append(']');
-        return sb.toString();
     }
 
     @Override

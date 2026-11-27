@@ -1290,21 +1290,34 @@ public class JSONObject implements Serializable {
      *  nested too deeply (for example because it contains a cycle).
      */
     String toCompactString(int depth) throws JSONException {
+        StringBuilder sb = new StringBuilder();
+        appendCompactString(sb, depth);
+        return sb.toString();
+    }
+
+
+    /**
+     * Append a compact JSON text of this JSONObject, which is nested at the
+     * given depth. Nested objects and arrays are appended to the same builder,
+     * rather than each making a string that is copied into the enclosing one,
+     * which made the cost proportional to the depth.
+     */
+    void appendCompactString(StringBuilder sb, int depth) throws JSONException {
         checkSerializationDepth(depth);
         Iterator     keys = keys();
-        StringBuilder sb = new StringBuilder("{");
-
+        sb.append('{');
+        boolean first = true;
         while (keys.hasNext()) {
-            if (sb.length() > 1) {
+            if (!first) {
                 sb.append(',');
             }
+            first = false;
             Object o = keys.next();
             sb.append(quote(o.toString(), escapeForwardSlashAlways));
             sb.append(':');
-            sb.append(valueToString(this.myHashMap.get(o), escapeForwardSlashAlways, depth + 1));
+            appendValueString(sb, this.myHashMap.get(o), escapeForwardSlashAlways, depth + 1);
         }
         sb.append('}');
-        return sb.toString();
     }
 
 
@@ -1368,38 +1381,52 @@ public class JSONObject implements Serializable {
      *  nested too deeply.
      */
     String toString(int indentFactor, int indent, int depth) throws JSONException {
+        StringBuilder sb = new StringBuilder();
+        appendString(sb, indentFactor, indent, depth);
+        return sb.toString();
+    }
+
+
+    /**
+     * Append a prettyprinted JSON text of this JSONObject, which is nested at
+     * the given depth. Nested objects and arrays are appended to the same
+     * builder.
+     */
+    void appendString(StringBuilder sb, int indentFactor, int indent, int depth) throws JSONException {
         checkSerializationDepth(depth);
         int          i;
         int          n = length();
         if (n == 0) {
-            return "{}";
+            sb.append("{}");
+            return;
         }
         Iterator     keys = keys();
-        StringBuilder sb = new StringBuilder("{");
+        sb.append('{');
+        boolean      first = true;
         int          newindent = indent + indentFactor;
         while (keys.hasNext()) {
             Object o = keys.next();
-            if (sb.length() > 1) {
+            if (!first) {
                 sb.append(",\n");
             } else {
                 sb.append('\n');
             }
+            first = false;
             for (i = 0; i < newindent; i += 1) {
                 sb.append(' ');
             }
             sb.append(quote(o.toString(), escapeForwardSlashAlways));
             sb.append(": ");
-            sb.append(valueToString(this.myHashMap.get(o), indentFactor,
-                    newindent, escapeForwardSlashAlways, depth + 1));
+            appendValueString(sb, this.myHashMap.get(o), indentFactor,
+                    newindent, escapeForwardSlashAlways, depth + 1);
         }
-        if (sb.length() > 1) {
+        if (!first) {
             sb.append('\n');
             for (i = 0; i < indent; i += 1) {
                 sb.append(' ');
             }
         }
         sb.append('}');
-        return sb.toString();
     }
 
 
@@ -1487,6 +1514,23 @@ public class JSONObject implements Serializable {
 
 
     /**
+     * Append a compact JSON text of an Object value, which is nested at the
+     * given depth, as valueToString makes it. Objects and arrays are appended
+     * directly, rather than copied from a string of their own.
+     */
+    static void appendValueString(StringBuilder sb, Object value, boolean escapeForwardSlash, int depth)
+            throws JSONException {
+        if (value instanceof JSONObject && !(value instanceof JSONString) && !value.equals(null)) {
+            ((JSONObject) value).appendCompactString(sb, depth);
+        } else if (value instanceof JSONArray && !(value instanceof JSONString) && !value.equals(null)) {
+            ((JSONArray) value).appendCompactString(sb, depth);
+        } else {
+            sb.append(valueToString(value, escapeForwardSlash, depth));
+        }
+    }
+
+
+    /**
      * Make a prettyprinted JSON text of an object value.
      * @param value The value to be serialized.
      * @param indentFactor The number of spaces to add to each level of
@@ -1544,6 +1588,23 @@ public class JSONObject implements Serializable {
             return ((JSONArray)value).toString(indentFactor, indent, depth);
         }
         return quote(value.toString(), escapeForwardSlash);
+    }
+
+
+    /**
+     * Append a prettyprinted JSON text of an Object value, which is nested at
+     * the given depth, as valueToString makes it. Objects and arrays are
+     * appended directly, rather than copied from a string of their own.
+     */
+    static void appendValueString(StringBuilder sb, Object value, int indentFactor, int indent,
+            boolean escapeForwardSlash, int depth) throws JSONException {
+        if (value instanceof JSONObject && !(value instanceof JSONString) && !value.equals(null)) {
+            ((JSONObject) value).appendString(sb, indentFactor, indent, depth);
+        } else if (value instanceof JSONArray && !(value instanceof JSONString) && !value.equals(null)) {
+            ((JSONArray) value).appendString(sb, indentFactor, indent, depth);
+        } else {
+            sb.append(valueToString(value, indentFactor, indent, escapeForwardSlash, depth));
+        }
     }
 
     /**
