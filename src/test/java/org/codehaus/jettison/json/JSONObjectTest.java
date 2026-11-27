@@ -359,6 +359,39 @@ public class JSONObjectTest extends TestCase {
         }
     }
 
+    public void testToStringOfDeeplyNestedStructure() throws JSONException {
+        // Nested objects and arrays are appended to one builder, rather than
+        // each making a string that's copied into the enclosing one, which
+        // copied the innermost text once per level
+        int depth = JSONObject.getGlobalRecursionDepthLimit();
+        StringBuilder json = new StringBuilder();
+        for (int i = 0; i < depth; i++) {
+            json.append(i % 2 == 0 ? "{\"a\":" : "[1,");
+        }
+        json.append("\"leaf\"");
+        for (int i = depth - 1; i >= 0; i--) {
+            json.append(i % 2 == 0 ? '}' : ']');
+        }
+        JSONObject obj = new JSONObject(json.toString());
+        assertEquals(json.toString(), obj.toString());
+        assertEquals(json.toString(), new JSONObject(obj.toString(2)).toString());
+    }
+
+    public void testIndentedToStringOfNestedValues() throws JSONException {
+        JSONObject obj = new JSONObject();
+        obj.put("a", new JSONObject().put("b", new JSONArray().put(1).put(new JSONObject())));
+        obj.put("c", new JSONArray().put(new JSONArray().put("d")));
+        obj.put("e", new int[] {1, 2});
+        obj.put("f", new JSONString() {
+            public String toJSONString() {
+                return "{\"g\":true}";
+            }
+        });
+        assertEquals("{\n  \"a\": {\n    \"b\": [\n      1,\n      {}\n    ]\n  },\n  \"c\": [[\"d\"]],\n"
+            + "  \"e\": [\n    1,\n    2\n  ],\n  \"f\": {\"g\":true}\n}", obj.toString(2));
+        assertEquals("{\"a\":{\"b\":[1,{}]},\"c\":[[\"d\"]],\"e\":[1,2],\"f\":{\"g\":true}}", obj.toString());
+    }
+
     public void testDuplicateKeysAreAccumulatedIntoArray() throws JSONException {
         JSONObject obj = new JSONObject("{\"a\":1,\"a\":2,\"a\":3}");
         assertEquals(1, obj.length());
