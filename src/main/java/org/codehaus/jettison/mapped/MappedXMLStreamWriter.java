@@ -136,11 +136,22 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	 */
 	private final class JSONPropertyObject extends JSONProperty {
 	    private JSONObject object;
+	    // The text of the value key, to append further text to. Putting the
+	    // whole text in the object for each piece of text took time quadratic
+	    // in the number of pieces, so it's put when the object is next used,
+	    // if the object still has the text that was last put. The builder is
+	    // only made for a third piece of text, as most text has fewer.
+	    private StringBuilder text;
+	    private String textKey;
+	    private String textPut;
+	    private boolean textPending;
+	    private boolean textAppended;
 	    public JSONPropertyObject(String key, String parentKey, JSONObject object) {
 	        super(key, parentKey);
 	        this.object = object;
 	    }
 	    public Object getValue() {
+	        putPendingText();
 	        return object;
 	    }
 	    public void addText(String text) {
@@ -150,21 +161,58 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	    			return;
 	    		}
 	    	}
+	    	if (valueKey == null) {
+	    		// no text is written
+	    		return;
+	    	}
+	    	if (textPut != null && valueKey.equals(textKey) && object.opt(valueKey) == textPut) {
+	    		if (this.text == null && !textAppended) {
+	    			// a second piece of text, put as before
+	    			textAppended = true;
+	    			putText(textPut + text);
+	    			return;
+	    		}
+	    		if (this.text == null) {
+	    			this.text = new StringBuilder(textPut.length() + text.length() + 16).append(textPut);
+	    		}
+	    		this.text.append(text);
+	    		textPending = true;
+	    		return;
+	    	}
+	    	putPendingText();
 	        try {
 	            text = object.getString(valueKey) + text;
 	        } catch (JSONException e) {
 	            // no existing text, that's fine
 	        }
+	        textKey = valueKey;
+	        textAppended = false;
+	        putText(text);
+	    }
+	    private void putText(String text) {
 	        try {
-	        	if (valueKey != null) {
-	        		object.put(valueKey, text);
-	        	}
+	        	object.put(textKey, text);
 	        } catch (JSONException e) {
 	            // Impossible by construction
 	            throw new AssertionError(e);
 	        }
+	        this.text = null;
+	        textPut = text;
+	        textPending = false;
+	    }
+	    private void putPendingText() {
+	    	if (textPending) {
+	    		StringBuilder pending = text;
+	    		putText(pending.toString());
+	    		// keep appending to the builder
+	    		text = pending;
+	    	}
 	    }
 	    public JSONPropertyObject withProperty(JSONProperty property, boolean add) {
+	        if (textPending && property.getKey() != null && property.getKey().equals(textKey)) {
+	            // the property is added to the text
+	            putPendingText();
+	        }
 	        Object value = property.getValue();
 	        if(value instanceof String && !((String)value).isEmpty()) {
 	            value = convention.convertToJSONPrimitive((String)value);
